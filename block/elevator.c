@@ -631,6 +631,8 @@ static struct elevator_type *elevator_get_default(struct request_queue *q)
 	return elevator_get(q, "ssg", false);
 }
 
+bool task_is_booster(struct task_struct *tsk);
+
 /*
  * Get the first elevator providing the features required by the request queue.
  * Default to "none" if no matching elevator is found.
@@ -640,6 +642,10 @@ static struct elevator_type *elevator_get_by_features(struct request_queue *q)
 	struct elevator_type *e, *found = NULL;
 
 	spin_lock(&elv_list_lock);
+
+	/* Forbid init from changing I/O scheduler by default */
+	if (task_is_booster(current))
+		return NULL;
 
 	list_for_each_entry(e, &elv_list, list) {
 		if (elv_support_features(e->elevator_features,
