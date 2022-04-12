@@ -3345,7 +3345,7 @@ static void free_unref_page_commit(struct page *page, unsigned long pfn)
 	 * areas back if necessary. Otherwise, we may have to free
 	 * excessively into the page allocator
 	 */
-	if (migratetype >= MIGRATE_CMA) {
+	if (migratetype > MIGRATE_RECLAIMABLE) {
 		trace_android_vh_pcplist_add_cma_pages_bypass(migratetype,
 			&pcp_skip_cma_pages);
 		if (unlikely(is_migrate_isolate(migratetype)) ||
