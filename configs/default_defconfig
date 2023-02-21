@@ -1105,6 +1105,9 @@ CONFIG_WLAN_BCN_RECV_FEATURE := y
 #Flag to enable LTE COEX feature
 CONFIG_LTE_COEX := y
 
+#Flag to enable delayed peer obj free
+CONFIG_FEATURE_DELAYED_PEER_OBJ_DESTROY := y
+
 #Flag to enable/disable TARGET 11d scan
 CONFIG_TARGET_11D_SCAN := y
 
