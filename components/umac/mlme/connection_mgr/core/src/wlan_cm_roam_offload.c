@@ -5848,9 +5848,8 @@ cm_send_roam_invoke_req(struct cnx_mgr *cm_ctx, struct cm_req *req)
 					roam_invoke_req);
 
 	if (QDF_IS_STATUS_ERROR(status)) {
-		mlme_err(CM_PREFIX_FMT "No Candidate found",
+		mlme_err(CM_PREFIX_FMT "No Candidate found, send roam invoke req, fw will perform scan",
 			 CM_PREFIX_REF(vdev_id, cm_id));
-		goto roam_err;
 	}
 
 	if (wlan_cm_get_ese_assoc(pdev, vdev_id)) {
