@@ -193,13 +193,13 @@ static struct wakeup_source *fp_wakelock = NULL;
 static struct gf_dev gf;
 static void goodix_register_panel_notifier_work(struct work_struct *work);
 
+#if defined(SUPPORT_NAV_EVENT)
 struct gf_key_map maps[] = {
 	{ EV_KEY, GF_KEY_INPUT_HOME },
 	{ EV_KEY, GF_KEY_INPUT_MENU },
 	{ EV_KEY, GF_KEY_INPUT_BACK },
 	{ EV_KEY, GF_KEY_INPUT_POWER },
 	{ EV_KEY, GF_KEY_DOUBLE_CLICK },
-#if defined(SUPPORT_NAV_EVENT)
 	{ EV_KEY, GF_NAV_INPUT_UP },
 	{ EV_KEY, GF_NAV_INPUT_DOWN },
 	{ EV_KEY, GF_NAV_INPUT_RIGHT },
@@ -209,8 +209,8 @@ struct gf_key_map maps[] = {
 	{ EV_KEY, GF_NAV_INPUT_DOUBLE_CLICK },
 	{ EV_KEY, GF_NAV_INPUT_LONG_PRESS },
 	{ EV_KEY, GF_NAV_INPUT_HEAVY },
-#endif
 };
+#endif
 
 static void gf_enable_irq(struct gf_dev *gf_dev)
 {
@@ -379,6 +379,7 @@ static int gfspi_ioctl_clk_uninit(struct gf_dev *data)
 }
 #endif
 
+#if defined(SUPPORT_NAV_EVENT)
 static void nav_event_input(struct gf_dev *gf_dev, gf_nav_event_t nav_event)
 {
 	uint32_t nav_input = 0;
@@ -480,12 +481,13 @@ static void gf_kernel_key_input(struct gf_dev *gf_dev, struct gf_key *gf_key)
 		input_sync(gf_dev->input);
 	}
 }
+#endif
 
 static long gf_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 {
 	struct gf_dev *gf_dev = &gf;
-	struct gf_key gf_key;
 #if defined(SUPPORT_NAV_EVENT)
+	struct gf_key gf_key;
 	gf_nav_event_t nav_event = GF_NAV_NONE;
 #endif
 	int retval = 0;
@@ -546,6 +548,7 @@ static long gf_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 		gf_hw_reset(gf_dev, 3);
 		break;
 
+#if defined(SUPPORT_NAV_EVENT)
 	case GF_IOC_INPUT_KEY_EVENT:
 		if (copy_from_user(&gf_key, (struct gf_key *)arg, sizeof(struct gf_key))) {
 			pr_debug("Failed to copy input key event from user to kernel\n");
@@ -555,7 +558,6 @@ static long gf_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 
 		gf_kernel_key_input(gf_dev, &gf_key);
 		break;
-#if defined(SUPPORT_NAV_EVENT)
 
 	case GF_IOC_NAV_EVENT:
 		pr_debug("%s GF_IOC_NAV_EVENT\n", __func__);
@@ -1114,7 +1116,9 @@ static int gf_probe(struct platform_device *pdev)
 	struct gf_dev *gf_dev = &gf;
 	int status = -EINVAL;
 	unsigned long minor;
+#if defined(SUPPORT_NAV_EVENT)
 	int i;
+#endif
 	/* Initialize the driver data */
 	INIT_LIST_HEAD(&gf_dev->device_entry);
 #if defined(USE_SPI_BUS)
@@ -1171,9 +1175,11 @@ static int gf_probe(struct platform_device *pdev)
 			goto error_dev;
 		}
 
+#if defined(SUPPORT_NAV_EVENT)
 		for (i = 0; i < ARRAY_SIZE(maps); i++) {
 			input_set_capability(gf_dev->input, maps[i].type, maps[i].code);
 		}
+#endif
 
 		gf_dev->input->name = GF_INPUT_NAME;
 		gf_dev->input->id.vendor = 0x0666;
