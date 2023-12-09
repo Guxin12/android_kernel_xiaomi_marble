@@ -8877,6 +8877,7 @@ int dsi_display_enable(struct dsi_display *display)
 
 		display->panel->panel_initialized = true;
 		display->panel->power_mode = SDE_MODE_DPMS_ON;
+		display->panel->mi_cfg.panel_state = PANEL_STATE_ON;
 		DSI_INFO("cont splash enabled, display enable not required\n");
 		dsi_display_panel_id_notification(display);
 
