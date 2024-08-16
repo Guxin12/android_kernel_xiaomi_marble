@@ -789,6 +789,8 @@ void sde_power_resource_deinit(struct platform_device *pdev,
 
 	msm_dss_put_clk(mp->clk_config, mp->num_clk);
 
+	msm_dss_enable_vreg(mp->vreg_config, mp->num_vreg, 0);
+
 	msm_dss_get_vreg(&pdev->dev, mp->vreg_config, mp->num_vreg, 0);
 
 	if (mp->clk_config)
