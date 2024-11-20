@@ -370,8 +370,8 @@ static void nav_event_input(struct gf_dev *gf_dev, gf_nav_event_t nav_event)
 		break;
 
 	case GF_NAV_CLICK:
-		nav_input = GF_NAV_INPUT_CLICK;
-		pr_debug("%s nav click\n", __func__);
+		//nav_input = GF_NAV_INPUT_CLICK;
+		pr_debug("%s ignored nav single click\n", __func__);
 		break;
 
 	case GF_NAV_HEAVY:
@@ -394,7 +394,7 @@ static void nav_event_input(struct gf_dev *gf_dev, gf_nav_event_t nav_event)
 		break;
 	}
 
-	if ((nav_event != GF_NAV_FINGER_DOWN) && (nav_event != GF_NAV_FINGER_UP)) {
+	if (nav_input != 0) {
 		input_report_key(gf_dev->input, nav_input, 1);
 		input_sync(gf_dev->input);
 		input_report_key(gf_dev->input, nav_input, 0);
@@ -431,10 +431,12 @@ static void gf_kernel_key_input(struct gf_dev *gf_dev, struct gf_key *gf_key)
 		input_sync(gf_dev->input);
 	}
 
-	if (GF_KEY_HOME == gf_key->key || GF_KEY_HOME_DOUBLE_CLICK == gf_key->key) {
-		pr_debug("input report key event single or double click");
+	if (GF_KEY_HOME_DOUBLE_CLICK == gf_key->key) {
+		pr_debug("input report key event double click");
 		input_report_key(gf_dev->input, key_input, gf_key->value);
 		input_sync(gf_dev->input);
+	} else if (GF_KEY_HOME == gf_key->key) {
+		pr_debug("ignored key event single click");
 	}
 }
 
