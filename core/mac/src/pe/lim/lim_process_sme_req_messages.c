@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2012-2021 The Linux Foundation. All rights reserved.
- * Copyright (c) 2021-2024 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  *
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
@@ -4103,14 +4103,16 @@ lim_fill_session_params(struct mac_context *mac_ctx,
 	}
 
 	pe_debug("After stripping Assoc IE len: %d", req->assoc_ie.len);
-	if (req->assoc_ie.len)
-		QDF_TRACE_HEX_DUMP(QDF_MODULE_ID_PE, QDF_TRACE_LEVEL_DEBUG,
-				   req->assoc_ie.ptr, req->assoc_ie.len);
-	qdf_mem_copy(pe_join_req->addIEAssoc.addIEdata,
-		     req->assoc_ie.ptr, req->assoc_ie.len);
 	/* update assoc ie to cm */
 	cm_update_session_assoc_ie(mac_ctx->psoc, session->vdev_id,
 				   &req->assoc_ie);
+
+	if (req->assoc_ie.len)
+		QDF_TRACE_HEX_DUMP(QDF_MODULE_ID_PE, QDF_TRACE_LEVEL_DEBUG,
+				   req->assoc_ie.ptr, req->assoc_ie.len);
+
+	qdf_mem_copy(pe_join_req->addIEAssoc.addIEdata,
+		     req->assoc_ie.ptr, req->assoc_ie.len);
 	pe_join_req->addIEAssoc.length = req->assoc_ie.len;
 	qdf_mem_copy(pe_join_req->addIEScan.addIEdata,
 		     req->scan_ie.ptr, req->scan_ie.len);

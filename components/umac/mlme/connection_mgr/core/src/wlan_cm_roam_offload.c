@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2012-2021 The Linux Foundation. All rights reserved.
- * Copyright (c) 2021-2024 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  *
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
@@ -5241,6 +5241,8 @@ void cm_update_session_assoc_ie(struct wlan_objmgr_psoc *psoc,
 	rso_cfg->assoc_ie.ptr = qdf_mem_malloc(assoc_ie->len);
 	if (!rso_cfg->assoc_ie.ptr)
 		goto rel_vdev_ref;
+
+	cm_update_ext_cap_ie_at_source(psoc, assoc_ie);
 
 	rso_cfg->assoc_ie.len = assoc_ie->len;
 	qdf_mem_copy(rso_cfg->assoc_ie.ptr, assoc_ie->ptr, assoc_ie->len);
