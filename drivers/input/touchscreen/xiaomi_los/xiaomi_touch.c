@@ -177,7 +177,8 @@ static void oneshot_sensor_update_driver(enum touch_id touch_id, bool enabled,
 			enabled ? atomic_read(&requested_state[i]) : 0;
 		if (atomic_xchg(&oneshot_sensor_enabled[touch_id][i], requested_value) !=
 		    requested_value) {
-			pr_info("setting mode %d to %d!\n", i, requested_value);
+			pr_debug("setting mode %d to %d!\n", i,
+				 requested_value);
 			interface->set_mode_value(interface->private,
 						  oneshot_sensor_map[i]->mode,
 						  requested_value);
@@ -455,8 +456,8 @@ static long xiaomi_touch_dev_ioctl(struct file *file, unsigned int cmd,
 	if (copy_from_user(&request, (int __user *)arg, sizeof(request)))
 		return -EFAULT;
 
-	pr_info("cmd: %d, mode: %d, value: %d\n", _IOC_NR(cmd), request.mode,
-		request.value);
+	pr_debug("cmd: %d, mode: %d, value: %d\n", _IOC_NR(cmd), request.mode,
+		 request.value);
 
 	switch (_IOC_NR(cmd)) {
 	case TOUCH_MODE_SET:
