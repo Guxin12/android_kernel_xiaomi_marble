@@ -16,6 +16,7 @@ _target_chipset_map = {
                 "adrastea",
         ],
         "parrot":[
+                "qca6490",
                 "qca6750",
                 "adrastea",
         ],
@@ -2095,7 +2096,7 @@ def _define_module_for_target_variant_chipset(target, variant, chipset):
         "//vendor/qcom/opensource/wlan/platform:wlan-platform-headers",
     ]
 
-    if target != "lahaina":
+    if target != "lahaina" and target != "parrot":
         deps = deps + [
             "//vendor/qcom/opensource/dataipa:include_headers",
             "//vendor/qcom/opensource/dataipa:{}_{}_ipam".format(target, variant),
