@@ -930,6 +930,10 @@ config FEATURE_STATION_INFO
 	bool "Enable support to get station info"
 	default n
 
+config WLAN_BOOST_CPU_FREQ_IN_ROAM
+	bool "Enable CPU boosting during roam"
+	default n
+
 config FEATURE_TX_POWER
 	bool "Enable support to get tx power"
 	default n
