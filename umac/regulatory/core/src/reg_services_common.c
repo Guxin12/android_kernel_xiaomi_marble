@@ -2040,6 +2040,19 @@ bool reg_is_5ghz_ch_freq(uint32_t freq)
 	return REG_IS_5GHZ_FREQ(freq);
 }
 
+#define MIN_UNII_3_BAND_CHANNEL 5725
+#define MAX_UNII_3_BAND_CHANNEL 5850
+bool reg_is_5ghz_unii3_chan_freq(qdf_freq_t freq)
+{
+	if (!REG_IS_5GHZ_FREQ(freq))
+		return false;
+
+	if (freq >= MIN_UNII_3_BAND_CHANNEL && freq <= MAX_UNII_3_BAND_CHANNEL)
+		return true;
+
+	return false;
+}
+
 /**
  * BAND_2G_PRESENT() - Check if REG_BAND_2G is set in the band_mask
  * @band_mask: Bitmask for bands
