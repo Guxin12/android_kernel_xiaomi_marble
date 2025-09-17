@@ -987,6 +987,11 @@ release_kfree:
 	case CAM_DUMP_REQ: {
 		struct cam_dump_req_cmd dump;
 
+		if (!cam_debugfs_available())
+		{
+			CAM_DBG(CAM_CORE, "Dump request disabled");
+			return 0;
+		}
 		if (copy_from_user(&dump, u64_to_user_ptr(cmd->handle),
 			sizeof(dump))) {
 			rc = -EFAULT;
