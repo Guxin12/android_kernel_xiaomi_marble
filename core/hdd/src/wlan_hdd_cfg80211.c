@@ -17230,7 +17230,7 @@ static int wlan_hdd_cfg80211_get_usable_channel(struct wiphy *wiphy,
 						int data_len)
 {
 	hdd_debug("get usable channel feature not supported");
-	return -EPERM;
+	return -EOPNOTSUPP;
 }
 #endif
 
