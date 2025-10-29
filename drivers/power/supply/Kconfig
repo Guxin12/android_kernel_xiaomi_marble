@@ -877,6 +877,11 @@ config MARBLE_TOGGLE
 	bool "Adapted to marble"
 	depends on QTI_BATTERY_CHARGER
 
+config MARBLE_TOGGLE_2
+	bool "Adapted to marble again"
+	depends on QTI_BATTERY_CHARGER
+	depends on MARBLE_TOGGLE
+
 source "drivers/power/supply/qcom/Kconfig"
 
 endif # POWER_SUPPLY

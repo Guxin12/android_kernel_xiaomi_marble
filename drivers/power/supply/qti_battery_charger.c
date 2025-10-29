@@ -311,6 +311,11 @@ enum xm_property_id {
 	XM_PROP_SET_LEARNING_POWER_B,
 	XM_PROP_GET_LEARNING_POWER_B,
 	XM_PROP_GET_LEARNING_POWER_DEV_B,
+#ifdef CONFIG_MARBLE_TOGGLE_2
+	XM_PROP_GET_MAX_LIFE_VOL,
+	XM_PROP_GET_MAX_LIFE_TEMP,
+	XM_PROP_GET_OVER_VOL_DURATION,
+#endif
 	XM_PROP_FG1_QMAX,
 	XM_PROP_FG1_RM,
 	XM_PROP_FG1_FCC,
@@ -5765,6 +5770,56 @@ static ssize_t get_learn_power_dev_b_show(struct class *c,
 }
 static CLASS_ATTR_RO(get_learn_power_dev_b);
 
+#ifdef CONFIG_MARBLE_TOGGLE_2
+static ssize_t max_life_vol_show(struct class *c,
+					struct class_attribute *attr, char *buf)
+{
+	struct battery_chg_dev *bcdev = container_of(c, struct battery_chg_dev,
+						battery_class);
+	struct psy_state *pst = &bcdev->psy_list[PSY_TYPE_XM];
+	int rc;
+
+	rc = read_property_id(bcdev, pst, XM_PROP_GET_MAX_LIFE_VOL);
+	if (rc < 0)
+		return rc;
+
+	return scnprintf(buf, PAGE_SIZE, "%d\n", pst->prop[XM_PROP_GET_MAX_LIFE_VOL]);
+}
+static CLASS_ATTR_RO(max_life_vol);
+
+static ssize_t max_life_temp_show(struct class *c,
+					struct class_attribute *attr, char *buf)
+{
+	struct battery_chg_dev *bcdev = container_of(c, struct battery_chg_dev,
+						battery_class);
+	struct psy_state *pst = &bcdev->psy_list[PSY_TYPE_XM];
+	int rc;
+
+	rc = read_property_id(bcdev, pst, XM_PROP_GET_MAX_LIFE_TEMP);
+	if (rc < 0)
+		return rc;
+
+	return scnprintf(buf, PAGE_SIZE, "%d\n", pst->prop[XM_PROP_GET_MAX_LIFE_TEMP]);
+}
+static CLASS_ATTR_RO(max_life_temp);
+
+static ssize_t over_vol_duration_show(struct class *c,
+					struct class_attribute *attr, char *buf)
+{
+	struct battery_chg_dev *bcdev = container_of(c, struct battery_chg_dev,
+						battery_class);
+	struct psy_state *pst = &bcdev->psy_list[PSY_TYPE_XM];
+	int rc;
+
+	rc = read_property_id(bcdev, pst, XM_PROP_GET_OVER_VOL_DURATION);
+	if (rc < 0)
+		return rc;
+
+	return scnprintf(buf, PAGE_SIZE, "%d\n", pst->prop[XM_PROP_GET_OVER_VOL_DURATION]);
+}
+static CLASS_ATTR_RO(over_vol_duration);
+#endif
+
 static ssize_t get_learn_time_dev_show(struct class *c,
 					struct class_attribute *attr, char *buf)
 {
@@ -7423,6 +7478,11 @@ static struct attribute *battery_class_attrs[] = {
 	&class_attr_wls_car_adapter.attr,
 	&class_attr_wls_tx_speed.attr,
 	&class_attr_wls_fc_flag.attr,
+#endif
+#ifdef CONFIG_MARBLE_TOGGLE_2
+	&class_attr_max_life_vol.attr,
+	&class_attr_max_life_temp.attr,
+	&class_attr_over_vol_duration.attr,
 #endif
 	&class_attr_fg1_qmax.attr,
 	&class_attr_fg1_rm.attr,
