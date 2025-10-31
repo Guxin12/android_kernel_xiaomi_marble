@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2013-2021 The Linux Foundation. All rights reserved.
- * Copyright (c) 2021-2024 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  *
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
@@ -5770,6 +5770,10 @@ static void wma_set_pmo_caps(struct wlan_objmgr_psoc *psoc)
 	caps.li_offload =
 		wmi_service_enabled(wma->wmi_handle,
 				    wmi_service_listen_interval_offload_support
+				    );
+	caps.apf_offload_enabled =
+		wmi_service_enabled(wma->wmi_handle,
+				    wmi_service_apf_data_offload_support_enabled
 				    );
 
 	status = ucfg_pmo_psoc_set_caps(psoc, &caps);
