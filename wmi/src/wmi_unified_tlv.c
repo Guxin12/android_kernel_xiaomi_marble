@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2016-2021 The Linux Foundation. All rights reserved.
- * Copyright (c) 2021-2024 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  *
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
@@ -17344,6 +17344,8 @@ struct wmi_ops tlv_ops =  {
 				wmi_send_apf_read_work_memory_cmd_tlv,
 	.extract_apf_read_memory_resp_event =
 				wmi_extract_apf_read_memory_resp_event_tlv,
+	.send_set_apf_supported_offload_bitmap_cmd =
+			wmi_send_set_apf_supported_offload_bitmap_cmd_tlv,
 #endif /* FEATURE_WLAN_APF */
 	.init_cmd_send = init_cmd_send_tlv,
 	.send_vdev_set_custom_aggr_size_cmd =
