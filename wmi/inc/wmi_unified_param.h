@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2016-2021 The Linux Foundation. All rights reserved.
- * Copyright (c) 2021-2024 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  *
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
@@ -5283,6 +5283,7 @@ typedef enum {
 	wmi_service_twt_requestor,
 	wmi_service_twt_responder,
 	wmi_service_listen_interval_offload_support,
+	wmi_service_apf_data_offload_support_enabled,
 
 #ifdef OL_ATH_SMART_LOGGING
 	wmi_service_smart_logging_support,

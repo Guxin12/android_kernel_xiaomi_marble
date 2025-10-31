@@ -18456,6 +18456,8 @@ static void populate_tlv_service(uint32_t *wmi_service)
 			WMI_SERVICE_SCAN_CONFIG_PER_CHANNEL;
 	wmi_service[wmi_service_csa_beacon_template] =
 			WMI_SERVICE_CSA_BEACON_TEMPLATE;
+	wmi_service[wmi_service_apf_data_offload_support_enabled] =
+			WMI_SERVICE_APF_DATA_OFFLOAD_SUPPORT_ENABLED;
 #if defined(WIFI_POS_CONVERGED) && defined(WLAN_FEATURE_RTT_11AZ_SUPPORT)
 	wmi_service[wmi_service_rtt_11az_ntb_support] =
 			WMI_SERVICE_RTT_11AZ_NTB_SUPPORT;
