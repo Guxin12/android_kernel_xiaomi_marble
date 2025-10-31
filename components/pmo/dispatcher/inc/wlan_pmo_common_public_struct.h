@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2017-2021 The Linux Foundation. All rights reserved.
- * Copyright (c) 2021-2022 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  *
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
@@ -389,6 +389,7 @@ struct pmo_icmp_offload {
  * wakeups needs to be monitored.
  * @ssr_frequency_on_pagefault: Time in ms in which SSR needs to be triggered
  * on max pagefault
+ * @apfv6_disable_offload_bitmap: Offload bitmap in APFv6
  */
 struct pmo_psoc_cfg {
 	bool ptrn_match_enable_all_vdev;
@@ -473,6 +474,7 @@ struct pmo_psoc_cfg {
 	uint8_t max_pagefault_wakeups_for_ssr;
 	uint32_t interval_for_pagefault_wakeup_counts;
 	uint32_t ssr_frequency_on_pagefault;
+	uint32_t apfv6_disable_offload_bitmap;
 };
 
 /**
