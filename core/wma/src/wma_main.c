@@ -382,6 +382,8 @@ static void wma_set_default_tgt_config(tp_wma_handle wma_handle,
 
 	cfg_nan_get_max_ndi(wma_handle->psoc,
 			    &tgt_cfg->max_ndi);
+	tgt_cfg->apfv6_offload_disabled = cfg_get(wma_handle->psoc,
+						  CFG_OFFLOAD_APFV6_MODE);
 
 	if (cds_get_conparam() == QDF_GLOBAL_MONITOR_MODE)
 		tgt_cfg->rx_decap_mode = CFG_TGT_RX_DECAP_MODE_RAW;
