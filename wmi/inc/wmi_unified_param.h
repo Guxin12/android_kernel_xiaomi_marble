@@ -5587,6 +5587,7 @@ struct wmi_host_fw_abi_ver {
  * @afc_timer_check_disable: Disables AFC Timer related checks in FW
  * @afc_req_id_check_disable: Disables AFC Request ID check in FW
  * @carrier_profile_config: Configuration for per-carrier profile
+ * @apfv6_offload_disabled: APFv6 offload disabled bitmap
  */
 typedef struct {
 	uint32_t num_vdevs;
@@ -5707,6 +5708,7 @@ typedef struct {
 	bool afc_timer_check_disable;
 	bool afc_req_id_check_disable;
 	uint32_t carrier_profile_config;
+	uint32_t apfv6_offload_disabled;
 } target_resource_config;
 
 /**
