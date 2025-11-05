@@ -486,6 +486,7 @@ struct pmo_psoc_cfg {
  *	This allows both D0-WoW (bus up) and Non-D0-WoW (bus down) to use one
  *	unified command
  * @li_offload: Firmware has listen interval offload support
+ * @apf_offload_enabled: Firmware has apf data offload enabled
  */
 struct pmo_device_caps {
 	bool apf;
@@ -493,6 +494,7 @@ struct pmo_device_caps {
 	bool packet_filter;
 	bool unified_wow;
 	bool li_offload;
+	bool apf_offload_enabled;
 };
 
 /**
