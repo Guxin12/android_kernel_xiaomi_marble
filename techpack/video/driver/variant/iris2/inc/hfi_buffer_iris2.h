@@ -7,6 +7,7 @@
 #define __HFI_BUFFER_IRIS2__
 
 #include <linux/types.h>
+#include <linux/minmax.h>
 #include "hfi_property.h"
 
 typedef u8 HFI_U8;
