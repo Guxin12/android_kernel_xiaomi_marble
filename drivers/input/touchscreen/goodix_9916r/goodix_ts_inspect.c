@@ -114,7 +114,9 @@
 #define DIFF_CODE_DATA_REG_BRD				0x14D00
 
 #define ABS(val)			((val < 0) ? -(val) : val)
+#ifndef MAX
 #define MAX(a, b)			((a > b) ? a : b)
+#endif
 
 static bool module_initialized;
 
