@@ -4132,7 +4132,9 @@ void sde_crtc_commit_kickoff(struct drm_crtc *crtc,
 
 	idle_pc_state = sde_crtc_get_property(cstate, CRTC_PROP_IDLE_PC_STATE);
 
+#ifdef MI_DISP_LAYERS_SUPPORTED
 	mi_sde_crtc_update_layer_state(cstate);
+#endif
 
 	sde_crtc->kickoff_in_progress = true;
 	list_for_each_entry(encoder, &dev->mode_config.encoder_list, head) {

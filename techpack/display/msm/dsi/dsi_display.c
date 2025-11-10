@@ -1482,6 +1482,16 @@ int dsi_display_set_power(struct drm_connector *connector,
 		if ((display->panel->power_mode == SDE_MODE_DPMS_LP1) ||
 			(display->panel->power_mode == SDE_MODE_DPMS_LP2)) {
 			rc = dsi_panel_set_nolp(display->panel);
+#ifndef MI_DISP_LAYERS_SUPPORTED
+			/* Without mi layer additions, we don't know when we leave aod,
+			   so restore brightness on power on */
+			dsi_panel_acquire_panel_lock(display->panel);
+			display->panel->mi_cfg.bl_enable = true;
+			dsi_panel_update_backlight(
+				display->panel,
+				display->panel->mi_cfg.last_bl_level);
+			dsi_panel_release_panel_lock(display->panel);
+#endif
 #ifdef CONFIG_MACH_XIAOMI_GARNET
 			if (mi_get_panel_id(display->panel->mi_cfg.mi_panel_id) == N16_PANEL_PB)
 				mi_dsi_panel_set_flat_mode(display->panel, false);
