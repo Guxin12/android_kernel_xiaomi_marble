@@ -22,13 +22,4 @@ config KSU_CUSTOM_SIGN_KEY
 	help
 	  Allows specifying an additional available APK signing key via module parameters.
 
-config KSU_MANUAL_HOOK
-	bool "Manual hooking without kprobes"
-	depends on KSU && KSU != m
-	depends on KPROBES
-	default n
-	help
-	  Keep KPROBES enabled but do not use KPROBES to implement
-	  the hooks required by KernelSU, but instead hook them manually.
-
 endmenu
