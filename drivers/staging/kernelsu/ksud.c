@@ -119,7 +119,6 @@ void on_boot_completed(void){
     pr_info("on_boot_completed!\n");
     // remark process, we don't want to mark other init
     // forked process excepte zygote and adbd
-    ksu_unmark_all_process();
     ksu_mark_running_process();
 }
 
@@ -317,6 +316,7 @@ int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
             task_work_add(init_task, &on_post_fs_data_cb, TWA_RESUME);
         }
         rcu_read_unlock();
+        ksu_set_task_tracepoint_flag(current); // we are zygote!
 
         stop_execve_hook();
     }
