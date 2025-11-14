@@ -1953,6 +1953,19 @@ typedef enum HTT_PPDU_STATS_RESP_PPDU_TYPE HTT_PPDU_STATS_RESP_PPDU_TYPE;
         ((_var) |= ((_val) << HTT_PPDU_STATS_USER_RATE_TLV_2xLDPC_S)); \
     } while (0)
 
+#define HTT_PPDU_STATS_USER_RATE_TLV_IS_NPCA_ENABLED_M  0x00080000
+#define HTT_PPDU_STATS_USER_RATE_TLV_IS_NPCA_ENABLED_S          19
+
+#define HTT_PPDU_STATS_USER_RATE_TLV_IS_NPCA_ENABLED_GET(_var) \
+    (((_var) & HTT_PPDU_STATS_USER_RATE_TLV_IS_NPCA_ENABLED_M) >> \
+    HTT_PPDU_STATS_USER_RATE_TLV_IS_NPCA_ENABLED_S)
+
+#define HTT_PPDU_STATS_USER_RATE_TLV_IS_NPCA_ENABLED_SET (_var , _val) \
+    do { \
+        HTT_CHECK_SET_VAL(HTT_PPDU_STATS_USER_RATE_TLV_IS_NPCA_ENABLED, _val); \
+        ((_var) |= ((_val) << HTT_PPDU_STATS_USER_RATE_TLV_IS_NPCA_ENABLED_S)); \
+    } while (0)
+
 typedef enum HTT_PPDU_STATS_RU_SIZE {
     HTT_PPDU_STATS_RU_26,
     HTT_PPDU_STATS_RU_52,
@@ -2142,12 +2155,14 @@ typedef struct {
      *                for current PPDU
      * BIT 17      :- flag to show is_min_rate
      * BIT 18      :- flag showing whether PPDU is transmitted with 2xLDPC
+     * BIT 19      :- flag showing whether PPDU is transmitted with NPCA enabled
      */
     A_UINT32 punc_pattern_bitmap: 16,
-             extra_eht_ltf:       1,
-             is_min_rate:         1,
-             is_2xldpc:           1,
-             reserved4:           13;
+             extra_eht_ltf:        1,
+             is_min_rate:          1,
+             is_2xldpc:            1,
+             is_npca_enabled:      1,
+             reserved4:           12;
 } htt_ppdu_stats_user_rate_tlv;
 
 #define HTT_PPDU_STATS_USR_RATE_VALID_M     0x80000000

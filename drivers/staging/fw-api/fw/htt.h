@@ -870,6 +870,12 @@ typedef enum {
     HTT_STATS_TX_PDEV_BN_DL_MU_OFDMA_STATS_TAG      = 223, /* htt_stats_tx_pdev_bn_dl_mu_ofdma_tlv, TOPIC=advanced */
     HTT_STATS_TX_PDEV_BN_UL_MU_OFDMA_STATS_TAG      = 224, /* htt_stats_tx_pdev_bn_ul_mu_ofdma_tlv, TOPIC=advanced */
     HTT_STATS_RX_PEER_TID_REO_QUEUE_BA_TAG          = 225, /* htt_stats_rx_peer_tid_reo_queue_ba_tlv */
+    HTT_STATS_TXBF_OFDMA_BN_NDPA_TAG                = 226, /* htt_stats_txbf_ofdma_bn_ndpa_tlv */
+    HTT_STATS_TXBF_OFDMA_BN_NDP_TAG                 = 227, /* htt_stats_txbf_ofdma_bn_ndp_tlv */
+    HTT_STATS_TXBF_OFDMA_BN_BRP_TAG                 = 228, /* htt_stats_txbf_ofdma_bn_brp_tlv */
+    HTT_STATS_TXBF_OFDMA_BN_STEER_TAG               = 229, /* htt_stats_txbf_ofdma_bn_steer_tlv */
+    HTT_STATS_TXBF_OFDMA_BN_STEER_MPDU_TAG          = 230, /* htt_stats_txbf_ofdma_bn_steer_mpdu_tlv */
+    HTT_STATS_TXBF_OFDMA_BN_PARBW_TAG               = 231, /* htt_stats_txbf_ofdma_bn_parbw_tlv */
 
     HTT_STATS_MAX_TAG,
 } htt_stats_tlv_tag_t;

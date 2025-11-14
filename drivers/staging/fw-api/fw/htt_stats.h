@@ -694,12 +694,14 @@ enum htt_dbg_ext_stats_type {
         HTT_DBG_ODD_UL_BE_OFDMA_STATS =
             HTT_DBG_EXT_STATS_ODD_UL_BE_BN_OFDMA,
 
-    /** HTT_DBG_EXT_STATS_ODD_BE_TXBF_OFDMA
+    /** HTT_DBG_EXT_STATS_ODD_BE_BN_TXBF_OFDMA_STATS
      */
-    HTT_DBG_EXT_STATS_ODD_BE_TXBF_OFDMA = 61,
-        /* retain the deprecated name as an alias */
+    HTT_DBG_EXT_STATS_ODD_BE_BN_TXBF_OFDMA_STATS = 61,
+        /* retain the deprecated names as aliases */
+        HTT_DBG_EXT_STATS_ODD_BE_TXBF_OFDMA =
+            HTT_DBG_EXT_STATS_ODD_BE_BN_TXBF_OFDMA_STATS,
         HTT_DBG_ODD_BE_TXBF_OFDMA_STATS =
-            HTT_DBG_EXT_STATS_ODD_BE_TXBF_OFDMA,
+            HTT_DBG_EXT_STATS_ODD_BE_BN_TXBF_OFDMA_STATS,
 
     /** HTT_DBG_EXT_STATS_ODD_STATS_PDEV_BE_UL_MUMIMO_TRIG
      * PARAMS:
@@ -1017,11 +1019,13 @@ typedef enum {
     HTT_UPLOAD_AX_TXBF_OFDMA_STATS,
 
     /*
-     * Upload 11be TXBF OFDMA stats
+     * Upload 11be and 11bn TXBF OFDMA stats
      *
      * TLV: htt_tx_pdev_be_txbf_ofdma_stats_t
      */
-    HTT_UPLOAD_BE_TXBF_OFDMA_STATS,
+    HTT_UPLOAD_BE_BN_TXBF_OFDMA_STATS,
+        /* retain previous name as alias */
+        HTT_UPLOAD_BE_TXBF_OFDMA_STATS = HTT_UPLOAD_BE_BN_TXBF_OFDMA_STATS,
 } htt_tx_pdev_txbf_ofdma_stats_upload_t;
 
 /* htt_tx_pdev_puncture_stats_upload_t
@@ -4183,6 +4187,165 @@ typedef struct {
     A_UINT32 be_ofdma_total_cv;
 } htt_stats_txbf_ofdma_be_parbw_tlv;
 
+typedef struct {
+    /** 11BN UHR OFDMA NDPA frame queued to the HW */
+    A_UINT32 bn_ofdma_ndpa_queued;
+    /** 11BN UHR OFDMA NDPA frame sent over the air */
+    A_UINT32 bn_ofdma_ndpa_tried;
+    /** 11BN UHR OFDMA NDPA frame flushed by HW */
+    A_UINT32 bn_ofdma_ndpa_flushed;
+    /** 11BN UHR OFDMA NDPA frame completed with error(s) */
+    A_UINT32 bn_ofdma_ndpa_err;
+} htt_txbf_ofdma_bn_ndpa_stats_elem_t;
+
+typedef struct {
+    htt_tlv_hdr_t tlv_hdr;
+    /**
+     * This field is populated with the num of elems in the bn_ndpa[]
+     * variable length array.
+     */
+    A_UINT32 num_elems_bn_ndpa_arr;
+    /**
+     * This field will be filled by target with value of
+     * sizeof(htt_txbf_ofdma_bn_ndpa_stats_elem_t).
+     * This is for allowing host to infer how much data target has provided,
+     * even if it using different version of the struct than what target
+     * had used.
+     */
+    A_UINT32 arr_elem_size_bn_ndpa;
+    HTT_STATS_VAR_LEN_ARRAY1(htt_txbf_ofdma_bn_ndpa_stats_elem_t, bn_ndpa);
+} htt_stats_txbf_ofdma_bn_ndpa_tlv;
+
+typedef struct {
+    /** 11BN UHR OFDMA NDP frame queued to the HW */
+    A_UINT32 bn_ofdma_ndp_queued;
+    /** 11BN UHR OFDMA NDPA frame sent over the air */
+    A_UINT32 bn_ofdma_ndp_tried;
+    /** 11BN UHR OFDMA NDPA frame flushed by HW */
+    A_UINT32 bn_ofdma_ndp_flushed;
+    /** 11BN UHR OFDMA NDPA frame completed with error(s) */
+    A_UINT32 bn_ofdma_ndp_err;
+} htt_txbf_ofdma_bn_ndp_stats_elem_t;
+
+typedef struct {
+    htt_tlv_hdr_t tlv_hdr;
+    /**
+     * This field is populated with the num of elems in the bn_ndp[]
+     * variable length array.
+     */
+    A_UINT32 num_elems_bn_ndp_arr;
+    /**
+     * This field will be filled by target with value of
+     * sizeof(htt_txbf_ofdma_bn_ndp_stats_elem_t).
+     * This is for allowing host to infer how much data target has provided,
+     * even if it using different version of the struct than what target
+     * had used.
+     */
+    A_UINT32 arr_elem_size_bn_ndp;
+    HTT_STATS_VAR_LEN_ARRAY1(htt_txbf_ofdma_bn_ndp_stats_elem_t, bn_ndp);
+} htt_stats_txbf_ofdma_bn_ndp_tlv;
+
+typedef struct {
+    /** 11BN UHR OFDMA MU BRPOLL frame queued to the HW */
+    A_UINT32 bn_ofdma_brpoll_queued;
+    /** 11BN UHR OFDMA MU BRPOLL frame sent over the air */
+    A_UINT32 bn_ofdma_brpoll_tried;
+    /** 11BN UHR OFDMA MU BRPOLL frame flushed by HW */
+    A_UINT32 bn_ofdma_brpoll_flushed;
+    /** 11BN UHR OFDMA MU BRPOLL frame completed with error(s) */
+    A_UINT32 bn_ofdma_brp_err;
+    /**
+     * Number of CBF(s) received when 11BN UHR OFDMA MU BRPOLL frame
+     * completed with error(s)
+     */
+    A_UINT32 bn_ofdma_brp_err_num_cbf_rcvd;
+} htt_txbf_ofdma_bn_brp_stats_elem_t;
+
+typedef struct {
+    htt_tlv_hdr_t tlv_hdr;
+    /**
+     * This field is populated with the num of elems in the bn_brp[]
+     * variable length array.
+     */
+    A_UINT32 num_elems_bn_brp_arr;
+    /**
+     * This field will be filled by target with value of
+     * sizeof(htt_txbf_ofdma_bn_brp_stats_elem_t).
+     * This is for allowing host to infer how much data target has provided,
+     * even if it using different version of the struct than what target
+     * had used
+     */
+    A_UINT32 arr_elem_size_bn_brp;
+    HTT_STATS_VAR_LEN_ARRAY1(htt_txbf_ofdma_bn_brp_stats_elem_t, bn_brp);
+} htt_stats_txbf_ofdma_bn_brp_tlv;
+
+typedef struct {
+    /**
+     * 11BN UHR OFDMA PPDUs that were sent over the air with steering
+     * (TXBF + OFDMA)
+     */
+    A_UINT32 bn_ofdma_num_ppdu_steer;
+    /** 11BN UHR OFDMA PPDUs that were sent over the air in open loop */
+    A_UINT32 bn_ofdma_num_ppdu_ol;
+    /**
+     * 11BN UHR OFDMA number of users for which CBF prefetch was initiated
+     * to PHY HW during TX
+     */
+    A_UINT32 bn_ofdma_num_usrs_prefetch;
+    /**
+     * 11BN UHR OFDMA number of users for which sounding was initiated
+     * during TX
+     */
+    A_UINT32 bn_ofdma_num_usrs_sound;
+    /**
+     * 11BN UHR OFDMA number of users for which sounding was forced during TX
+     */
+    A_UINT32 bn_ofdma_num_usrs_force_sound;
+} htt_txbf_ofdma_bn_steer_stats_elem_t;
+
+typedef struct {
+    htt_tlv_hdr_t tlv_hdr;
+    /**
+     * This field is populated with the num of elems in the bn_steer[]
+     * variable length array.
+     */
+    A_UINT32 num_elems_bn_steer_arr;
+    /**
+     * This field will be filled by target with value of
+     * sizeof(htt_txbf_ofdma_bn_steer_stats_elem_t).
+     * This is for allowing host to infer how much data target has provided,
+     * even if it using different version of the struct than what target
+     * had used.
+     */
+    A_UINT32 arr_elem_size_bn_steer;
+    HTT_STATS_VAR_LEN_ARRAY1(htt_txbf_ofdma_bn_steer_stats_elem_t, bn_steer);
+} htt_stats_txbf_ofdma_bn_steer_tlv;
+
+typedef struct {
+    htt_tlv_hdr_t tlv_hdr;
+    /* 11BN UHR OFDMA MPDUs tried in rbo steering */
+    A_UINT32 bn_ofdma_rbo_steer_mpdus_tried;
+    /* 11BN UHR OFDMA MPDUs failed in rbo steering */
+    A_UINT32 bn_ofdma_rbo_steer_mpdus_failed;
+    /* 11BN UHR OFDMA MPDUs tried in sifs steering */
+    A_UINT32 bn_ofdma_sifs_steer_mpdus_tried;
+    /* 11BN UHR OFDMA MPDUs failed in sifs steering */
+    A_UINT32 bn_ofdma_sifs_steer_mpdus_failed;
+} htt_stats_txbf_ofdma_bn_steer_mpdu_tlv;
+
+/* HTT_STATS_TXBF_OFDMA_BN_PARBW_TAG stats TLV:
+ * Sent by target in response to HTT_DBG_EXT_STATS_TXBF_OFDMA stats ID request.
+ */
+typedef struct {
+    htt_tlv_hdr_t tlv_hdr;
+    /* Num of UHR TxBF Partial Bandwidth soundings */
+    A_UINT32 bn_ofdma_parbw_user_snd;
+    /* Num of UHR Partial Bandwidth Sounded CVs received */
+    A_UINT32 bn_ofdma_parbw_cv;
+    /* Num of 11BN EHT Total CVs received */
+    A_UINT32 bn_ofdma_total_cv;
+} htt_stats_txbf_ofdma_bn_parbw_tlv;
+
 /* STATS_TYPE : HTT_DBG_EXT_STATS_TXBF_OFDMA
  * TLV_TAGS:
  *      - HTT_STATS_TXBF_OFDMA_NDPA_STATS_TAG
@@ -4195,6 +4358,11 @@ typedef struct {
  *      - HTT_STATS_TXBF_OFDMA_BE_BRP_STATS_TAG
  *      - HTT_STATS_TXBF_OFDMA_BE_STEER_STATS_TAG
  *      - HTT_STATS_TXBF_OFDMA_BE_STEER_MPDU_STATS_TAG
+ *      - HTT_STATS_TXBF_OFDMA_BN_NDPA_TAG
+ *      - HTT_STATS_TXBF_OFDMA_BN_NDP_TAG
+ *      - HTT_STATS_TXBF_OFDMA_BN_BRP_TAG
+ *      - HTT_STATS_TXBF_OFDMA_BN_STEER_TAG
+ *      - HTT_STATS_TXBF_OFDMA_BN_STEER_MPDU_TAG
  */
 
 typedef struct {
@@ -6417,6 +6585,7 @@ typedef struct {
 #define HTT_TX_PDEV_STATS_NUM_LTF 4
 #define HTT_TX_PDEV_STATS_NUM_11AX_TRIGGER_TYPES 6
 #define HTT_TX_PDEV_STATS_NUM_11BE_TRIGGER_TYPES 6
+#define HTT_TX_PDEV_STATS_NUM_11BN_TRIGGER_TYPES 6
 #define HTT_TX_VDEV_STATS_NUM_SPATIAL_STREAMS 4
 #define HTT_TX_NUM_OF_SOUNDING_STATS_WORDS \
     (HTT_TX_PDEV_STATS_NUM_BW_COUNTERS * \
@@ -6667,7 +6836,7 @@ typedef struct {
     A_UINT32 ax_su_embedded_trigger_data_ppdu;
     /** 11AX HE SU data + embedded trigger PPDU failure stats (stats for HETP ack failure PPDU cnt) */
     A_UINT32 ax_su_embedded_trigger_data_ppdu_err;
-    /** sta side trigger stats */
+    /** STA side trigger stats */
     A_UINT32 trigger_type_11be[HTT_TX_PDEV_STATS_NUM_11BE_TRIGGER_TYPES];
     /** Stats for Extra EHT LTF */
     A_UINT32 extra_eht_ltf;
@@ -6694,6 +6863,8 @@ typedef struct {
      * element 4: 120 MHz punctured
      */
     A_UINT32 npca_tx_su_punctured_mode[HTT_TX_PDEV_STATS_NUM_PUNCTURED_MODE_COUNTERS];
+    /* STA side trigger stats */
+    A_UINT32 trigger_type_11bn[HTT_TX_PDEV_STATS_NUM_11BN_TRIGGER_TYPES];
 } htt_stats_tx_pdev_rate_stats_tlv;
 /* preserve old name alias for new name consistent with the tag name */
 typedef htt_stats_tx_pdev_rate_stats_tlv htt_tx_pdev_rate_stats_tlv;
