@@ -311,6 +311,11 @@ enum xm_property_id {
 	XM_PROP_SET_LEARNING_POWER_B,
 	XM_PROP_GET_LEARNING_POWER_B,
 	XM_PROP_GET_LEARNING_POWER_DEV_B,
+#ifdef CONFIG_MARBLE_TOGGLE_2
+	XM_PROP_GET_MAX_LIFE_VOL,
+	XM_PROP_GET_MAX_LIFE_TEMP,
+	XM_PROP_GET_OVER_VOL_DURATION,
+#endif
 	XM_PROP_FG1_QMAX,
 	XM_PROP_FG1_RM,
 	XM_PROP_FG1_FCC,
@@ -452,6 +457,7 @@ struct wls_fw_resp_msg {
 enum xm_chg_debug_type {
 	CHG_WLS_DEBUG,
 	CHG_ADSP_LOG,
+	CHG_BATT_SN_CODE,
 	CHG_DEBUG_TYPE_MAX,
 };
 
@@ -606,6 +612,7 @@ struct battery_chg_dev {
 	u8				*digest;
 	u32				*ss_auth_data;
 	char				wls_debug_data[CHG_DEBUG_DATA_LEN];
+	char				batt_sn_data[CHG_DEBUG_DATA_LEN];
 	bool				shutdown_delay_en;
 	bool				support_2s_charging;
 	bool				report_power_absent;
@@ -1254,6 +1261,10 @@ static void handle_message(struct battery_chg_dev *bcdev, void *data,
 			if (chg_debug_data->type == CHG_ADSP_LOG) {
 			} else if (chg_debug_data->type == CHG_WLS_DEBUG) {
 				memcpy(bcdev->wls_debug_data, chg_debug_data->data, CHG_DEBUG_DATA_LEN);
+				ack_set = true;
+			} else if (chg_debug_data->type == CHG_BATT_SN_CODE) {
+				memset(bcdev->batt_sn_data, '\0', CHG_DEBUG_DATA_LEN);
+				memcpy(bcdev->batt_sn_data, chg_debug_data->data, CHG_DEBUG_DATA_LEN);
 				ack_set = true;
 			}
 			break;
@@ -5765,6 +5776,79 @@ static ssize_t get_learn_power_dev_b_show(struct class *c,
 }
 static CLASS_ATTR_RO(get_learn_power_dev_b);
 
+#ifdef CONFIG_MARBLE_TOGGLE_2
+static ssize_t batt_sn_show(struct class *c,
+					struct class_attribute *attr, char *buf)
+{
+	struct battery_chg_dev *bcdev = container_of(c, struct battery_chg_dev,
+						battery_class);
+	struct psy_state *pst = &bcdev->psy_list[PSY_TYPE_XM];
+	struct chg_debug_msg req_msg = { { 0 } };
+	int rc;
+
+	req_msg.property_id = XM_PROP_CHG_DEBUG;
+	req_msg.type = CHG_BATT_SN_CODE;
+	req_msg.hdr.owner = MSG_OWNER_BC;
+	req_msg.hdr.type = MSG_TYPE_REQ_RESP;
+	req_msg.hdr.opcode = pst->opcode_get;
+
+	rc = battery_chg_write(bcdev, &req_msg, sizeof(req_msg));
+	if (rc < 0)
+		return rc;
+
+	return scnprintf(buf, PAGE_SIZE, "%s", bcdev->batt_sn_data);
+}
+static CLASS_ATTR_RO(batt_sn);
+
+static ssize_t max_life_vol_show(struct class *c,
+					struct class_attribute *attr, char *buf)
+{
+	struct battery_chg_dev *bcdev = container_of(c, struct battery_chg_dev,
+						battery_class);
+	struct psy_state *pst = &bcdev->psy_list[PSY_TYPE_XM];
+	int rc;
+
+	rc = read_property_id(bcdev, pst, XM_PROP_GET_MAX_LIFE_VOL);
+	if (rc < 0)
+		return rc;
+
+	return scnprintf(buf, PAGE_SIZE, "%d\n", pst->prop[XM_PROP_GET_MAX_LIFE_VOL]);
+}
+static CLASS_ATTR_RO(max_life_vol);
+
+static ssize_t max_life_temp_show(struct class *c,
+					struct class_attribute *attr, char *buf)
+{
+	struct battery_chg_dev *bcdev = container_of(c, struct battery_chg_dev,
+						battery_class);
+	struct psy_state *pst = &bcdev->psy_list[PSY_TYPE_XM];
+	int rc;
+
+	rc = read_property_id(bcdev, pst, XM_PROP_GET_MAX_LIFE_TEMP);
+	if (rc < 0)
+		return rc;
+
+	return scnprintf(buf, PAGE_SIZE, "%d\n", pst->prop[XM_PROP_GET_MAX_LIFE_TEMP]);
+}
+static CLASS_ATTR_RO(max_life_temp);
+
+static ssize_t over_vol_duration_show(struct class *c,
+					struct class_attribute *attr, char *buf)
+{
+	struct battery_chg_dev *bcdev = container_of(c, struct battery_chg_dev,
+						battery_class);
+	struct psy_state *pst = &bcdev->psy_list[PSY_TYPE_XM];
+	int rc;
+
+	rc = read_property_id(bcdev, pst, XM_PROP_GET_OVER_VOL_DURATION);
+	if (rc < 0)
+		return rc;
+
+	return scnprintf(buf, PAGE_SIZE, "%d\n", pst->prop[XM_PROP_GET_OVER_VOL_DURATION]);
+}
+static CLASS_ATTR_RO(over_vol_duration);
+#endif
+
 static ssize_t get_learn_time_dev_show(struct class *c,
 					struct class_attribute *attr, char *buf)
 {
@@ -7423,6 +7507,12 @@ static struct attribute *battery_class_attrs[] = {
 	&class_attr_wls_car_adapter.attr,
 	&class_attr_wls_tx_speed.attr,
 	&class_attr_wls_fc_flag.attr,
+#endif
+#ifdef CONFIG_MARBLE_TOGGLE_2
+	&class_attr_batt_sn.attr,
+	&class_attr_max_life_vol.attr,
+	&class_attr_max_life_temp.attr,
+	&class_attr_over_vol_duration.attr,
 #endif
 	&class_attr_fg1_qmax.attr,
 	&class_attr_fg1_rm.attr,

@@ -1,5 +1,8 @@
 // SPDX-License-Identifier: GPL-2.0-only
-/* Copyright (c) 2017-2021, The Linux Foundation. All rights reserved.*/
+/*
+ * Copyright (c) 2017-2021, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2024, Qualcomm Innovation Center, Inc. All rights reserved.
+ */
 
 /*
  * MHI Device Network interface
@@ -66,10 +69,10 @@ struct mhi_dev_net_chan_attr {
 #define CHAN_TO_CLIENT(_CHAN_NR) (_CHAN_NR / 2)
 
 #define mhi_dev_net_log(_msg_lvl, _msg, ...) do { \
-	if ((enum mhi_dev_net_dbg_lvl)_msg_lvl >= mhi_net_msg_lvl) { \
+	if (_msg_lvl >= mhi_net_msg_lvl) { \
 		pr_err("[%s] "_msg, __func__, ##__VA_ARGS__); \
 	} \
-	if (mhi_net_ipc_log && ((enum mhi_dev_net_dbg_lvl)_msg_lvl >= mhi_net_ipc_log_lvl)) { \
+	if (mhi_net_ipc_log && (_msg_lvl >= mhi_net_ipc_log_lvl)) { \
 		ipc_log_string(mhi_net_ipc_log,                     \
 			"[%s] " _msg, __func__, ##__VA_ARGS__);     \
 	} \
@@ -667,9 +670,9 @@ static void mhi_dev_net_state_cb(struct mhi_dev_client_cb_data *cb_data)
 			mhi_client->out_chan);
 		return;
 	}
-	mhi_dev_net_log(MHI_MSG_VERBOSE, "in_channel :%d, state :%d\n",
+	mhi_dev_net_log(MHI_VERBOSE, "in_channel :%d, state :%d\n",
 			mhi_client->in_chan, info_in_ch);
-	mhi_dev_net_log(MHI_MSG_VERBOSE, "out_channel :%d, state :%d\n",
+	mhi_dev_net_log(MHI_VERBOSE, "out_channel :%d, state :%d\n",
 			mhi_client->out_chan, info_out_ch);
 	if (info_in_ch == MHI_STATE_CONNECTED &&
 		info_out_ch == MHI_STATE_CONNECTED) {

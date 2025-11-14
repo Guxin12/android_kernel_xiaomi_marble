@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
  * Copyright (c) 2012-2021, The Linux Foundation. All rights reserved.
- * Copyright (c) 2023, 2025 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  */
 
 #include "ipa_i.h"
@@ -775,8 +775,10 @@ static int __ipa3_del_hdr_proc_ctx(u32 proc_ctx_hdl,
 			proc_ctx_hdl, entry->ref_cnt);
 		return 0;
 	}
+	if (entry->hdr && (entry == entry->hdr->proc_ctx))
+		entry->hdr->proc_ctx = NULL;
 
-	if (release_hdr)
+	if (entry->hdr && release_hdr)
 		__ipa3_del_hdr(entry->hdr->id, false);
 
 	/* move the offset entry to appropriate free list */
@@ -866,12 +868,16 @@ int __ipa3_del_hdr(u32 hdr_hdl, bool by_user)
 		return 0;
 	}
 
+	if (entry->proc_ctx && (entry == entry->proc_ctx->hdr))
+		entry->proc_ctx->hdr = NULL;
+
 	if (entry->proc_ctx)
 		__ipa3_del_hdr_proc_ctx(entry->proc_ctx->id, false, false);
-	else
-		/* move the offset entry to appropriate free list */
-		list_move(&entry->offset_entry->link,
-			&htbl->head_free_offset_list[entry->offset_entry->bin]);
+
+	/* move the offset entry to appropriate free list */
+	list_move(&entry->offset_entry->link,
+		&htbl->head_free_offset_list[entry->offset_entry->bin]);
+
 	list_del(&entry->link);
 	htbl->hdr_cnt--;
 	entry->cookie = 0;
