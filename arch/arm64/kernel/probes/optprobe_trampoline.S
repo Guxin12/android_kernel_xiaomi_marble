@@ -28,7 +28,7 @@ SYM_CODE_START(optprobe_common)
 	stp x24, x25, [sp, #S_X24]
 	stp x26, x27, [sp, #S_X26]
 	stp x28, x29, [sp, #S_X28]
-	add x2, sp, #PT_REGS_SIZE
+	add x2, sp, #S_FRAME_SIZE
 	str x2, [sp, #S_SP]
 	/* Construct a useful saved PSTATE */
 	mrs x2, nzcv
@@ -80,7 +80,7 @@ optprobe_template_entry:
 	adr x30, 2f
 	stp x29, x30, [sp, #-16]!
 	mov x29, sp
-	sub sp, sp, #PT_REGS_SIZE
+	sub sp, sp, #S_FRAME_SIZE
 	str lr, [sp, #S_LR]
 	stp x0, x1, [sp, #S_X0]
 	/* Get parameters to optimized_callback() */
@@ -89,7 +89,7 @@ optprobe_template_entry:
 optprobe_template_common:
 	nop
 	ldr lr, [sp, #S_LR]
-	add sp, sp, #PT_REGS_SIZE
+	add sp, sp, #S_FRAME_SIZE
 	ldp x29, x30, [sp], #16
 	ldp x29, x30, [sp], #16
 	.global optprobe_template_restore_orig_insn
@@ -98,12 +98,12 @@ optprobe_template_restore_orig_insn:
 	.global optprobe_template_restore_end
 optprobe_template_restore_end:
 	nop
-	.balign
+	.balign 4
 	.global optprobe_template_val
 optprobe_template_val:
 	1:	.long 0
 		.long 0
-	.balign
+	.balign 4
 	.global optprobe_template_orig_addr
 optprobe_template_orig_addr:
 	2:	.long 0
