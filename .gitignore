@@ -166,4 +166,5 @@ sphinx_*/
 
 # Custom
 /build.sh
+/git-batch-push.sh
 Documentation/devicetree/bindings
