@@ -4,7 +4,7 @@
 #include <linux/kernel.h>
 #include <linux/slab.h>
 #include <linux/version.h>
-#if defined(CONFIG_KSU_DEBUG) || defined(CONFIG_KSU_CUSTOM_SIGN_KEY)
+#ifdef CONFIG_KSU_DEBUG
 #include <linux/moduleparam.h>
 #endif
 #include <crypto/hash.h>
@@ -31,35 +31,6 @@ static struct apk_sign_key apk_sign_keys[] = {
     {384, "7e0c6d7278a3bb8e364e0fcba95afaf3666cf5ff3c245a3b63c8833bd0445cc4"},  // MKSU
     {0x316, "a997df357d1e3a42d3d68f6a2797e3ecec79b21c8972cafc1834c5386920d428"},  // YuKongA/KernelSU
 };
-
-#ifdef CONFIG_KSU_CUSTOM_SIGN_KEY
-#define KEY_LENGTH 64
-
-static unsigned int custom_key_size = 0;
-static char custom_key_sha256[KEY_LENGTH + 1];
-static struct apk_sign_key block_apk_sign_keys[] = {
-    {0x35c, "947ae944f3de4ed4c21a7e4f7953ecf351bfa2b36239da37a34111ad29993eef"},  // SukiSU-Ultra
-    {0x3e6, "79e590113c4c4c0c222978e413a5faa801666957b1212a328e46c00c69821bf7"},  // KernelSU-Next
-};
-
-
-static int custom_key_size_set(const char *val, const struct kernel_param *kp)
-{
-    int ret;
-    unsigned int temp;
-
-    ret = kstrtouint(val, 0, &temp);
-    if (ret)
-        return ret;
-
-    return param_set_int(val, kp);
-}
-
-module_param_call(custom_key_size, custom_key_size_set, param_get_int,
-          &custom_key_size, S_IRUGO);
-module_param_string(custom_key_sha256, custom_key_sha256,
-          sizeof(custom_key_sha256), S_IRUGO);
-#endif
 
 static struct sdesc *init_sdesc(struct crypto_shash *alg)
 {
@@ -158,25 +129,6 @@ static bool check_block(struct file *fp, u32 *size4, loff_t *pos, u32 *offset)
             return true;
         }
     }
-
-#ifdef CONFIG_KSU_CUSTOM_SIGN_KEY
-    for (i = 0; i < ARRAY_SIZE(block_apk_sign_keys); i++) {
-        sign_key = block_apk_sign_keys[i];
-
-        if (*size4 == sign_key.size &&
-            strcmp(sign_key.sha256, hash_str) == 0) {
-            pr_info("Blocked sign key is matched\n");
-            return false;
-        }
-    }
-
-    if (*size4 == custom_key_size &&
-        strcmp(hash_str, custom_key_sha256) == 0) {
-        pr_info("Custom sign key is matched\n");
-        return true;
-    }
-#endif
-
     return false;
 }
 
