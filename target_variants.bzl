@@ -6,6 +6,7 @@ targets = [
     "pitti",
     "pitti_32go",
     "parrot",
+    "bengal",
 ]
 
 la_variants = [
