@@ -22,16 +22,6 @@ struct sdesc {
     char ctx[];
 };
 
-struct apk_sign_key {
-    unsigned size;
-    const char *sha256;
-};
-static struct apk_sign_key apk_sign_keys[] = {
-    {EXPECTED_SIZE, EXPECTED_HASH},
-    {384, "7e0c6d7278a3bb8e364e0fcba95afaf3666cf5ff3c245a3b63c8833bd0445cc4"},  // MKSU
-    {0x316, "a997df357d1e3a42d3d68f6a2797e3ecec79b21c8972cafc1834c5386920d428"},  // YuKongA/KernelSU
-};
-
 static struct sdesc *init_sdesc(struct crypto_shash *alg)
 {
     struct sdesc *sdesc;
@@ -79,15 +69,9 @@ static int ksu_sha256(const unsigned char *data, unsigned int datalen,
     return ret;
 }
 
-static bool check_block(struct file *fp, u32 *size4, loff_t *pos, u32 *offset)
+static bool check_block(struct file *fp, u32 *size4, loff_t *pos, u32 *offset,
+            unsigned expected_size, const char *expected_sha256)
 {
-#define CERT_MAX_LENGTH 1024
-    int i;
-    struct apk_sign_key sign_key;
-    char cert[CERT_MAX_LENGTH];
-    unsigned char digest[SHA256_DIGEST_SIZE];
-    char hash_str[SHA256_DIGEST_SIZE * 2 + 1];
-
     kernel_read(fp, size4, 0x4, pos); // signer-sequence length
     kernel_read(fp, size4, 0x4, pos); // signer length
     kernel_read(fp, size4, 0x4, pos); // signed data length
@@ -101,31 +85,31 @@ static bool check_block(struct file *fp, u32 *size4, loff_t *pos, u32 *offset)
 
     kernel_read(fp, size4, 0x4, pos); // certificates length
     kernel_read(fp, size4, 0x4, pos); // certificate length
+    *offset += 0x4 * 2;
 
-    *offset += 0x4 * 2 + *size4;
+    if (*size4 == expected_size) {
+        *offset += *size4;
 
-    if (*size4 > CERT_MAX_LENGTH) {
-        pr_info("cert length overlimit\n");
-        return false;
-    }
+#define CERT_MAX_LENGTH 1024
+        char cert[CERT_MAX_LENGTH];
+        if (*size4 > CERT_MAX_LENGTH) {
+            pr_info("cert length overlimit\n");
+            return false;
+        }
         kernel_read(fp, cert, *size4, pos);
-    if (IS_ERR(ksu_sha256(cert, *size4, digest))) {
-        pr_info("sha256 error\n");
-        return false;
-    }
+        unsigned char digest[SHA256_DIGEST_SIZE];
+        if (IS_ERR(ksu_sha256(cert, *size4, digest))) {
+            pr_info("sha256 error\n");
+            return false;
+        }
 
-    hash_str[SHA256_DIGEST_SIZE * 2] = '\0';
-    bin2hex(hash_str, digest, SHA256_DIGEST_SIZE);
+        char hash_str[SHA256_DIGEST_SIZE * 2 + 1];
+        hash_str[SHA256_DIGEST_SIZE * 2] = '\0';
 
-    for (i = 0; i < ARRAY_SIZE(apk_sign_keys); i++) {
-        sign_key = apk_sign_keys[i];
-
-        if (*size4 != sign_key.size)
-            continue;
-
+        bin2hex(hash_str, digest, SHA256_DIGEST_SIZE);
         pr_info("sha256: %s, expected: %s\n", hash_str,
-            sign_key.sha256);
-        if (strcmp(sign_key.sha256, hash_str) == 0) {
+            expected_sha256);
+        if (strcmp(expected_sha256, hash_str) == 0) {
             return true;
         }
     }
@@ -185,7 +169,9 @@ static bool has_v1_signature_file(struct file *fp)
     return false;
 }
 
-static __always_inline bool check_v2_signature(char *path)
+static __always_inline bool check_v2_signature(char *path,
+                           unsigned expected_size,
+                           const char *expected_sha256)
 {
     unsigned char buffer[0x11] = { 0 };
     u32 size4;
@@ -256,7 +242,9 @@ static __always_inline bool check_v2_signature(char *path)
         offset = 4;
         if (id == 0x7109871au) {
             v2_signing_blocks++;
-            v2_signing_valid = check_block(fp, &size4, &pos, &offset);
+            v2_signing_valid =
+                check_block(fp, &size4, &pos, &offset,
+                        expected_size, expected_sha256);
         } else if (id == 0xf05368c0u) {
             // http://aospxref.com/android-14.0.0_r2/xref/frameworks/base/core/java/android/util/apk/ApkSignatureSchemeV3Verifier.java#73
             v3_signing_exist = true;
@@ -326,5 +314,5 @@ module_param_cb(ksu_debug_manager_uid, &expected_size_ops,
 
 bool is_manager_apk(char *path)
 {
-    return check_v2_signature(path);
+    return check_v2_signature(path, EXPECTED_SIZE, EXPECTED_HASH);
 }
