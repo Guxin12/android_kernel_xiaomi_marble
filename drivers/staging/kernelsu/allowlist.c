@@ -13,6 +13,7 @@
 #include <linux/compiler_types.h>
 
 #include "klog.h" // IWYU pragma: keep
+#include "ksud.h"
 #include "selinux/selinux.h"
 #include "allowlist.h"
 #include "manager.h"
@@ -42,7 +43,7 @@ static void remove_uid_from_arr(uid_t uid)
     if (allow_list_pointer == 0)
         return;
 
-    temp_arr = kmalloc(sizeof(allow_list_arr), GFP_KERNEL);
+    temp_arr = kzalloc(sizeof(allow_list_arr), GFP_KERNEL);
     if (temp_arr == NULL) {
         pr_err("%s: unable to allocate memory\n", __func__);
         return;
@@ -197,7 +198,7 @@ bool ksu_set_app_profile(struct app_profile *profile, bool persist)
     }
 
     // not found, alloc a new node!
-    p = (struct perm_data *)kmalloc(sizeof(struct perm_data), GFP_KERNEL);
+    p = (struct perm_data *)kzalloc(sizeof(struct perm_data), GFP_KERNEL);
     if (!p) {
         pr_err("ksu_set_app_profile alloc failed\n");
         return false;
@@ -486,6 +487,11 @@ void ksu_prune_allowlist(bool (*is_uid_valid)(uid_t, char *, void *),
 {
     struct perm_data *np = NULL;
     struct perm_data *n = NULL;
+
+    if (!ksu_boot_completed) {
+        pr_info("boot not completed, skip prune\n");
+        return;
+    }
 
     bool modified = false;
     // TODO: use RCU!

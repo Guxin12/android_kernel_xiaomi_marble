@@ -22,8 +22,9 @@
 #include "arch.h"
 #include "klog.h" // IWYU pragma: keep
 #include "ksud.h"
+#include "util.h"
 #include "selinux/selinux.h"
-#include "syscall_hook_manager.h"
+#include "throne_tracker.h"
 
 bool ksu_module_mounted __read_mostly = false;
 bool ksu_boot_completed __read_mostly = false;
@@ -55,15 +56,9 @@ static void stop_vfs_read_hook();
 static void stop_execve_hook();
 static void stop_input_hook();
 
-#ifdef CONFIG_KPROBES
 static struct work_struct stop_vfs_read_work;
 static struct work_struct stop_execve_hook_work;
 static struct work_struct stop_input_hook_work;
-#else
-bool ksu_vfs_read_hook __read_mostly = true;
-bool ksu_execveat_hook __read_mostly = true;
-bool ksu_input_hook __read_mostly = true;
-#endif
 
 u32 ksu_file_sid;
 void on_post_fs_data(void)
@@ -76,24 +71,22 @@ void on_post_fs_data(void)
     done = true;
     pr_info("on_post_fs_data!\n");
     ksu_load_allow_list();
-    pr_info("mark tif for running process\n");
-    ksu_mark_running_process();
     ksu_observer_init();
     // sanity check, this may influence the performance
     stop_input_hook();
 
     ksu_file_sid = ksu_get_ksu_file_sid();
-	pr_info("ksu_file sid: %d\n", ksu_file_sid);
+    pr_info("ksu_file sid: %d\n", ksu_file_sid);
 }
 
 extern void ext4_unregister_sysfs(struct super_block *sb);
-static void nuke_ext4_sysfs(void)
+int nuke_ext4_sysfs(const char *mnt)
 {
     struct path path;
-    int err = kern_path("/data/adb/modules", 0, &path);
+    int err = kern_path(mnt, 0, &path);
     if (err) {
         pr_err("nuke path err: %d\n", err);
-        return;
+        return err;
     }
 
     struct super_block *sb = path.dentry->d_inode->i_sb;
@@ -101,25 +94,25 @@ static void nuke_ext4_sysfs(void)
     if (strcmp(name, "ext4") != 0) {
         pr_info("nuke but module aren't mounted\n");
         path_put(&path);
-        return;
+        return -EINVAL;
     }
 
     ext4_unregister_sysfs(sb);
     path_put(&path);
+    return 0;
 }
 
-void on_module_mounted(void){
+void on_module_mounted(void)
+{
     pr_info("on_module_mounted!\n");
     ksu_module_mounted = true;
-    nuke_ext4_sysfs();
 }
 
-void on_boot_completed(void){
+void on_boot_completed(void)
+{
     ksu_boot_completed = true;
     pr_info("on_boot_completed!\n");
-    // remark process, we don't want to mark other init
-    // forked process excepte zygote and adbd
-    ksu_mark_running_process();
+    track_throne(true);
 }
 
 #define MAX_ARG_STRINGS 0x7FFFFFFF
@@ -203,11 +196,6 @@ int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
                              struct user_arg_ptr *argv,
                              struct user_arg_ptr *envp, int *flags)
 {
-#ifndef CONFIG_KPROBES
-    if (!ksu_execveat_hook) {
-        return 0;
-    }
-#endif
     struct filename *filename;
 
     static const char app_process[] = "/system/bin/app_process";
@@ -316,7 +304,6 @@ int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
             task_work_add(init_task, &on_post_fs_data_cb, TWA_RESUME);
         }
         rcu_read_unlock();
-        ksu_set_task_tracepoint_flag(current); // we are zygote!
 
         stop_execve_hook();
     }
@@ -355,11 +342,6 @@ static ssize_t read_iter_proxy(struct kiocb *iocb, struct iov_iter *to)
 static int ksu_handle_vfs_read(struct file **file_ptr, char __user **buf_ptr,
                                size_t *count_ptr, loff_t **pos)
 {
-#ifndef CONFIG_KPROBES
-    if (!ksu_vfs_read_hook) {
-        return 0;
-    }
-#endif
     struct file *file;
     char __user *buf;
     size_t count;
@@ -468,11 +450,6 @@ static bool is_volumedown_enough(unsigned int count)
 int ksu_handle_input_handle_event(unsigned int *type, unsigned int *code,
                                   int *value)
 {
-#ifndef CONFIG_KPROBES
-    if (!ksu_input_hook) {
-        return 0;
-    }
-#endif
     if (*type == EV_KEY && *code == KEY_VOLUMEDOWN) {
         int val = *value;
         pr_info("KEY_VOLUMEDOWN val: %d\n", val);
@@ -510,8 +487,6 @@ bool ksu_is_safe_mode()
     return false;
 }
 
-#ifdef CONFIG_KPROBES
-
 static int sys_execve_handler_pre(struct kprobe *p, struct pt_regs *regs)
 {
     struct pt_regs *real_regs = PT_REAL_REGS(regs);
@@ -522,12 +497,25 @@ static int sys_execve_handler_pre(struct kprobe *p, struct pt_regs *regs)
     struct user_arg_ptr argv = { .ptr.native = __argv };
     struct filename filename_in, *filename_p;
     char path[32];
+    long ret;
+    unsigned long addr;
+    const char __user *fn;
 
     if (!filename_user)
         return 0;
 
+    addr = untagged_addr((unsigned long)*filename_user);
+    fn = (const char __user *)addr;
+
     memset(path, 0, sizeof(path));
-    strncpy_from_user_nofault(path, *filename_user, 32);
+    ret = strncpy_from_user_nofault(path, fn, 32);
+    if (ret < 0 && try_set_access_flag(addr)) {
+        ret = strncpy_from_user_nofault(path, fn, 32);
+    }
+    if (ret < 0) {
+        pr_err("Access filename failed for execve_handler_pre\n");
+        return 0;
+    }
     filename_in.name = path;
 
     filename_p = &filename_in;
@@ -582,28 +570,17 @@ static void do_stop_input_hook(struct work_struct *work)
 {
     unregister_kprobe(&input_event_kp);
 }
-#endif
 
 static void stop_vfs_read_hook()
 {
-#ifdef CONFIG_KPROBES
     bool ret = schedule_work(&stop_vfs_read_work);
     pr_info("unregister vfs_read kprobe: %d!\n", ret);
-#else
-    ksu_vfs_read_hook = false;
-    pr_info("stop vfs_read_hook\n");
-#endif
 }
 
 static void stop_execve_hook()
 {
-#ifdef CONFIG_KPROBES
     bool ret = schedule_work(&stop_execve_hook_work);
     pr_info("unregister execve kprobe: %d!\n", ret);
-#else
-    ksu_execveat_hook = false;
-    pr_info("stop execve_hook\n");
-#endif
 }
 
 static void stop_input_hook()
@@ -613,19 +590,13 @@ static void stop_input_hook()
         return;
     }
     input_hook_stopped = true;
-#ifdef CONFIG_KPROBES
     bool ret = schedule_work(&stop_input_hook_work);
     pr_info("unregister input kprobe: %d!\n", ret);
-#else
-    ksu_input_hook = false;
-    pr_info("stop input_hook\n");
-#endif
 }
 
 // ksud: module support
 void ksu_ksud_init()
 {
-#ifdef CONFIG_KPROBES
     int ret;
 
     ret = register_kprobe(&execve_kp);
@@ -640,15 +611,12 @@ void ksu_ksud_init()
     INIT_WORK(&stop_vfs_read_work, do_stop_vfs_read_hook);
     INIT_WORK(&stop_execve_hook_work, do_stop_execve_hook);
     INIT_WORK(&stop_input_hook_work, do_stop_input_hook);
-#endif
 }
 
 void ksu_ksud_exit()
 {
-#ifdef CONFIG_KPROBES
     unregister_kprobe(&execve_kp);
     // this should be done before unregister vfs_read_kp
     // unregister_kprobe(&vfs_read_kp);
     unregister_kprobe(&input_event_kp);
-#endif
 }

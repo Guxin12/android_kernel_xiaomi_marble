@@ -40,24 +40,6 @@ static const struct ksu_feature_handler kernel_umount_handler = {
     .set_handler = kernel_umount_feature_set,
 };
 
-static bool should_umount(struct path *path)
-{
-    if (!path) {
-        return false;
-    }
-
-    if (current->nsproxy->mnt_ns == init_nsproxy.mnt_ns) {
-        pr_info("ignore global mnt namespace process: %d\n", current_uid().val);
-        return false;
-    }
-
-    if (path->mnt && path->mnt->mnt_sb && path->mnt->mnt_sb->s_type) {
-        const char *fstype = path->mnt->mnt_sb->s_type->name;
-        return strcmp(fstype, "overlay") == 0;
-    }
-    return false;
-}
-
 extern int path_umount(struct path *path, int flags);
 
 static void ksu_umount_mnt(struct path *path, int flags)
@@ -68,7 +50,7 @@ static void ksu_umount_mnt(struct path *path, int flags)
     }
 }
 
-static void try_umount(const char *mnt, bool check_mnt, int flags)
+static void try_umount(const char *mnt, int flags)
 {
     struct path path;
     int err = kern_path(mnt, 0, &path);
@@ -78,12 +60,6 @@ static void try_umount(const char *mnt, bool check_mnt, int flags)
 
     if (path.dentry != path.mnt->mnt_root) {
         // it is not root mountpoint, maybe umounted by others already.
-        path_put(&path);
-        return;
-    }
-
-    // we are only interest in some specific mounts
-    if (check_mnt && !should_umount(&path)) {
         path_put(&path);
         return;
     }
@@ -104,14 +80,13 @@ static void umount_tw_func(struct callback_head *cb)
         saved = override_creds(tw->old_cred);
     }
 
-    // fixme: use `collect_mounts` and `iterate_mount` to iterate all mountpoint and
-    // filter the mountpoint whose target is `/data/adb`
-    try_umount("/odm", true, 0);
-    try_umount("/system", true, 0);
-    try_umount("/vendor", true, 0);
-    try_umount("/product", true, 0);
-    try_umount("/system_ext", true, 0);
-    try_umount("/data/adb/modules", false, MNT_DETACH);
+    struct mount_entry *entry;
+    down_read(&mount_list_lock);
+    list_for_each_entry(entry, &mount_list, list) {
+        pr_info("%s: unmounting: %s flags 0x%x\n", __func__, entry->umountable, entry->flags);
+        try_umount(entry->umountable, entry->flags);
+    }
+    up_read(&mount_list_lock);
 
     if (saved)
         revert_creds(saved);
@@ -126,7 +101,7 @@ int ksu_handle_umount(uid_t old_uid, uid_t new_uid)
 {
     struct umount_tw *tw;
 
-    // this hook is used for umounting overlayfs for some uid, if there isn't any module mounted, just ignore it!
+    // if there isn't any module mounted, just ignore it!
     if (!ksu_module_mounted) {
         return 0;
     }
@@ -135,18 +110,24 @@ int ksu_handle_umount(uid_t old_uid, uid_t new_uid)
         return 0;
     }
 
-    // FIXME: isolated process which directly forks from zygote is not handled
-    if (!is_appuid(new_uid)) {
+    // There are 5 scenarios:
+    // 1. Normal app: zygote -> appuid
+    // 2. Isolated process forked from zygote: zygote -> isolated_process
+    // 3. App zygote forked from zygote: zygote -> appuid
+    // 4. Isolated process froked from app zygote: appuid -> isolated_process (already handled by 3)
+    // 5. Isolated process froked from webview zygote (no need to handle, app cannot run custom code)
+    if (!is_appuid(new_uid) && !is_isolated_process(new_uid)) {
         return 0;
     }
 
-    if (!ksu_uid_should_umount(new_uid)) {
+    if (!ksu_uid_should_umount(new_uid) && !is_isolated_process(new_uid)) {
         return 0;
     }
 
     // check old process's selinux context, if it is not zygote, ignore it!
     // because some su apps may setuid to untrusted_app but they are in global mount namespace
     // when we umount for such process, that is a disaster!
+    // also handle case 4 and 5
     bool is_zygote_child = is_zygote(get_current_cred());
     if (!is_zygote_child) {
         pr_info("handle umount ignore non zygote child: %d\n", current->pid);
@@ -155,7 +136,7 @@ int ksu_handle_umount(uid_t old_uid, uid_t new_uid)
     // umount the target mnt
     pr_info("handle umount for uid: %d, pid: %d\n", new_uid, current->pid);
 
-    tw = kmalloc(sizeof(*tw), GFP_ATOMIC);
+    tw = kzalloc(sizeof(*tw), GFP_ATOMIC);
     if (!tw)
         return 0;
 

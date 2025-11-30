@@ -17,6 +17,7 @@
 #include "sucompat.h"
 #include "setuid_hook.h"
 #include "selinux/selinux.h"
+#include "util.h"
 
 // Tracepoint registration count management
 // == 1: just us
@@ -239,18 +240,29 @@ static inline bool check_syscall_fastpath(int nr)
     }
 }
 
-// Unmark init's child that are not zygote or adbd
+// Unmark init's child that are not zygote, adbd or ksud
 int ksu_handle_init_mark_tracker(const char __user **filename_user)
 {
     char path[64];
+    unsigned long addr;
+    const char __user *fn;
+    long ret;
 
     if (unlikely(!filename_user))
         return 0;
 
-    memset(path, 0, sizeof(path));
-    strncpy_from_user_nofault(path, *filename_user, sizeof(path));
+    addr = untagged_addr((unsigned long)*filename_user);
+    fn = (const char __user *)addr;
 
-    if (likely(strstr(path, "/app_process") == NULL && strstr(path, "/adbd") == NULL)) {
+    memset(path, 0, sizeof(path));
+    ret = strncpy_from_user_nofault(path, fn, sizeof(path));
+    if (ret < 0 && try_set_access_flag(addr)) {
+        ret = strncpy_from_user_nofault(path, fn, sizeof(path));
+        pr_info("ksu_handle_init_mark_tracker: %ld\n", ret);
+    }
+
+    if (likely(strstr(path, "/app_process") == NULL && strstr(path, "/adbd") == NULL && strstr(path, "/ksud") == NULL)) {
+		pr_info("hook_manager: unmark %d exec %s", current->pid, path);
         ksu_clear_task_tracepoint_flag_if_needed(current);
     }
 

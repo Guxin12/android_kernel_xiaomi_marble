@@ -160,7 +160,7 @@ FILLDIR_RETURN_TYPE my_actor(struct dir_context *ctx, const char *name,
 
     if (d_type == DT_DIR && my_ctx->depth > 0 &&
         (my_ctx->stop && !*my_ctx->stop)) {
-        struct data_path *data = kmalloc(sizeof(struct data_path), GFP_ATOMIC);
+        struct data_path *data = kzalloc(sizeof(struct data_path), GFP_ATOMIC);
 
         if (!data) {
             pr_err("Failed to allocate memory for %s\n", dirpath);
@@ -195,7 +195,7 @@ FILLDIR_RETURN_TYPE my_actor(struct dir_context *ctx, const char *name,
                 }
             } else {
                 struct apk_path_hash *apk_data =
-                    kmalloc(sizeof(struct apk_path_hash), GFP_ATOMIC);
+                    kzalloc(sizeof(struct apk_path_hash), GFP_ATOMIC);
                 apk_data->hash = hash;
                 apk_data->exists = true;
                 list_add_tail(&apk_data->list, &apk_path_hash_list);
@@ -300,7 +300,7 @@ static bool is_uid_exist(uid_t uid, char *package, void *data)
     return exist;
 }
 
-void track_throne()
+void track_throne(bool prune_only)
 {
     struct file *fp = filp_open(SYSTEM_PACKAGES_LIST_PATH, O_RDONLY, 0);
     if (IS_ERR(fp)) {
@@ -356,6 +356,9 @@ void track_throne()
     // now update uid list
     struct uid_data *np;
     struct uid_data *n;
+
+    if (prune_only)
+        goto prune;
 
     // first, check if manager_uid exist!
     bool manager_exist = false;
