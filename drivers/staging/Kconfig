@@ -120,8 +120,6 @@ source "drivers/staging/hikey9xx/Kconfig"
 
 source "drivers/staging/qcacld-3.0/Kconfig"
 
-source "drivers/staging/kernelsu/Kconfig"
-
 source "drivers/staging/extend_reclaim/Kconfig"
 
 source "drivers/staging/binder_prio/Kconfig"
