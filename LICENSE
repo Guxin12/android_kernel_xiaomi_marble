@@ -1,0 +1,425 @@
+## AnyKernel3 (AK3), and AnyKernel2/AnyKernel 2.0 (AK2) Scripts License:
+
+    AnyKernel (versions 2.0/2 and later) Android image modifying scripts.
+    Copyright (c) 2019 Chris Renshaw (osm0sis @ xda-developers),
+    and additional contributors per readily available commit history/credits.
+    All rights reserved.
+
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted (subject to the limitations in the disclaimer
+    below) provided that the following conditions are met:
+
+       * Redistributions of source code must retain the above copyright notice,
+         this list of conditions and the following disclaimer.
+
+       * Redistributions in binary form must reproduce the above copyright
+         notice, this list of conditions and the following disclaimer in the
+         documentation and/or other materials provided with the distribution.
+
+       * Neither the name of the copyright holder nor the names of its
+         contributors may be used to endorse or promote products derived from this
+         software without specific prior written permission.
+
+    NO EXPRESS OR IMPLIED LICENSES TO ANY PARTY'S PATENT RIGHTS ARE GRANTED BY
+    THIS LICENSE. THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND
+    CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+    LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+    PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
+    CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+    EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+    PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
+    BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
+    IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+    POSSIBILITY OF SUCH DAMAGE.
+
+
+## Included Binary Licenses:
+
+magiskboot, magiskpolicy (Magisk): GPLv3+
+
+    Magisk, including all git submodules are free software:
+    you can redistribute it and/or modify it under the terms of the
+    GNU General Public License as published by the Free Software Foundation,
+    either version 3 of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+    Per Section 6(d), official compiled binaries from unmodified source:
+    https://github.com/topjohnwu/Magisk
+
+busybox: GPLv2
+
+    BusyBox is distributed under version 2 of the General Public
+    License. Version 2 is the only version of this license which this
+    version of BusyBox (or modified versions derived from this one) may
+    be distributed under.
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    Per Section 3(b), modified source:
+    https://git.busybox.net/busybox/
+    https://github.com/topjohnwu/ndk-box-kitchen
+
+    Pre-compiled binaries from Magisk:
+    https://github.com/topjohnwu/magisk-files/releases/download/files/busybox-1.36.1.1.zip
+
+lptools_static: Apache License 2.0
+fec: Apache License 2.0
+snapshotupdater_static: Apache License 2.0
+
+    Copyright their respective authors, (linked below).
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+         http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+    Source not required, however, respective sources are provided:
+    https://github.com/phhusson/vendor_lptools
+    https://android.googlesource.com/platform/system/extras/+/master/verity/fec/
+    https://github.com/capntrips/SnapshotUpdater
+
+httools_static: MIT License
+
+    Copyright (c) 2022 capntrips
+
+    Permission is hereby granted, free of charge, to any person obtaining a copy
+    of this software and associated documentation files (the "Software"), to deal
+    in the Software without restriction, including without limitation the rights
+    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+    copies of the Software, and to permit persons to whom the Software is
+    furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice shall be included in all
+    copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+    SOFTWARE.
+
+    Source not required, however, respective source is provided:
+    https://github.com/capntrips/HashtreePatcher
+
+extract.erofs, mkfs.erofs:
+
+    erofs-utils uses two different license patterns:
+
+     - most liberofs files in `lib` and `include` directories
+       use GPL-2.0+ OR Apache-2.0 dual license;
+
+     - all other files use GPL-2.0+ license, unless
+       explicitly stated otherwise.
+
+    Relevant licenses can be found in the LICENSES directory.
+
+    This model is selected to emphasize that
+    files in `lib` and `include` directory are designed to be included into
+    3rd-party applications, while all other files, are intended to be used
+    "as is", as part of their intended scenarios, with no intention to
+    support 3rd-party integration use cases.
+
+    Official compiled binaries from unmodified source:
+    https://github.com/sekaiacg/erofs-utils
+
+7za: LGPLv2
+    7-Zip is free software with open source.
+    The most of the code is under the GNU LGPL license.
+    Some parts of the code are under the BSD 3-clause License.
+    Also there is unRAR license restriction for some parts of the code.
+    Read [7-Zip License](https://www.7-zip.org/license.txt) information.
+
+    You can use 7-Zip on any computer, including a computer in a commercial organization.
+    You don't need to register or pay for 7-Zip.
+
+    Self-compiled binary from unmodified source:
+    https://sourceforge.net/projects/sevenzip/files/7-Zip/25.01/7z2501-src.tar.xz/download
+
+vbmeta-disable-verification: MIT License
+
+    Copyright (c) 2022 LibXZR
+
+    Permission is hereby granted, free of charge, to any person obtaining a copy
+    of this software and associated documentation files (the "Software"), to deal
+    in the Software without restriction, including without limitation the rights
+    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+    copies of the Software, and to permit persons to whom the Software is
+    furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice shall be included in all
+    copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+    SOFTWARE.
+
+    Source not required, however, respective source is provided:
+    https://github.com/libxzr/vbmeta-disable-verification
+
+bspatch: BSD
+    Copyright 2003-2005 Colin Percival
+    All rights reserved
+
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted providing that the following conditions 
+    are met:
+    1. Redistributions of source code must retain the above copyright
+       notice, this list of conditions and the following disclaimer.
+    2. Redistributions in binary form must reproduce the above copyright
+       notice, this list of conditions and the following disclaimer in the
+       documentation and/or other materials provided with the distribution.
+
+    THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
+    IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+    ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+    DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+    OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+    HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+    STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
+    IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+    POSSIBILITY OF SUCH DAMAGE.
+
+    Self-compiled binary from unmodified source:
+    http://www.daemonology.net/bsdiff/
+
+keycheck: Apache License 2.0 & BSD
+    Copyright (C) 2010 The Android Open Source Project
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+         http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+    Source not required, however, respective source is provided:
+    https://github.com/Zackptg5/Keycheck
+
+lpdump: Apache License 2.0
+    Copyright (C) 2018 The Android Open Source Project
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+         http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+    Source not required, however, respective source is provided:
+    https://android.googlesource.com/platform/system/extras/+/refs/heads/main/partition_tools/
+
+dtp: None
+    Source:
+    https://github.com/lyq1996/msm8998_offset_voltage/tree/TWRP/dtp_src
+
+fdtget, fdtput: GPL/BSD dual-licensed
+    Licensing and contribution policy of dtc and libfdt
+
+    This dtc package contains two pieces of software: dtc itself, and
+    libfdt which comprises the files in the libfdt/ subdirectory.  These
+    two pieces of software, although closely related, are quite distinct.
+    dtc does not incorporate or rely on libfdt for its operation, nor vice
+    versa.  It is important that these two pieces of software have
+    different license conditions.
+
+    As SPDX license tags in each source file attest, dtc is licensed
+    under the GNU GPL.  The full text of the GPL can be found in the file
+    entitled 'GPL' which should be included in this package.  dtc code,
+    therefore, may not be incorporated into works which do not have a GPL
+    compatible license.
+
+    libfdt, however, is GPL/BSD dual-licensed.  That is, it may be used
+    either under the terms of the GPL, or under the terms of the 2-clause
+    BSD license (aka the ISC license).  The full terms of that license can
+    be found are in the file entitled 'BSD-2-Clause'. This is, in
+    practice, equivalent to being BSD licensed, since the terms of the BSD
+    license are strictly more permissive than the GPL.
+
+    Self-compiled binaries from unmodified source:
+    https://github.com/dgibson/dtc
+
+e2fsck, resize2fs: GPLv2
+    This package, the EXT2 filesystem utilities, are made available under
+    the GNU Public License version 2, with the exception of the lib/ext2fs
+    and lib/e2p libraries, which are made available under the GNU Library
+    General Public License Version 2, the lib/uuid library which is made
+    available under a BSD-style license and the lib/et and lib/ss
+    libraries which are made available under an MIT-style license.  Please
+    see lib/uuid/COPYING for more details for the license for the files
+    comprising the libuuid library, and the source file headers of the
+    libet and libss libraries for more information.
+
+    Self-compiled binaries from unmodified source:
+    https://git.kernel.org/pub/scm/fs/ext2/e2fsprogs.git
+
+vendor_boot_fix: None
+    Source:
+    https://github.com/Pzqqt/AnyKernel3/tree/Marble-Melt/vendor_boot_fix-ndk
+
+kmod: GPLv2+ & LGPL-2.1
+    LGPLv2.1+ for libkmod, testsuite and helper libraries
+    see: https://git.kernel.org/pub/scm/utils/kernel/kmod/kmod.git/tree/COPYING
+
+    GPLv2+ for tools/*
+    see: https://git.kernel.org/pub/scm/utils/kernel/kmod/kmod.git/tree/tools/COPYING
+
+    Self-compiled binaries from unmodified source:
+    https://git.kernel.org/pub/scm/utils/kernel/kmod/kmod.git
+
+## Optional Binary Licenses:
+
+mkbootfs, mkbootimg: Apache License 2.0
+mkmtkhdr: Apache License 2.0, implied (AOSP mkbootimg derived)
+boot_signer*.jar: Apache License 2.0
+
+    Copyright (c) 2008 The Android Open Source Project
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+         http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+    Source not required, however, respective sources are provided:
+    https://github.com/osm0sis/mkbootfs
+    https://github.com/osm0sis/mkbootimg
+    https://github.com/osm0sis/mkmtkhdr
+    https://android.googlesource.com/platform/system/extras/+/master/verity/
+
+flash_erase, nanddump, nandwrite (mtd-utils): GPLv2
+dumpimage, mkimage (U-Boot): GPLv2+
+mboot: GPLv2 (Intel mboot.py derived)
+
+    Copyright their respective authors, (linked below).
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    Per Section 3(b), self-compiled binaries from unmodified respective sources:
+    http://git.infradead.org/mtd-utils.git
+    https://gitlab.denx.de/u-boot/u-boot
+    https://github.com/osm0sis/mboot
+
+futility: BSD 3-Clause License (Chromium OS)
+unpackelf, elftool: BSD 3-Clause License, implied (Sony mkelf.py derived)
+
+    Copyright their respective authors, (linked below).
+
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are
+    met:
+       * Redistributions of source code must retain the above copyright
+         notice, this list of conditions and the following disclaimer.
+       * Redistributions in binary form must reproduce the above copyright
+         notice, this list of conditions and the following disclaimer in
+         the documentation and/or other materials provided with the
+         distribution.
+       * Neither the name of the copyright holder nor the names of its
+         contributors may be used to endorse or promote products derived
+         from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+    "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+    LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+    A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+    OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+    SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+    LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+    DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+    THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+    OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+    Source not required, however, respective sources are provided:
+    https://github.com/osm0sis/futility
+    https://github.com/osm0sis/unpackelf
+    https://github.com/osm0sis/elftool
+    (https://github.com/sonyxperiadev/device-sony-lt26/tree/master/tools)
+
+rkcrc: BSD 2-Clause License
+
+    Copyright (c) 2010, 2011 Fukaumi Naoki
+    Copyright (c) 2013 Ivo van Poorten
+    All rights reserved.
+
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are
+    met:
+    1. Redistributions of source code must retain the above copyright
+       notice, this list of conditions and the following disclaimer.
+    2. Redistributions in binary form must reproduce the above copyright
+       notice, this list of conditions and the following disclaimer in the
+       documentation and/or other materials provided with the distribution.
+
+    THIS SOFTWARE IS PROVIDED BY THE AUTHOR "AS IS" AND ANY EXPRESS OR
+    IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+    OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+    IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
+    INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+    NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+    DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+    THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+    THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+    Source not required, however, respective source is provided:
+    https://github.com/linux-rockchip/rkflashtool
+
+
+## Additional Build Scripts for Listed Binaries (where used):
+
+osm0sis' Odds and Ends Thread - Knowledge Base:
+https://forum.xda-developers.com/t/tools-zips-scripts-osm0sis-odds-and-ends-multiple-devices-platforms.2239421/#post-53554719
+
