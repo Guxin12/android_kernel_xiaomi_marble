@@ -654,7 +654,6 @@ static void macb_mac_link_up(struct phylink_config *config,
 		/* Initialize rings & buffers as clearing MACB_BIT(TE) in link down
 		 * cleared the pipeline and control registers.
 		 */
-		bp->macbgem_ops.mog_init_rings(bp);
 		macb_init_buffers(bp);
 
 		for (q = 0, queue = bp->queues; q < bp->num_queues; ++q, ++queue)
@@ -2286,6 +2285,8 @@ static void gem_init_rings(struct macb *bp)
 	struct macb_dma_desc *desc = NULL;
 	unsigned int q;
 	int i;
+
+	bp->macbgem_ops.mog_init_rings(bp);
 
 	for (q = 0, queue = bp->queues; q < bp->num_queues; ++q, ++queue) {
 		for (i = 0; i < bp->tx_ring_size; i++) {
