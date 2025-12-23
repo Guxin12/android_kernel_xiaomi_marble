@@ -725,6 +725,7 @@ static void hif_exec_napi_kill(struct hif_exec_context *ctx)
 
 	if (ctx->inited) {
 		napi_disable(&n_ctx->napi);
+		netif_napi_del(&n_ctx->napi);
 		ctx->inited = 0;
 	}
 
@@ -732,7 +733,6 @@ static void hif_exec_napi_kill(struct hif_exec_context *ctx)
 		hif_irq_affinity_remove(ctx->os_irq[irq_ind]);
 
 	hif_core_ctl_set_boost(false);
-	netif_napi_del(&(n_ctx->napi));
 	qdf_net_if_destroy_dummy_if((struct qdf_net_if *)dummy_nd);
 	qdf_napi_set_dummy_nd_ptr(n_ctx, NULL);
 }
