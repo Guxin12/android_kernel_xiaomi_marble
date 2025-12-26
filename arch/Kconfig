@@ -741,7 +741,7 @@ config CFI_PERMISSIVE
 
 config CFI_FORCE_SKIP_CHECK
 	bool "Skip execution of __cfi_check function"
-	def_bool y if CLANG_VERSION >= 190100
+	def_bool y if CLANG_VERSION >= 190100 && CLANG_VERSION <= 210100
 	depends on CFI_CLANG
 
 config LLVM_POLLY
