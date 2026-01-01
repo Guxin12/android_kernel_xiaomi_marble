@@ -326,7 +326,10 @@ static int gsx_gesture_before_suspend(struct goodix_ts_core *cd,
 		ts_info("enter gesture mode, type[0x%02X]", cd->gesture_type);
 
 	hw_ops->irq_enable(cd, true);
-	enable_irq_wake(cd->irq);
+	if (!cd->irq_wake_enabled) {
+		enable_irq_wake(cd->irq);
+		cd->irq_wake_enabled = true;
+	}
 
 	return EVT_CANCEL_SUSPEND;
 }
@@ -339,7 +342,10 @@ static int gsx_gesture_before_resume(struct goodix_ts_core *cd,
 	if (cd->gesture_type == 0)
 		return EVT_CONTINUE;
 
-	disable_irq_wake(cd->irq);
+	if (cd->irq_wake_enabled) {
+		disable_irq_wake(cd->irq);
+		cd->irq_wake_enabled = false;
+	}
 	hw_ops->reset(cd, GOODIX_NORMAL_RESET_DELAY_MS);
 
 	return EVT_CANCEL_RESUME;
