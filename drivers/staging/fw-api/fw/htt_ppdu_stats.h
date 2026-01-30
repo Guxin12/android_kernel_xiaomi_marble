@@ -971,7 +971,8 @@ typedef struct {
                      is_combined_ul_basic_trigger: 1,
                      is_manual_ulofdma_trigger: 1,
                      is_combined_ul_bsrp_trigger: 1,
-                     reserved3:     28;
+                     is_sta_dps_seq: 1,
+                     reserved3:     27;
         };
     };
     /* Flag to indicate if the channel chosen is 320_1 / 320_2 */
