@@ -14,7 +14,6 @@
 #include <linux/rwsem.h>
 
 struct posix_clock;
-struct posix_clock_context;
 
 /**
  * struct posix_clock_operations - functional interface to the clock
@@ -51,18 +50,18 @@ struct posix_clock_operations {
 	/*
 	 * Optional character device methods:
 	 */
-	long (*ioctl)(struct posix_clock_context *pccontext, unsigned int cmd,
-		      unsigned long arg);
+	long    (*ioctl)   (struct posix_clock *pc,
+			    unsigned int cmd, unsigned long arg);
 
-	int (*open)(struct posix_clock_context *pccontext, fmode_t f_mode);
+	int     (*open)    (struct posix_clock *pc, fmode_t f_mode);
 
-	__poll_t (*poll)(struct posix_clock_context *pccontext, struct file *file,
-			 poll_table *wait);
+	__poll_t (*poll)   (struct posix_clock *pc,
+			    struct file *file, poll_table *wait);
 
-	int (*release)(struct posix_clock_context *pccontext);
+	int     (*release) (struct posix_clock *pc);
 
-	ssize_t (*read)(struct posix_clock_context *pccontext, uint flags,
-			char __user *buf, size_t cnt);
+	ssize_t (*read)    (struct posix_clock *pc,
+			    uint flags, char __user *buf, size_t cnt);
 };
 
 /**
@@ -89,24 +88,6 @@ struct posix_clock {
 	struct device *dev;
 	struct rw_semaphore rwsem;
 	bool zombie;
-};
-
-/**
- * struct posix_clock_context - represents clock file operations context
- *
- * @clk:              Pointer to the clock
- * @private_clkdata:  Pointer to user data
- *
- * Drivers should use struct posix_clock_context during specific character
- * device file operation methods to access the posix clock.
- *
- * Drivers can store a private data structure during the open operation
- * if they have specific information that is required in other file
- * operations.
- */
-struct posix_clock_context {
-	struct posix_clock *clk;
-	void *private_clkdata;
 };
 
 /**
