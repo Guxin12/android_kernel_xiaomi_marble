@@ -477,7 +477,7 @@ struct regulator_dev {
 	unsigned int is_switch:1;
 
 	/* time when this regulator was disabled last time */
-	ktime_t last_off;
+	unsigned long last_off_jiffy;
 
 	ANDROID_KABI_RESERVE(1);
 };
