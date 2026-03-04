@@ -375,7 +375,8 @@ static ssize_t driver_override_store(struct device *dev,
 	struct rpmsg_device *rpdev = to_rpmsg_device(dev);
 	int ret;
 
-	ret = driver_set_override(dev, &rpdev->driver_override, buf, count);
+	ret = driver_set_override(dev, (const char **)&rpdev->driver_override,
+				  buf, count);
 	if (ret)
 		return ret;
 
