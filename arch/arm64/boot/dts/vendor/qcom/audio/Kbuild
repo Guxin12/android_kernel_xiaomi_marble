@@ -1,5 +1,5 @@
-DTC_INCLUDE += $(srctree)/../sm8450-modules/qcom/opensource/audio-kernel/include
-KBUILD_DTC_INCLUDE += $(srctree)/../sm8450-modules/qcom/opensource/audio-kernel/include
+DTC_INCLUDE += $(srctree)/techpack/audio/include
+KBUILD_DTC_INCLUDE += $(srctree)/techpack/audio/include
 
 dtbo-$(CONFIG_ARCH_WAIPIO) += waipio-audio.dtbo \
                  waipio-audio-cdp.dtbo \

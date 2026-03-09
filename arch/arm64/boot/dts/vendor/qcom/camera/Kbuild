@@ -1,5 +1,5 @@
-DTC_INCLUDE += $(srctree)/../sm8450-modules/qcom/opensource/camera-kernel
-KBUILD_DTC_INCLUDE += $(srctree)/../sm8450-modules/qcom/opensource/camera-kernel
+DTC_INCLUDE += $(srctree)/techpack/camera
+KBUILD_DTC_INCLUDE += $(srctree)/techpack/camera
 
 include $(srctree)/$(src)/config/parrot.mk
 include $(srctree)/$(src)/config/waipio.mk
