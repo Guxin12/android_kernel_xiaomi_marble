@@ -291,7 +291,7 @@ dtb-$(CONFIG_ARCH_DIWALI) += diwali-rumi.dtb \
 	diwali-lte-idp-usbc.dtb \
 	diwali-lte-idp-hsp.dtb \
 	diwali-lte-idp-nopmi.dtb \
-	diwali-lte-qrd-nopmi.dtbi \
+	diwali-lte-qrd-nopmi.dtb \
 	diwali-lte-qrd-pm8350b.dtb
 endif
 
