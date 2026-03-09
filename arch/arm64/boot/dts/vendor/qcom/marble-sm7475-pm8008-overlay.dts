@@ -1,0 +1,43 @@
+/dts-v1/;
+/plugin/;
+
+#include "marble-sm7475.dtsi"
+#include "waipio-pm8008.dtsi"
+
+/ {
+	model = "Marble based on Qualcomm Technologies, Inc SM7475";
+	compatible = "qcom,ukee-mtp", "qcom,ukee", "qcom,mtp";
+	qcom,msm-id = <591 0x10000>;
+	qcom,board-id = <0x10008 0>;
+	xiaomi,miboard-id = <0xf 0>;
+};
+
+&L1J {
+	regulator-min-microvolt = <1000000>;
+	regulator-max-microvolt = <1000000>;
+};
+
+&L2J {
+	regulator-min-microvolt = <1200000>;
+	regulator-max-microvolt = <1200000>;
+};
+
+&L3J {
+	regulator-min-microvolt = <2800000>;
+	regulator-max-microvolt = <2800000>;
+};
+
+&L4J {
+	regulator-min-microvolt = <2800000>;
+	regulator-max-microvolt = <2800000>;
+};
+
+&L6J {
+	regulator-min-microvolt = <2800000>;
+	regulator-max-microvolt = <2800000>;
+};
+
+&L7J {
+	regulator-min-microvolt = <2800000>;
+	regulator-max-microvolt = <2800000>;
+};

@@ -1,0 +1,9 @@
+DTC_INCLUDE += $(srctree)/../sm8450-modules/qcom/opensource/camera-kernel
+KBUILD_DTC_INCLUDE += $(srctree)/../sm8450-modules/qcom/opensource/camera-kernel
+
+include $(srctree)/$(src)/config/parrot.mk
+include $(srctree)/$(src)/config/waipio.mk
+
+always-y	:= $(dtbo-y) $(dtb-y)
+subdir-y	:= $(dts-dirs)
+clean-files	:= *.dtb *.dtbo

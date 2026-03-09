@@ -1,0 +1,241 @@
+#include "cape-sde-display.dtsi"
+#include "dsi-panel-l1-38-0c-0a-dsc-cmd.dtsi"
+
+&soc {
+	dsi_panel_pwr_supply_L1: dsi_panel_pwr_supply_L1 {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		qcom,panel-supply-entry@0 {
+			reg = <0>;
+			qcom,supply-name = "vci";
+			qcom,supply-min-voltage = <3000000>;
+			qcom,supply-max-voltage = <3000000>;
+			qcom,supply-enable-load = <300000>;
+			qcom,supply-disable-load = <0>;
+			qcom,supply-post-on-sleep = <1>;
+			qcom,supply-post-off-sleep = <1>;
+		};
+		qcom,panel-supply-entry@1 {
+			reg = <1>;
+			qcom,supply-name = "vddio";
+			qcom,supply-min-voltage = <1800000>;
+			qcom,supply-max-voltage = <1800000>;
+			qcom,supply-enable-load = <300000>;
+			qcom,supply-disable-load = <80>;
+			qcom,supply-post-on-sleep = <1>;
+			qcom,supply-post-off-sleep = <1>;
+		};
+		qcom,panel-supply-entry@2 {
+			reg = <2>;
+			qcom,supply-name = "vddd";
+			qcom,supply-min-voltage = <1500000>;
+			qcom,supply-max-voltage = <1500000>;
+			qcom,supply-enable-load = <300000>;
+			qcom,supply-disable-load = <0>;
+			qcom,supply-post-on-sleep = <1>;
+			qcom,supply-post-off-sleep = <1>;
+		};
+	};
+};
+
+
+&dsi_l1_38_0c_0a_dsc_cmd {
+	qcom,mdss-dsi-panel-vsync-delay;
+	qcom,ulps-enabled;
+	qcom,dsi-select-clocks = "pll_byte_clk0", "pll_dsi_clk0";
+	qcom,mdss-dsi-clk-strength = <0xFF>;
+	qcom,mdss-dsi-display-timings {
+		/* WQHD 60Hz */
+		timing@wqhd_60hz_index_00{
+			qcom,mdss-dsi-panel-phy-timings = [00 2B 0C 0C 1C 26 0C
+				0C 0B 02 04 00 24 11];
+			qcom,display-topology = <2 2 1>;
+			qcom,default-topology-index = <0>;
+		};
+		/* WQHD 120hz */
+		timing@wqhd_120hz_index_01{
+			qcom,mdss-dsi-panel-phy-timings = [00 2B 0C 0C 1C 26 0C
+				0C 0B 02 04 00 24 11];
+			qcom,display-topology = <2 2 1>;
+			qcom,default-topology-index = <0>;
+		};
+		/* WQHD 90hz */
+		timing@wqhd_90hz_index_02{
+			qcom,mdss-dsi-panel-phy-timings = [00 2B 0C 0C 1C 26 0C
+				0C 0B 02 04 00 24 11];
+			qcom,display-topology = <2 2 1>;
+			qcom,default-topology-index = <0>;
+		};
+		/* WQHD 40hz */
+		timing@wqhd_40hz_index_03{
+			qcom,mdss-dsi-panel-phy-timings = [00 2B 0C 0C 1C 26 0C
+				0C 0B 02 04 00 24 11];
+			qcom,display-topology = <2 2 1>;
+			qcom,default-topology-index = <0>;
+		};
+		/* WQHD 30hz */
+		timing@wqhd_30hz_index_04{
+			qcom,mdss-dsi-panel-phy-timings = [00 2B 0C 0C 1C 26 0C
+				0C 0B 02 04 00 24 11];
+			qcom,display-topology = <2 2 1>;
+			qcom,default-topology-index = <0>;
+		};
+		/* WQHD 24hz */
+		timing@wqhd_24hz_index_05{
+			qcom,mdss-dsi-panel-phy-timings = [00 2B 0C 0C 1C 26 0C
+				0C 0B 02 04 00 24 11];
+			qcom,display-topology = <2 2 1>;
+			qcom,default-topology-index = <0>;
+		};
+		/* WQHD 10hz */
+		timing@wqhd_10hz_index_06{
+			qcom,mdss-dsi-panel-phy-timings = [00 2B 0C 0C 1C 26 0C
+				0C 0B 02 04 00 24 11];
+			qcom,display-topology = <2 2 1>;
+			qcom,default-topology-index = <0>;
+		};
+		/* WQHD 1hz */
+		timing@wqhd_1hz_index_07{
+			qcom,mdss-dsi-panel-phy-timings = [00 2B 0C 0C 1C 26 0C
+				0C 0B 02 04 00 24 11];
+			qcom,display-topology = <2 2 1>;
+			qcom,default-topology-index = <0>;
+		};
+	};
+};
+
+&dsi_l1_38_0c_0a_dsc_cmd {
+	qcom,panel-supply-entries = <&dsi_panel_pwr_supply_L1>;
+	qcom,mdss-dsi-bl-pmic-control-type = "bl_ctrl_dcs";
+	qcom,mdss-dsi-bl-min-level = <8>;
+	qcom,mdss-dsi-bl-max-level = <2047>;
+	qcom,mdss-brightness-max-level = <2047>;
+	qcom,mdss-brightness-init-level = <307>;
+	qcom,mdss-dsi-bl-inverted-dbv;
+	qcom,platform-reset-gpio = <&tlmm 106 0>;
+};
+
+&dsi_r66451_amoled_video {
+	qcom,panel-supply-entries = <&dsi_panel_pwr_supply_L1>;
+	qcom,mdss-dsi-bl-pmic-control-type = "bl_ctrl_dcs";
+	qcom,mdss-dsi-bl-min-level = <1>;
+	qcom,mdss-dsi-bl-max-level = <4095>;
+	qcom,mdss-brightness-max-level = <255>;
+	qcom,mdss-dsi-bl-inverted-dbv;
+	qcom,platform-reset-gpio = <&tlmm 106 0>;
+};
+
+&sde_dsi_active {
+	mux {
+		pins = "gpio106";
+		function = "gpio";
+	};
+
+	config {
+		pins = "gpio106";
+		drive-strength = <8>;   /* 8 mA */
+		bias-disable = <0>;   /* no pull */
+	};
+};
+
+&sde_dsi_suspend {
+	mux {
+		pins = "gpio106";
+		function = "gpio";
+	};
+
+	config {
+		pins = "gpio106";
+		drive-strength = <2>;   /* 2 mA */
+		bias-pull-down;         /* PULL DOWN */
+	};
+};
+&soc {
+	display_panel_vddio: display_panel_vddio {
+		compatible = "regulator-fixed";
+		regulator-name = "display_panel_vddio";
+		regulator-min-microvolt = <1800000>;
+		regulator-max-microvolt = <1800000>;
+		gpio = <&tlmm 74 0>;
+		enable-active-high;
+		regulator-boot-on;
+	};
+
+	display_panel_vddd: display_panel_vddd {
+		compatible = "regulator-fixed";
+		regulator-name = "display_panel_vddd";
+		regulator-min-microvolt = <1500000>;
+		regulator-max-microvolt = <1500000>;
+		gpio = <&tlmm 64 0>;
+		enable-active-high;
+		regulator-boot-on;
+	};
+
+	display_panel_vci: display_panel_vci {
+		compatible = "regulator-fixed";
+		regulator-name = "display_panel_vci";
+		regulator-min-microvolt = <3000000>;
+		regulator-max-microvolt = <3000000>;
+		gpio = <&tlmm 75 0>;
+		enable-active-high;
+		regulator-boot-on;
+	};
+};
+
+&sde_dsi {
+	qcom,dsi-default-panel = <&dsi_r66451_amoled_video>;
+	vddd-supply = <&display_panel_vddd>;
+	vci-supply = <&display_panel_vci>;
+	vddio-supply = <&display_panel_vddio>;
+};
+
+
+&sde_dsi1 {
+	status = "disabled";
+};
+
+&sde_dp {
+	status = "disabled";
+};
+
+&pm8350c_rgb {
+	status = "disabled";
+};
+
+&mdss_mdp {
+	connectors = <&sde_dsi &smmu_sde_unsec &smmu_sde_sec &sde_wb &sde_rscc>;
+};
+
+&qupv3_se4_spi {
+	fts@0 {
+		panel = <&dsi_l1_38_0c_0a_dsc_cmd
+			&dsi_r66451_amoled_video>;
+	};
+};
+
+&soc {
+	thermal-message {
+		board-sensor = "VIRTUAL-SENSOR0";
+	};
+	thermal_screen: thermal-screen {
+		panel = <&dsi_l1_38_0c_0a_dsc_cmd
+			&dsi_r66451_amoled_video>;
+	};
+	charge_screen: charge-screen {
+		panel = <&dsi_l1_38_0c_0a_dsc_cmd
+			&dsi_r66451_amoled_video>;
+	};
+	xiaomi-touch  {
+		panel-primary = <&dsi_l1_38_0c_0a_dsc_cmd
+			&dsi_r66451_amoled_video>;
+	};
+};
+
+&spmi_bus {
+	qcom,pm8350b@3 {
+		qcom,amoled-ecm@f900 {
+			display-panels = <&dsi_l1_38_0c_0a_dsc_cmd
+					&dsi_r66451_amoled_video>;
+		};
+	};
+};

@@ -1,0 +1,197 @@
+#include "cape-sde-display.dtsi"
+#include "dsi-panel-m16t-36-02-0a-dsc-vid.dtsi"
+#include "dsi-panel-m16t-36-0d-0b-dsc-vid.dtsi"
+
+&soc {
+	dsi_panel_pwr_supply_m16t: dsi_panel_pwr_supply_m16t {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		qcom,panel-supply-entry@0 {
+			reg = <0>;
+			qcom,supply-name = "vddio";
+			qcom,supply-min-voltage = <1800000>;
+			qcom,supply-max-voltage = <1800000>;
+			qcom,supply-enable-load = <60700>;
+			qcom,supply-disable-load = <80>;
+			qcom,supply-post-on-sleep = <10>;
+			qcom,supply-post-off-sleep = <2>;
+		};
+		qcom,panel-supply-entry@1 {
+			reg = <1>;
+			qcom,supply-name = "vddd";
+			qcom,supply-min-voltage = <1200000>;
+			qcom,supply-max-voltage = <1200000>;
+			qcom,supply-enable-load = <60700>;
+			qcom,supply-disable-load = <80>;
+			qcom,supply-post-on-sleep = <0>;
+			qcom,supply-post-off-sleep = <2>;
+		};
+		qcom,panel-supply-entry@2 {
+			reg = <2>;
+			qcom,supply-name = "vci";
+			qcom,supply-min-voltage = <3000000>;
+			qcom,supply-max-voltage = <3000000>;
+			qcom,supply-enable-load = <10000>;
+			qcom,supply-disable-load = <0>;
+			qcom,supply-post-on-sleep = <10>;
+			qcom,supply-post-off-sleep = <2>;
+		};
+	};
+
+	dsi_panel_pwr_supply_0b_m16t: dsi_panel_pwr_supply_0b_m16t {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		qcom,panel-supply-entry@0 {
+			reg = <0>;
+			qcom,supply-name = "vddio";
+			qcom,supply-min-voltage = <1800000>;
+			qcom,supply-max-voltage = <1800000>;
+			qcom,supply-enable-load = <60700>;
+			qcom,supply-disable-load = <80>;
+			qcom,supply-post-on-sleep = <10>;
+			qcom,supply-post-off-sleep = <2>;
+		};
+		qcom,panel-supply-entry@1 {
+			reg = <1>;
+			qcom,supply-name = "vci";
+			qcom,supply-min-voltage = <3000000>;
+			qcom,supply-max-voltage = <3000000>;
+			qcom,supply-enable-load = <15000>;
+			qcom,supply-disable-load = <0>;
+			qcom,supply-post-on-sleep = <10>;
+			qcom,supply-post-off-sleep = <2>;
+		};
+		qcom,panel-supply-entry@2 {
+			reg = <2>;
+			qcom,supply-name = "vddd";
+			qcom,supply-min-voltage = <1250000>;
+			qcom,supply-max-voltage = <1250000>;
+			qcom,supply-enable-load = <200000>;
+			qcom,supply-disable-load = <80>;
+			qcom,supply-post-on-sleep = <0>;
+			qcom,supply-post-off-sleep = <2>;
+		};
+	};
+};
+
+&dsi_m16t_36_02_0a_dsc_vid {
+	qcom,mdss-dsi-panel-vsync-delay;
+	qcom,ulps-enabled;
+	qcom,dsi-select-clocks = "pll_byte_clk0", "pll_dsi_clk0";
+	qcom,mdss-dsi-clk-strength = <0xFF>;
+	qcom,mdss-dsi-display-timings {
+		/* 60hz */
+		timing@0{
+			qcom,mdss-dsi-panel-phy-timings = [00 1D 07 07 17 22 07
+				 07 08 02 04 00 19 0C];
+			qcom,display-topology = <1 1 1>;
+			qcom,default-topology-index = <0>;
+		};
+	};
+};
+
+&dsi_m16t_36_0d_0b_dsc_vid {
+	qcom,mdss-dsi-panel-vsync-delay;
+	qcom,ulps-enabled;
+	qcom,dsi-select-clocks = "pll_byte_clk0", "pll_dsi_clk0";
+	qcom,mdss-dsi-clk-strength = <0xFF>;
+	qcom,mdss-dsi-display-timings {
+		/* 60hz */
+		timing@0{
+			qcom,mdss-dsi-panel-phy-timings = [00 1D 07 07 17 22 07
+				 07 08 02 04 00 19 0C];
+			qcom,display-topology = <1 1 1>;
+			qcom,default-topology-index = <0>;
+		};
+	};
+};
+
+&dsi_m16t_36_02_0a_dsc_vid {
+	qcom,panel-supply-entries = <&dsi_panel_pwr_supply_m16t>;
+	qcom,mdss-dsi-bl-pmic-control-type = "bl_ctrl_dcs";
+	qcom,mdss-dsi-bl-min-level = <8>;
+	qcom,mdss-dsi-bl-max-level = <4095>;
+	qcom,mdss-brightness-max-level = <4095>;
+	qcom,mdss-brightness-init-level = <307>;
+	qcom,mdss-dsi-bl-inverted-dbv;
+	qcom,platform-reset-gpio = <&tlmm 0 0>;
+};
+
+&dsi_m16t_36_0d_0b_dsc_vid {
+	qcom,panel-supply-entries = <&dsi_panel_pwr_supply_0b_m16t>;
+	qcom,mdss-dsi-bl-pmic-control-type = "bl_ctrl_dcs";
+	qcom,mdss-dsi-bl-min-level = <8>;
+	qcom,mdss-dsi-bl-max-level = <4095>;
+	qcom,mdss-brightness-max-level = <4095>;
+	qcom,mdss-brightness-init-level = <307>;
+	qcom,mdss-dsi-bl-inverted-dbv;
+	qcom,platform-reset-gpio = <&tlmm 0 0>;
+};
+
+&L1D {
+    regulator-max-microvolt = <1250000>;
+};
+
+&dsi_r66451_amoled_video {
+	qcom,panel-supply-entries = <&dsi_panel_pwr_supply_m16t>;
+	qcom,mdss-dsi-bl-pmic-control-type = "bl_ctrl_dcs";
+	qcom,mdss-dsi-bl-min-level = <1>;
+	qcom,mdss-dsi-bl-max-level = <4095>;
+	qcom,mdss-brightness-max-level = <255>;
+	qcom,mdss-dsi-bl-inverted-dbv;
+	qcom,platform-reset-gpio = <&tlmm 0 0>;
+};
+
+&sde_dsi {
+	qcom,dsi-default-panel = <&dsi_r66451_amoled_video>;
+	vddio-supply = <&L12C>;
+	vddd-supply = <&L1D>;
+	vci-supply = <&L13C>;
+};
+
+&mdss_dsi0 {
+	mi,support-max-hs-timer;
+};
+
+&qupv3_se4_spi {
+	m16t-touch@0 {
+		panel = <&dsi_m16t_36_02_0a_dsc_vid &dsi_m16t_36_0d_0b_dsc_vid
+			&dsi_r66451_amoled_video>;
+	};
+};
+
+&soc {
+	thermal-message {
+		board-sensor = "VIRTUAL-SENSOR0";
+	};
+	thermal_screen: thermal-screen {
+		panel = <&dsi_m16t_36_02_0a_dsc_vid &dsi_m16t_36_0d_0b_dsc_vid
+		&dsi_r66451_amoled_video>;
+	};
+	charge_screen: charge-screen {
+		panel = <&dsi_m16t_36_02_0a_dsc_vid &dsi_m16t_36_0d_0b_dsc_vid
+		&dsi_r66451_amoled_video>;
+	};
+	fingerprint_screen: fingerprint-screen {
+		panel = <&dsi_m16t_36_02_0a_dsc_vid &dsi_m16t_36_0d_0b_dsc_vid
+		&dsi_r66451_amoled_video>;
+	};
+	xiaomi-touch  {
+		panel-primary = <&dsi_m16t_36_02_0a_dsc_vid
+			&dsi_m16t_36_0d_0b_dsc_vid
+			&dsi_r66451_amoled_video>;
+	};
+};
+
+&spmi_bus {
+	qcom,pm8350b@3 {
+		qcom,amoled-ecm@f900 {
+			display-panels = <&dsi_m16t_36_02_0a_dsc_vid &dsi_m16t_36_0d_0b_dsc_vid
+			&dsi_r66451_amoled_video>;
+		};
+	};
+};
+
+&mdss_mdp {
+        connectors = <&sde_dsi &smmu_sde_unsec &smmu_sde_sec &sde_wb &sde_rscc>;
+};

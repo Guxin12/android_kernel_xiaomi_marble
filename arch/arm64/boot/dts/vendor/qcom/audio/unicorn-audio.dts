@@ -1,0 +1,54 @@
+/dts-v1/;
+/plugin/;
+
+#include "xiaomi-sm8450-common.dtsi"
+
+ / {
+	model = "Qualcomm Technologies, Inc. Cape MTP";
+	compatible = "qcom,cape-mtp", "qcom,cape", "qcom,mtp";
+	qcom,msm-id = <530 0x10000>, <531 0x10000>, <540 0x10000>;
+	qcom,board-id = <0x10008 0>;
+	xiaomi,miboard-id = <0x8 0>;
+};
+
+&soc {
+    sbu_uart_en: msm_cdc_pinctrl@12 {
+        compatible = "qcom,msm-cdc-pinctrl";
+        pinctrl-names = "aud_active", "aud_sleep";
+        pinctrl-0 = <&sbu_uart_en_active_uni>;
+        pinctrl-1 = <&sbu_uart_en_idle_uni>;
+        #gpio-cells = <0>;
+    };
+};
+
+&tlmm {
+	sbu_uart_en_idle_uni: uart_audio_en_idle_uni {
+		mux {
+			pins = "gpio12";
+			function = "gpio";
+		};
+		config {
+			pins = "gpio12";
+			drive-strength = <2>;
+			bias-pull-down;
+			output-low;
+		};
+	};
+
+	sbu_uart_en_active_uni: uart_audio_en_active_uni {
+		mux {
+			pins = "gpio12";
+			function = "gpio";
+		};
+		config {
+			pins = "gpio12";
+			drive-strength = <2>;
+			bias-disable;
+			output-high;
+		};
+	};
+};
+
+&swr_haptics {
+	status = "disabled";
+};

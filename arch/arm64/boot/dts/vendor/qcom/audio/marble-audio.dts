@@ -1,0 +1,25 @@
+/dts-v1/;
+/plugin/;
+
+#include "xiaomi-sm8450-common.dtsi"
+
+/ {
+	model = "Qualcomm Technologies, Inc. Ukee MTP";
+	compatible = "qcom,ukee-mtp", "qcom,ukee", "qcom,mtp";
+	qcom,msm-id = <591 0x10000>;
+	qcom,board-id = <0x10008 0>;
+	xiaomi,miboard-id = <0xF 0>;
+};
+
+&waipio_snd {
+	/delete-property/qcom,uart-audio-sw-gpio;
+	qcom,model = "ukee-mtp-snd-card";
+	qcom,msm-mbhc-usbc-audio-supported = <0>;
+	qcom,msm-mbhc-hphl-swh = <1>;
+	qcom,msm-mbhc-gnd-swh = <1>;
+};
+
+&adsp_loader {
+	adsp-fuse-not-supported = <1>;
+	adsp-fw-name = "adsp2.mdt";
+};

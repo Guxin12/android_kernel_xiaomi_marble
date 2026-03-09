@@ -1,0 +1,26 @@
+/dts-v1/;
+/plugin/;
+
+#include "xiaomi-sm8450-common.dtsi"
+
+ / {
+	model = "Qualcomm Technologies, Inc. Waipio MTP";
+	compatible = "qcom,waipio";
+	qcom,msm-id = <457 0x10000>, <482 0x10000>, <457 0x20000>, <482 0x20000>, <552 0x10000>;
+	qcom,board-id = <0x10008 0>, <0x02010008 0>, <0x03010008 0x03>, <0x04010008 0x04>;
+	xiaomi,miboard-id = <0x1 0>;
+};
+
+&soc {
+	sbu_uart_en: msm_cdc_pinctrl@12 {
+		compatible = "qcom,msm-cdc-pinctrl";
+		pinctrl-names = "aud_active", "aud_sleep";
+		pinctrl-0 = <&sbu_uart_en_active_ze>;
+		pinctrl-1 = <&sbu_uart_en_idle_ze>;
+		#gpio-cells = <0>;
+	};
+};
+
+&swr_haptics {
+	status = "disabled";
+};
