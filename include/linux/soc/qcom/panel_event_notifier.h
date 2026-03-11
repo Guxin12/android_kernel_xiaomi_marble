@@ -30,13 +30,9 @@ enum panel_event_notifier_client {
 	PANEL_EVENT_NOTIFIER_CLIENT_BATTERY_CHARGER,
 	PANEL_EVENT_NOTIFIER_CLIENT_FINGERPRINT,
 	PANEL_EVENT_NOTIFIER_CLIENT_KEYBOARD,
+	PANEL_EVENT_NOTIFIER_CLIENT_XIAOMI_TOUCH_PRIMARY,
+	PANEL_EVENT_NOTIFIER_CLIENT_XIAOMI_TOUCH_SECONDARY,
 	PANEL_EVENT_NOTIFIER_CLIENT_MAX
-};
-
-enum panel_event_notifier_client_ext {
-	PANEL_EVENT_NOTIFIER_CLIENT_EXT_XIAOMI_TOUCH_PRIMARY,
-	PANEL_EVENT_NOTIFIER_CLIENT_EXT_XIAOMI_TOUCH_SECONDARY,
-	PANEL_EVENT_NOTIFIER_CLIENT_EXT_MAX,
 };
 
 enum panel_event_notification_type {
@@ -69,10 +65,6 @@ void *panel_event_notifier_register(enum panel_event_notifier_tag tag,
 		enum panel_event_notifier_client client_handle,
 		struct drm_panel *panel,
 		panel_event_notifier_handler notif_handler, void *pvt_data);
-void *panel_event_notifier_register_ext(enum panel_event_notifier_tag tag,
-		enum panel_event_notifier_client_ext client_handle,
-		struct drm_panel *panel,
-		panel_event_notifier_handler notif_handler, void *pvt_data);
 void panel_event_notifier_unregister(void *cookie);
 void panel_event_notification_trigger(enum panel_event_notifier_tag tag,
 		 struct panel_event_notification *notification);
@@ -80,13 +72,6 @@ void panel_event_notification_trigger(enum panel_event_notifier_tag tag,
 #else
 static inline void *panel_event_notifier_register(enum panel_event_notifier_tag tag,
 		enum panel_event_notifier_client client_handle,
-		struct drm_panel *panel,
-		panel_event_notifier_handler notif_handler, void *pvt_data)
-{
-	return ERR_PTR(-EOPNOTSUPP);
-}
-static inline void *panel_event_notifier_register_ext(enum panel_event_notifier_tag tag,
-		enum panel_event_notifier_client_ext client_handle,
 		struct drm_panel *panel,
 		panel_event_notifier_handler notif_handler, void *pvt_data)
 {

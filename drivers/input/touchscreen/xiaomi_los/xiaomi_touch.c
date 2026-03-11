@@ -542,7 +542,7 @@ touch_panel_event_callback(enum panel_event_notifier_tag tag,
 static bool touch_register_panel_event_notifier(
 	struct device_node *np, const char *property_name,
 	enum panel_event_notifier_tag tag,
-	enum panel_event_notifier_client_ext client, void **cookie)
+	enum panel_event_notifier_client client, void **cookie)
 {
 	int count, i;
 	struct device_node *node;
@@ -563,7 +563,7 @@ static bool touch_register_panel_event_notifier(
 	if (IS_ERR(panel))
 		return false;
 
-	*cookie = panel_event_notifier_register_ext(
+	*cookie = panel_event_notifier_register(
 		tag, client, panel, touch_panel_event_callback, NULL);
 
 	return !IS_ERR(*cookie);
@@ -579,11 +579,11 @@ static void register_panel_handler(struct work_struct *work)
 	node = of_find_node_by_name(NULL, "xiaomi-touch");
 	primary = touch_register_panel_event_notifier(
 		node, "panel-primary", PANEL_EVENT_NOTIFICATION_PRIMARY,
-		PANEL_EVENT_NOTIFIER_CLIENT_EXT_XIAOMI_TOUCH_PRIMARY,
+		PANEL_EVENT_NOTIFIER_CLIENT_XIAOMI_TOUCH_PRIMARY,
 		&panel_cookie_primary);
 	secondary = touch_register_panel_event_notifier(
 		node, "panel-secondary", PANEL_EVENT_NOTIFICATION_SECONDARY,
-		PANEL_EVENT_NOTIFIER_CLIENT_EXT_XIAOMI_TOUCH_SECONDARY,
+		PANEL_EVENT_NOTIFIER_CLIENT_XIAOMI_TOUCH_SECONDARY,
 		&panel_cookie_secondary);
 	if (!primary || !secondary) {
 		pr_info("Failed to register panel event notifier, trying again in 5 seconds!\n");
