@@ -34,6 +34,7 @@
 #include <linux/completion.h>
 #include <linux/of_irq.h>
 #include <linux/pm_runtime.h>
+#include <linux/debugfs.h>
 #ifdef CONFIG_OF
 #include <linux/of_gpio.h>
 #include <linux/regulator/consumer.h>
@@ -42,7 +43,12 @@
 #include <linux/notifier.h>
 #include <linux/fb.h>
 #endif
+#if IS_ENABLED(CONFIG_TOUCHSCREEN_XIAOMI_TOUCHFEATURE)
 #include "../xiaomi/xiaomi_touch.h"
+#endif
+#if IS_ENABLED(CONFIG_TOUCHSCREEN_XIAOMI_TOUCHFEATURE_LOS)
+#include "../xiaomi_los/xiaomi_touch.h"
+#endif
 
 #define GOODIX_CORE_DRIVER_NAME			"goodix_ts"
 #define GOODIX_PEN_DRIVER_NAME			"goodix_ts,pen"
@@ -56,6 +62,7 @@
 #define GOODIX_MAX_FRAMEDATA_LEN		2000
 
 #define GOODIX_NORMAL_RESET_DELAY_MS	100
+#define GOODIX_NORMAL_GESTURE_DELAY_MS 300
 #define GOODIX_HOLD_CPU_RESET_DELAY_MS  5
 
 #define GOODIX_RETRY_3					3
@@ -67,9 +74,18 @@
 #define GOODIX_LOCKDOWN_SIZE		8
 #define TS_LOCKDOWN_REG				0x10030
 
+#if IS_ENABLED(CONFIG_TOUCHSCREEN_XIAOMI_TOUCHFEATURE)
 #define GOODIX_XIAOMI_TOUCHFEATURE
+#endif
+#if IS_ENABLED(CONFIG_TOUCHSCREEN_XIAOMI_TOUCHFEATURE_LOS)
+#define GOODIX_XIAOMI_TOUCHFEATURE_LOS
+#endif
 #define GOODIX_DEBUGFS_ENABLE
 #define CONFIG_TOUCH_BOOST
+
+#ifndef BTN_INFO
+#define BTN_INFO 0x152
+#endif
 
 #define GTP_RESULT_INVALID				0
 #define GTP_RESULT_FAIL					1
@@ -578,7 +594,7 @@ struct goodix_ts_core {
 	struct work_struct suspend_work;
 	struct work_struct resume_work;
 	struct work_struct charger_work;
-	struct work_struct gesture_work;
+	struct delayed_work gesture_work;
 	struct work_struct game_work;
 	struct work_struct power_supply_work;
 	u8 lockdown_info[GOODIX_LOCKDOWN_SIZE];
@@ -605,6 +621,9 @@ struct goodix_ts_core {
 	bool tp_pm_suspend;
 	struct completion pm_resume_completion;
 	void *notifier_cookie;
+#ifdef GOODIX_XIAOMI_TOUCHFEATURE_LOS
+	struct xiaomi_touch_interface xiaomi_touch;
+#endif
 };
 
 /* external module structures */

@@ -18,7 +18,7 @@ struct panel_event_notifier_entry {
 
 static DEFINE_MUTEX(panel_event_notifier_entries_lock);
 static struct panel_event_notifier_entry
-		panel_event_notifier_entries[PANEL_EVENT_NOTIFIER_CLIENT_MAX];
+		panel_event_notifier_entries[PANEL_EVENT_NOTIFIER_CLIENT_MAX + PANEL_EVENT_NOTIFIER_CLIENT_EXT_MAX];
 
 static bool panel_event_notifier_tag_valid(enum panel_event_notifier_tag tag)
 {
@@ -88,6 +88,41 @@ void *panel_event_notifier_register(enum panel_event_notifier_tag tag,
 }
 EXPORT_SYMBOL(panel_event_notifier_register);
 
+void *panel_event_notifier_register_ext(enum panel_event_notifier_tag tag,
+		enum panel_event_notifier_client_ext client_handle,
+		struct drm_panel *panel,
+		panel_event_notifier_handler handler, void *pvt_data)
+{
+	struct panel_event_notifier_entry *entry;
+
+	if (!panel_event_notifier_tag_valid(tag) || !handler) {
+		pr_err("Invalid tag or handler found while registering\n");
+		return ERR_PTR(-EINVAL);
+	}
+
+	if (client_handle < 0 ||
+			client_handle >= PANEL_EVENT_NOTIFIER_CLIENT_EXT_MAX) {
+		pr_err("Invalid client handle used for registering\n");
+		return ERR_PTR(-EINVAL);
+	}
+
+	mutex_lock(&panel_event_notifier_entries_lock);
+	entry = &panel_event_notifier_entries[(int)PANEL_EVENT_NOTIFIER_CLIENT_MAX + (int)client_handle];
+	if (entry->handler) {
+		mutex_unlock(&panel_event_notifier_entries_lock);
+		return ERR_PTR(-EEXIST);
+	}
+	entry->panel = panel;
+	entry->handler = handler;
+	entry->pvt_data = pvt_data;
+	entry->tag = tag;
+	mutex_unlock(&panel_event_notifier_entries_lock);
+
+	pr_debug("client %d registered successfully\n", (int)PANEL_EVENT_NOTIFIER_CLIENT_MAX + (int)client_handle);
+	return entry;
+}
+EXPORT_SYMBOL(panel_event_notifier_register_ext);
+
 /**
  * panel_event_notifier_unregister: responsible for unregistering clients.
  *
@@ -136,7 +171,7 @@ void panel_event_notification_trigger(enum panel_event_notifier_tag tag,
 		return;
 	}
 
-	for (i = 0; i < PANEL_EVENT_NOTIFIER_CLIENT_MAX; i++) {
+	for (i = 0; i < PANEL_EVENT_NOTIFIER_CLIENT_MAX + PANEL_EVENT_NOTIFIER_CLIENT_EXT_MAX; i++) {
 		mutex_lock(&panel_event_notifier_entries_lock);
 		entry = &panel_event_notifier_entries[i];
 		if (notification->panel != entry->panel) {

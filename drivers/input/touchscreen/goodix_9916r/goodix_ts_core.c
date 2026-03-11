@@ -804,10 +804,12 @@ static ssize_t goodix_ts_double_tap_store(struct device *dev,
 
 	if (buf[0] != '0') {
 		goodix_core_data->double_wakeup = 1;
-		queue_work(goodix_core_data->gesture_wq, &goodix_core_data->gesture_work);
+		queue_delayed_work(goodix_core_data->gesture_wq, &goodix_core_data->gesture_work,
+				   msecs_to_jiffies(GOODIX_NORMAL_GESTURE_DELAY_MS));
 	} else {
 		goodix_core_data->double_wakeup = 0;
-		queue_work(goodix_core_data->gesture_wq, &goodix_core_data->gesture_work);
+		queue_delayed_work(goodix_core_data->gesture_wq, &goodix_core_data->gesture_work,
+				   msecs_to_jiffies(GOODIX_NORMAL_GESTURE_DELAY_MS));
 	}
 	return count;
 }
@@ -835,10 +837,12 @@ static ssize_t goodix_ts_aod_store(struct device *dev,
 
 	if (buf[0] != '0') {
 		goodix_core_data->aod_status = 1;
-		queue_work(goodix_core_data->gesture_wq, &goodix_core_data->gesture_work);
+		queue_delayed_work(goodix_core_data->gesture_wq, &goodix_core_data->gesture_work,
+				   msecs_to_jiffies(GOODIX_NORMAL_GESTURE_DELAY_MS));
 	} else {
 		goodix_core_data->aod_status = 0;
-		queue_work(goodix_core_data->gesture_wq, &goodix_core_data->gesture_work);
+		queue_delayed_work(goodix_core_data->gesture_wq, &goodix_core_data->gesture_work,
+				   msecs_to_jiffies(GOODIX_NORMAL_GESTURE_DELAY_MS));
 	}
 	return count;
 }
@@ -866,10 +870,12 @@ static ssize_t goodix_ts_fod_store(struct device *dev,
 
 	if (buf[0] != '0') {
 		goodix_core_data->fod_status = 1;
-		queue_work(goodix_core_data->gesture_wq, &goodix_core_data->gesture_work);
+		queue_delayed_work(goodix_core_data->gesture_wq, &goodix_core_data->gesture_work,
+				   msecs_to_jiffies(GOODIX_NORMAL_GESTURE_DELAY_MS));
 	} else {
 		goodix_core_data->fod_status = 0;
-		queue_work(goodix_core_data->gesture_wq, &goodix_core_data->gesture_work);
+		queue_delayed_work(goodix_core_data->gesture_wq, &goodix_core_data->gesture_work,
+				   msecs_to_jiffies(GOODIX_NORMAL_GESTURE_DELAY_MS));
 	}
 	return count;
 }
@@ -2229,6 +2235,10 @@ static int goodix_ts_resume(struct goodix_ts_core *core_data)
 	ts_info("Resume start");
 	atomic_set(&core_data->suspended, 0);
 
+#ifdef GOODIX_XIAOMI_TOUCHFEATURE_LOS
+	cancel_delayed_work_sync(&core_data->gesture_work);
+#endif
+
 	mutex_lock(&goodix_modules.mutex);
 	if (!list_empty(&goodix_modules.head)) {
 		list_for_each_entry_safe(ext_module, next,
@@ -2544,7 +2554,7 @@ int goodix_ts_stage2_init(struct goodix_ts_core *cd)
 		goto exit;
 	}
 
-	INIT_WORK(&cd->gesture_work, goodix_set_gesture_work);
+	INIT_DELAYED_WORK(&cd->gesture_work, goodix_set_gesture_work);
 
 	/* register suspend and resume notifier callchain */
 	INIT_WORK(&cd->suspend_work, goodix_ts_suspend_work);
@@ -2881,6 +2891,7 @@ int goodix_ts_get_lockdown_info(struct goodix_ts_core *cd)
 	return 0;
 }
 
+#ifdef GOODIX_XIAOMI_TOUCHFEATURE
 static ssize_t goodix_ts_fod_test_store(struct device *dev,
 		struct device_attribute *attr, const char *buf, size_t count)
 {
@@ -2915,7 +2926,6 @@ static ssize_t goodix_ts_fod_test_store(struct device *dev,
 
 static DEVICE_ATTR_WO(goodix_ts_fod_test);
 
-#ifdef GOODIX_XIAOMI_TOUCHFEATURE
 static struct xiaomi_touch_interface xiaomi_touch_interfaces;
 /*
  * bit 0: double tap
@@ -3091,25 +3101,29 @@ static int goodix_set_cur_value(int gtp_mode, int gtp_value)
 
 	if (gtp_mode == Touch_Doubletap_Mode && goodix_core_data && gtp_value >= 0) {
 		goodix_core_data->double_wakeup = gtp_value;
-		queue_work(goodix_core_data->gesture_wq, &goodix_core_data->gesture_work);
+		queue_delayed_work(goodix_core_data->gesture_wq, &goodix_core_data->gesture_work,
+				   msecs_to_jiffies(GOODIX_NORMAL_GESTURE_DELAY_MS));
 		return 0;
 	}
 	if ((gtp_mode == Touch_Aod_Enable || gtp_mode == Touch_Singletap_Gesture) &&
 	    goodix_core_data && gtp_value >= 0) {
 		goodix_core_data->aod_status = gtp_value;
-		queue_work(goodix_core_data->gesture_wq, &goodix_core_data->gesture_work);
+		queue_delayed_work(goodix_core_data->gesture_wq, &goodix_core_data->gesture_work,
+				   msecs_to_jiffies(GOODIX_NORMAL_GESTURE_DELAY_MS));
 		return 0;
 	}
 	if (gtp_mode ==  Touch_Fod_Enable && goodix_core_data && gtp_value >= 0) {
 		goodix_core_data->fod_status = gtp_value;
 		ts_info("Touch_Fod_Enable value [%d]", gtp_value);
-		queue_work(goodix_core_data->gesture_wq, &goodix_core_data->gesture_work);
+		queue_delayed_work(goodix_core_data->gesture_wq, &goodix_core_data->gesture_work,
+				   msecs_to_jiffies(GOODIX_NORMAL_GESTURE_DELAY_MS));
 		return 0;
 	}
 	if (gtp_mode ==  Touch_FodIcon_Enable && goodix_core_data && gtp_value >= 0) {
 		goodix_core_data->fod_icon_status = gtp_value;
 		ts_info("Touch_FodIcon_Enable value [%d]", gtp_value);
-		queue_work(goodix_core_data->gesture_wq, &goodix_core_data->gesture_work);
+		queue_delayed_work(goodix_core_data->gesture_wq, &goodix_core_data->gesture_work,
+				   msecs_to_jiffies(GOODIX_NORMAL_GESTURE_DELAY_MS));
 		return 0;
 	}
 	if (gtp_mode == Touch_Power_Status && goodix_core_data && gtp_value >= 0) {
@@ -3126,7 +3140,8 @@ static int goodix_set_cur_value(int gtp_mode, int gtp_value)
 	if (gtp_mode ==  Touch_Nonui_Mode && goodix_core_data && gtp_value >= 0) {
 		goodix_core_data->nonui_status = gtp_value;
 		ts_info("Touch_Nonui_Mode value [%d]", gtp_value);
-		queue_work(goodix_core_data->gesture_wq, &goodix_core_data->gesture_work);
+		queue_delayed_work(goodix_core_data->gesture_wq, &goodix_core_data->gesture_work,
+				   msecs_to_jiffies(GOODIX_NORMAL_GESTURE_DELAY_MS));
 		return 0;
 	}
 
@@ -3345,6 +3360,108 @@ static int goodix_palm_sensor_write(int value)
 
 #endif
 
+#ifdef GOODIX_XIAOMI_TOUCHFEATURE_LOS
+static void goodix_set_gesture_work(struct work_struct *work)
+{
+	struct delayed_work *dwork = to_delayed_work(work);
+	struct goodix_ts_core *core_data =
+		container_of(dwork, struct goodix_ts_core, gesture_work);
+	struct goodix_ts_hw_ops *hw_ops = core_data->hw_ops;
+	int res;
+	if (!atomic_read(&core_data->suspended)) {
+		ts_debug("touch is not suspended, skip re-wake");
+		return;
+	}
+
+	ts_debug("double is 0x%x", core_data->double_wakeup);
+	ts_debug("aod is 0x%x", core_data->aod_status);
+	ts_debug("fod is 0x%x", core_data->fod_status);
+	ts_debug("enable is 0x%x", core_data->gesture_enabled);
+	if ((core_data->double_wakeup) || (core_data->aod_status) ||
+				(core_data->fod_status != -1 && core_data->fod_status != 100))
+		core_data->gesture_enabled |= (1 << 0);
+	else
+		core_data->gesture_enabled &= ~(1 << 0);
+	ts_info("set gesture_enabled:%d", core_data->gesture_enabled);
+
+	pm_stay_awake(core_data->bus->dev);
+	if (core_data->nonui_status) {
+		hw_ops->irq_enable(core_data, false);
+		hw_ops->gesture(core_data, 0);
+		goto exit;
+	}
+	res = hw_ops->reset(core_data, GOODIX_NORMAL_RESET_DELAY_MS);
+	if (res) {
+		ts_err("reset failed during gesture works");
+		goto exit;
+	}
+	res = hw_ops->gesture(core_data, core_data->gesture_enabled);
+	if (res) {
+		ts_err("failed enter gesture mode");
+		goto exit;
+	} else {
+		ts_err("enter gesture mode");
+	}
+	hw_ops->irq_enable(core_data, true);
+exit:
+	pm_relax(core_data->bus->dev);
+}
+static int goodix_set_cur_value(void *private, enum touch_mode mode, int value)
+{
+	struct goodix_ts_core *ts_core = private;
+	ts_info("set mode: %d, value: %d", mode, value);
+	switch (mode) {
+	case TOUCH_MODE_DOUBLETAP_GESTURE:
+		ts_core->double_wakeup = value;
+		break;
+	case TOUCH_MODE_SINGLETAP_GESTURE:
+		ts_core->aod_status = value;
+		break;
+	case TOUCH_MODE_FOD_PRESS_GESTURE:
+		ts_core->fod_status = value;
+		break;
+	case TOUCH_MODE_NONUI_MODE:
+		ts_core->nonui_status = value != 0;
+		break;
+	case TOUCH_MODE_REPORT_RATE:
+		if (!force_high_report_rate)
+			ts_core->hw_ops->switch_report_rate(ts_core, value);
+		goto exit;
+	default:
+		ts_err("handler got mode %d with value %d, not implemented",
+		       mode, value);
+		return -EINVAL;
+	}
+	queue_delayed_work(ts_core->gesture_wq, &ts_core->gesture_work,
+			   msecs_to_jiffies(GOODIX_NORMAL_GESTURE_DELAY_MS));
+exit:
+	return 0;
+}
+static int goodix_get_mode_value(void *private, enum touch_mode mode)
+{
+	struct goodix_ts_core *ts_core = private;
+	ts_debug("get mode: %d", mode);
+	switch (mode) {
+	case TOUCH_MODE_DOUBLETAP_GESTURE:
+		return ts_core->double_wakeup;
+	case TOUCH_MODE_SINGLETAP_GESTURE:
+		return ts_core->aod_status;
+	case TOUCH_MODE_FOD_PRESS_GESTURE:
+		return ts_core->fod_status;
+	case TOUCH_MODE_NONUI_MODE:
+		return ts_core->nonui_status ? 2 : 0;
+	case TOUCH_MODE_REPORT_RATE:
+		if (force_high_report_rate)
+			return 1;
+		return ts_core->report_rate == 240 ? 0 : 1;
+	default:
+		ts_err("handler got mode %d, not implemented", mode);
+		return -EINVAL;
+	}
+	return 0;
+}
+#endif
+
 #ifdef GOODIX_DEBUGFS_ENABLE
 static void tpdbg_suspend(struct goodix_ts_core *core_data, bool enable)
 {
@@ -3463,6 +3580,21 @@ void goodix_tpdebug_proc_remove(void)
 {
 	remove_proc_entry("switch_state", touch_debug);
 	remove_proc_entry("tp_debug", NULL);
+}
+#endif
+
+#ifdef GOODIX_XIAOMI_TOUCHFEATURE_LOS
+static void xiaomi_touch_init(struct goodix_ts_core *ts_core)
+{
+	ts_core->xiaomi_touch.set_mode_value = goodix_set_cur_value;
+	ts_core->xiaomi_touch.get_mode_value = goodix_get_mode_value;
+	ts_core->xiaomi_touch.private = ts_core;
+	register_xiaomi_touch_client(TOUCH_ID_PRIMARY, &ts_core->xiaomi_touch);
+}
+
+static void xiaomi_touch_deinit(struct goodix_ts_core *ts_core)
+{
+	unregister_xiaomi_touch_client(TOUCH_ID_PRIMARY);
 }
 #endif
 
@@ -3662,12 +3794,9 @@ static int goodix_ts_probe(struct platform_device *pdev)
 	goodix_tpdebug_proc_init();
 #endif
 
-	if (core_data->goodix_tp_class == NULL) {
 #ifdef GOODIX_XIAOMI_TOUCHFEATURE
+	if (core_data->goodix_tp_class == NULL) {
 		core_data->goodix_tp_class = get_xiaomi_touch_class();
-	#else
-		core_data->goodix_tp_class = class_create(THIS_MODULE, "touch");
-	#endif
 		if (core_data->goodix_tp_class) {
 			core_data->goodix_touch_dev = device_create(core_data->goodix_tp_class, NULL, 0x38, core_data, "tp_dev");
 			if (IS_ERR(core_data->goodix_touch_dev)) {
@@ -3682,7 +3811,6 @@ static int goodix_ts_probe(struct platform_device *pdev)
 		}
 	}
 
-#ifdef GOODIX_XIAOMI_TOUCHFEATURE
 	core_data->game_wq = alloc_workqueue("gtp-game-queue",
 				WQ_UNBOUND | WQ_HIGHPRI | WQ_CPU_INTENSIVE, 1);
 	if (!core_data->game_wq)
@@ -3704,6 +3832,10 @@ static int goodix_ts_probe(struct platform_device *pdev)
 	goodix_init_touchmode_data();
 #endif
 
+#ifdef GOODIX_XIAOMI_TOUCHFEATURE_LOS
+	xiaomi_touch_init(core_data);
+#endif
+
 	/* debug node init */
 	goodix_tools_init();
 	core_data->tp_pm_suspend = false;
@@ -3723,9 +3855,11 @@ static int goodix_ts_probe(struct platform_device *pdev)
 	ts_info("goodix_ts_core probe success");
 	return 0;
 
+#ifdef GOODIX_XIAOMI_TOUCHFEATURE
 err_class_create:
 	class_destroy(core_data->goodix_tp_class);
 	core_data->goodix_tp_class = NULL;
+#endif
 
 err_out:
 	core_data->init_stage = CORE_INIT_FAIL;
@@ -3770,6 +3904,9 @@ static int goodix_ts_remove(struct platform_device *pdev)
 	}
 
 	goodix_tools_exit();
+#ifdef GOODIX_XIAOMI_TOUCHFEATURE_LOS
+	xiaomi_touch_deinit(core_data);
+#endif
 	goodix_ts_unregister_notifier(&ts_esd->esd_notifier);
 	goodix_ts_unregister_notifier(&core_data->ts_notifier);
 	goodix_ts_power_off(core_data);

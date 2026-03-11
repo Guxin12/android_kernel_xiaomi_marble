@@ -1,0 +1,11 @@
+config TOUCHSCREEN_XIAOMI_TOUCHFEATURE_LOS
+	tristate "Xiaomi Touch Feature (LineageOS)"
+	depends on DRM
+	depends on INPUT_TOUCHSCREEN
+	depends on OF
+	help
+	  Say Y here if you want to enable xiaomi touch feature.
+
+	  If unsure, say N.
+
+	  To compile this driver as a module, choose M here.

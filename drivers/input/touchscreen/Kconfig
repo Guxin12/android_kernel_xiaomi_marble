@@ -1349,4 +1349,6 @@ source "drivers/input/touchscreen/goodix_berlin_driver/Kconfig"
 
 source "drivers/input/touchscreen/xiaomi/Kconfig"
 
+source "drivers/input/touchscreen/xiaomi_los/Kconfig"
+
 endif

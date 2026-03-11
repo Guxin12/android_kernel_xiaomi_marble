@@ -249,7 +249,7 @@ int brl_resume(struct goodix_ts_core *cd)
 }
 
 #define GOODIX_GESTURE_CMD	0xA6
-int brl_gesture(struct goodix_ts_core *cd, int gesture_type)
+int brl_gesture(struct goodix_ts_core *cd, int enable)
 {
 	struct goodix_ts_cmd cmd;
 	int ret = 0;
@@ -258,6 +258,9 @@ int brl_gesture(struct goodix_ts_core *cd, int gesture_type)
 	cmd.len = 6;
 	cmd.data[0] = 0x80;
 	cmd.data[1] = 0x10;
+
+	if (!enable)
+		goto send_cmd;
 
 	if ((cd->fod_icon_status) || (cd->aod_status)) {
 		cmd.data[0] = 0x80;
@@ -271,6 +274,8 @@ int brl_gesture(struct goodix_ts_core *cd, int gesture_type)
 		cmd.data[0] = 0x00;
 		cmd.data[1] = 0x00;
 	}
+
+send_cmd:
 	ts_info("BRL cmd 0 is 0x%x", cmd.data[0]);
 	ts_info("BRL cmd 1 is 0x%x", cmd.data[1]);
 
@@ -1297,6 +1302,7 @@ static int brl_event_handler(struct goodix_ts_core *cd,
 		ts_event->gesture_type = pre_buf[4];
 	}
 
+#ifdef GOODIX_XIAOMI_TOUCHFEATURE
 	if (cd->palm_status) {
 		if (large_touch_status & GOODIX_LARGETOUCH_EVENT) {
 			update_palm_sensor_value(1);
@@ -1304,7 +1310,7 @@ static int brl_event_handler(struct goodix_ts_core *cd,
 		}
 		update_palm_sensor_value(0);
 	}
-
+#endif
 	return 0;
 }
 

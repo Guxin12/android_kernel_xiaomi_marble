@@ -242,7 +242,11 @@ static int gsx_gesture_ist(struct goodix_ts_core *cd,
 	u8 gesture_data[32];
 #endif
 
+#ifdef GOODIX_XIAOMI_TOUCHFEATURE_LOS
+	if (atomic_read(&cd->suspended) == 0 || cd->nonui_status)
+#else
 	if (atomic_read(&cd->suspended) == 0)
+#endif
 		return EVT_CONTINUE;
 
 	mutex_lock(&cd->report_mutex);
@@ -321,20 +325,28 @@ static int gsx_gesture_ist(struct goodix_ts_core *cd,
 		ts_info("GTP got valid gesture type 0x%x", gs_event.gesture_type);
 		if (cd->double_wakeup && gs_event.gesture_type == 0xcc) {
 			ts_info("GTP gesture report double tap");
+#ifdef GOODIX_XIAOMI_TOUCHFEATURE_LOS
+			notify_oneshot_sensor(ONESHOT_SENSOR_DOUBLE_TAP, 1);
+#else
 			input_report_key(cd->input_dev, KEY_WAKEUP, 1);
 			input_sync(cd->input_dev);
 			input_report_key(cd->input_dev, KEY_WAKEUP, 0);
 			input_sync(cd->input_dev);
 			notify_gesture_double_tap();
+#endif
 			goto re_send_ges_cmd;
 		} else if ((cd->fod_icon_status || cd->aod_status) &&
 		    cd->nonui_status == 0 && gs_event.gesture_type == 0x4c) {
 			ts_info("GTP gesture report single tap");
+#ifdef GOODIX_XIAOMI_TOUCHFEATURE_LOS
+			notify_oneshot_sensor(ONESHOT_SENSOR_SINGLE_TAP, 1);
+#else
 			input_report_key(cd->input_dev, KEY_GOTO, 1);
 			input_sync(cd->input_dev);
 			input_report_key(cd->input_dev, KEY_GOTO, 0);
 			input_sync(cd->input_dev);
 			notify_gesture_single_tap();
+#endif
 			goto re_send_ges_cmd;
 		}
 	} else {
@@ -439,6 +451,7 @@ int gesture_module_init(void)
 	}
 
 	module_initialized = true;
+	goodix_gesture_enable(1);
 	ts_info("gesture module init success");
 
 	return 0;
