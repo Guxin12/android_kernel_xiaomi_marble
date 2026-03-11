@@ -949,6 +949,43 @@ int goodix_ts_blocking_notify(enum ts_notify_event evt, void *v)
 
 #if IS_ENABLED(CONFIG_OF)
 /**
+ * goodix_check_ts_id_gpio - check if the touch driver should be
+ *                           used based of touch screen ID GPIO
+ * @dev: pointer to device
+ * @node: devicetree node
+ * return: 0 - driver should be used, <0 driver should not be used
+ */
+int goodix_check_ts_id_gpio(struct device *dev)
+{
+	int gpio, gpio_value, ret;
+	u8 match_value;
+
+	ret = of_property_read_u8(dev->of_node, "goodix,ts-id-gpio-match-value",
+			&match_value);
+	if (ret < 0)
+		return 0;
+
+	gpio = of_get_named_gpio(dev->of_node, "goodix,ts-id-gpio", 0);
+	if (gpio < 0)
+		return 0;
+
+	ret = devm_gpio_request_one(dev, gpio, GPIOF_IN, "LCD_ID_DET1");
+	if (gpio < 0)
+		return -EINVAL;
+
+	gpio_value = gpio_get_value(gpio);
+
+	ts_info("ts id gpio value=%d\n", gpio_value);
+
+	if (match_value != gpio_value) {
+		ts_err("ts id gpio value mismatch!\n");
+		return -ENODEV;
+	}
+
+	return 0;
+}
+
+/**
  * goodix_parse_dt_resolution - parse resolution from dt
  * @node: devicetree node
  * @board_data: pointer to board data structure
@@ -1123,6 +1160,9 @@ static int goodix_parse_dt(struct device_node *node,
 	if (board_data->pen_enable)
 		ts_info("goodix pen enabled");
 
+	board_data->support_thp_fw = of_property_read_bool(node,
+					"goodix,support-thp-fw");
+
 	ts_debug("[DT]x:%d, y:%d, w:%d, p:%d", board_data->panel_max_x,
 		 board_data->panel_max_y, board_data->panel_max_w,
 		 board_data->panel_max_p);
@@ -1171,21 +1211,38 @@ static void goodix_ts_report_finger(struct input_dev *dev,
 		struct goodix_touch_data *touch_data,
 		bool invert_xy)
 {
+	struct goodix_ts_core *cd = input_get_drvdata(dev);
 	unsigned int touch_num = touch_data->touch_num;
 	int i;
+	int resolution_factor;
 
 	mutex_lock(&dev->mutex);
 
 	for (i = 0; i < GOODIX_MAX_TOUCH; i++) {
 		if (touch_data->coords[i].status == TS_TOUCH) {
-			ts_debug("report: id[%d], x %d, y %d, w %d", i,
-				touch_data->coords[i].x,
-				touch_data->coords[i].y,
-				touch_data->coords[i].w);
+			/*
+				Make sure the Touch function works properly regardless of
+				whether the TouchIC firmware supports the super-resolution
+				scanning function
+			*/
+			if (cd->ic_info.other.screen_max_x > cd->board_data.panel_max_x) {
+				resolution_factor = cd->ic_info.other.screen_max_x / cd->board_data.panel_max_x;
+				touch_data->coords[i].x /= resolution_factor;
+				touch_data->coords[i].y /= resolution_factor;
+			} else {
+				resolution_factor = cd->board_data.panel_max_x / cd->ic_info.other.screen_max_x;
+				touch_data->coords[i].x *= resolution_factor;
+				touch_data->coords[i].y *= resolution_factor;
+			}
 
 			if (invert_xy)
 				swap(touch_data->coords[i].x,
 						touch_data->coords[i].y);
+
+			ts_debug("report: id[%d], x %d, y %d, w %d", i,
+				touch_data->coords[i].x,
+				touch_data->coords[i].y,
+				touch_data->coords[i].w);
 
 			input_mt_slot(dev, i);
 			input_mt_report_slot_state(dev, MT_TOOL_FINGER, true);
@@ -1806,6 +1863,13 @@ out:
 	return 0;
 }
 
+static void goodix_suspend_work(struct work_struct *work)
+{
+	struct goodix_ts_core *core_data = container_of(work, struct goodix_ts_core, suspend_work);
+
+	goodix_ts_suspend(core_data);
+}
+
 /**
  * goodix_ts_resume - Touchscreen resume function
  * Called by PM/FB/EARLYSUSPEN module to wakeup device
@@ -1823,6 +1887,8 @@ static int goodix_ts_resume(struct goodix_ts_core *core_data)
 	ts_info("Resume start");
 	atomic_set(&core_data->suspended, 0);
 	hw_ops->irq_enable(core_data, false);
+
+	cancel_delayed_work_sync(&core_data->gesture_work);
 
 	mutex_lock(&goodix_modules.mutex);
 	if (!list_empty(&goodix_modules.head)) {
@@ -1868,7 +1934,127 @@ out:
 	hw_ops->irq_enable(core_data, true);
 	/* open esd */
 	goodix_ts_blocking_notify(NOTIFY_RESUME, NULL);
+	if (core_data->board_data.support_thp_fw) {
+		core_data->hw_ops->set_coor_mode(core_data);
+	}
+	if (core_data->high_report_rate) {
+		core_data->hw_ops->switch_report_rate(core_data, true);
+	}
 	ts_info("Resume end");
+	return 0;
+}
+
+static void goodix_resume_work(struct work_struct *work)
+{
+	struct goodix_ts_core *core_data = container_of(work, struct goodix_ts_core, resume_work);
+
+	goodix_ts_resume(core_data);
+}
+
+static void goodix_set_gesture_work(struct work_struct *work)
+{
+	struct delayed_work *dwork = to_delayed_work(work);
+	struct goodix_ts_core *core_data =
+		container_of(dwork, struct goodix_ts_core, gesture_work);
+	struct goodix_ts_hw_ops *hw_ops = core_data->hw_ops;
+	unsigned int target_gesture_type;
+	int res;
+
+	if (!atomic_read(&core_data->suspended)) {
+		ts_debug("touch is not suspended, skip re-wake");
+		return;
+	}
+
+	pm_stay_awake(core_data->bus->dev);
+
+	target_gesture_type =
+		core_data->nonui_enabled ? 0 : core_data->gesture_type;
+
+	if (target_gesture_type == 0) {
+		hw_ops->irq_enable(core_data, false);
+		hw_ops->gesture(core_data, 0);
+		goto exit;
+	}
+
+	res = hw_ops->reset(core_data, GOODIX_NORMAL_RESET_DELAY_MS);
+	if (res) {
+		ts_err("reset failed during gesture works");
+		goto exit;
+	}
+
+	res = hw_ops->gesture(core_data, target_gesture_type);
+	if (res) {
+		ts_err("failed enter gesture mode");
+		goto exit;
+	} else {
+		ts_err("enter gesture mode");
+	}
+	hw_ops->irq_enable(core_data, true);
+
+exit:
+	pm_relax(core_data->bus->dev);
+}
+
+static int goodix_set_cur_value(void *private, enum touch_mode mode, int value)
+{
+	struct goodix_ts_core *ts_core = private;
+
+	ts_debug("set mode: %d, value: %d", mode, value);
+	switch (mode) {
+	case TOUCH_MODE_DOUBLETAP_GESTURE:
+		if (value)
+			ts_core->gesture_type |= GESTURE_DOUBLE_TAP;
+		else
+			ts_core->gesture_type &= ~GESTURE_DOUBLE_TAP;
+		break;
+	case TOUCH_MODE_SINGLETAP_GESTURE:
+		if (value)
+			ts_core->gesture_type |= GESTURE_SINGLE_TAP;
+		else
+			ts_core->gesture_type &= ~GESTURE_SINGLE_TAP;
+		break;
+	case TOUCH_MODE_FOD_PRESS_GESTURE:
+		if (value)
+			ts_core->gesture_type |= GESTURE_FOD_PRESS;
+		else
+			ts_core->gesture_type &= ~GESTURE_FOD_PRESS;
+		break;
+	case TOUCH_MODE_NONUI_MODE:
+		ts_core->nonui_enabled = value != 0;
+		break;
+	case TOUCH_MODE_REPORT_RATE:
+		ts_core->hw_ops->switch_report_rate(ts_core, value);
+		goto exit;
+	default:
+		ts_err("handler got mode %d with value %d, not implemented",
+		       mode, value);
+		return -EINVAL;
+	}
+
+	queue_delayed_work(ts_core->gesture_wq, &ts_core->gesture_work,
+			   msecs_to_jiffies(GOODIX_NORMAL_GESTURE_DELAY_MS));
+
+exit:
+	return 0;
+}
+static int goodix_get_mode_value(void *private, enum touch_mode mode)
+{
+	struct goodix_ts_core *ts_core = private;
+
+	ts_debug("get mode: %d", mode);
+	switch (mode) {
+	case TOUCH_MODE_DOUBLETAP_GESTURE:
+		return (ts_core->gesture_type & GESTURE_DOUBLE_TAP) != 0;
+	case TOUCH_MODE_SINGLETAP_GESTURE:
+		return (ts_core->gesture_type & GESTURE_SINGLE_TAP) != 0;
+	case TOUCH_MODE_FOD_PRESS_GESTURE:
+		return (ts_core->gesture_type & GESTURE_FOD_PRESS) != 0;
+	case TOUCH_MODE_NONUI_MODE:
+		return ts_core->nonui_enabled ? 2 : 0;
+	default:
+		ts_err("handler got mode %d, not implemented", mode);
+		return -EINVAL;
+	}
 	return 0;
 }
 
@@ -1889,19 +2075,19 @@ static void goodix_panel_notifier_callback(enum panel_event_notifier_tag tag,
 			notification->notif_data.early_trigger);
 	switch (notification->notif_type) {
 	case DRM_PANEL_EVENT_UNBLANK:
-		if (!notification->notif_data.early_trigger)
-			goodix_ts_resume(core_data);
+		if (notification->notif_data.early_trigger) {
+			flush_workqueue(core_data->power_wq);
+			queue_work(core_data->power_wq, &core_data->resume_work);
+		}
 		break;
 
 	case DRM_PANEL_EVENT_BLANK:
-		if (notification->notif_data.early_trigger)
-			goodix_ts_suspend(core_data);
-		break;
-
 	case DRM_PANEL_EVENT_BLANK_LP:
-		ts_debug("received lp event\n");
+		if (notification->notif_data.early_trigger) {
+			flush_workqueue(core_data->power_wq);
+			queue_work(core_data->power_wq, &core_data->suspend_work);
+		}
 		break;
-
 	case DRM_PANEL_EVENT_FPS_CHANGE:
 		ts_debug("Received fps change old fps:%d new fps:%d\n",
 				notification->notif_data.old_fps,
@@ -2030,9 +2216,31 @@ int goodix_ts_stage2_init(struct goodix_ts_core *cd)
 	}
 	ts_info("success register irq");
 
+	cd->power_wq =
+		alloc_workqueue("gtp-power-queue",
+				WQ_UNBOUND | WQ_HIGHPRI | WQ_CPU_INTENSIVE, 1);
+	if (!cd->power_wq) {
+		ts_err("cannot create power work thread");
+		ret = -ENOMEM;
+		goto exit;
+	}
+	INIT_WORK(&cd->resume_work, goodix_resume_work);
+	INIT_WORK(&cd->suspend_work, goodix_suspend_work);
+
+	cd->gesture_wq =
+		alloc_workqueue("gtp-gesture-queue",
+				WQ_UNBOUND | WQ_HIGHPRI | WQ_CPU_INTENSIVE, 1);
+	if (!cd->gesture_wq) {
+		ts_err("cannot create gesture work thread");
+		ret = -ENOMEM;
+		goto exit;
+	}
+	INIT_DELAYED_WORK(&cd->gesture_work, goodix_set_gesture_work);
 #if defined(CONFIG_DRM)
-	if (cd->touch_environment && !strcmp(cd->touch_environment, "pvm"))
+	if (active_panel)
 		goodix_register_for_panel_events(cd->bus->dev->of_node, cd);
+	else
+		ts_err("No panel found");
 
 #elif defined(CONFIG_FB)
 	cd->fb_notifier.notifier_call = goodix_ts_fb_notifier_callback;
@@ -2160,6 +2368,10 @@ upgrade:
 	}
 	cd->init_stage = CORE_INIT_STAGE2;
 
+	if (cd->board_data.support_thp_fw) {
+		cd->hw_ops->set_coor_mode(cd);
+	}
+
 	return 0;
 
 uninit_fw:
@@ -2186,6 +2398,19 @@ static int goodix_start_later_init(struct goodix_ts_core *ts_core)
 		return -EFAULT;
 	}
 	return 0;
+}
+
+static void xiaomi_touch_init(struct goodix_ts_core *ts_core)
+{
+	ts_core->xiaomi_touch.set_mode_value = goodix_set_cur_value;
+	ts_core->xiaomi_touch.get_mode_value = goodix_get_mode_value;
+	ts_core->xiaomi_touch.private = ts_core;
+	register_xiaomi_touch_client(TOUCH_ID_PRIMARY, &ts_core->xiaomi_touch);
+}
+
+static void xiaomi_touch_deinit(struct goodix_ts_core *ts_core)
+{
+	unregister_xiaomi_touch_client(TOUCH_ID_PRIMARY);
 }
 
 #if defined(CONFIG_DRM)
@@ -2361,6 +2586,8 @@ static int goodix_ts_probe(struct platform_device *pdev)
 	/* Try start a thread to get config-bin info */
 	goodix_start_later_init(core_data);
 
+	xiaomi_touch_init(core_data);
+
 	ts_info("goodix_ts_core probe success");
 	return 0;
 
@@ -2377,6 +2604,7 @@ static int goodix_ts_remove(struct platform_device *pdev)
 	struct goodix_ts_hw_ops *hw_ops = core_data->hw_ops;
 	struct goodix_ts_esd *ts_esd = &core_data->ts_esd;
 
+	xiaomi_touch_deinit(core_data);
 	goodix_ts_unregister_notifier(&core_data->ts_notifier);
 	goodix_tools_exit();
 
