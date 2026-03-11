@@ -40,7 +40,7 @@
 #include <linux/fb.h>
 #endif
 
-#include "../xiaomi/xiaomi_touch.h"
+#include "../xiaomi_los/xiaomi_touch.h"
 
 #define GOODIX_CORE_DRIVER_NAME			"goodix_ts"
 #define GOODIX_PEN_DRIVER_NAME			"goodix_ts,pen"
