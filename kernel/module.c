@@ -57,7 +57,6 @@
 #include <linux/bsearch.h>
 #include <linux/dynamic_debug.h>
 #include <linux/audit.h>
-#include <linux/xiaomi_hwid_project.h>
 #include <uapi/linux/module.h>
 #include "module-internal.h"
 
@@ -3588,8 +3587,7 @@ static char *custom_module_blacklist[] = {
 #if IS_BUILTIN(CONFIG_CORESIGHT_AMBA_PLACEHOLDER)
     "coresight_clk_amba_placeholder",
 #endif
-};
-static char *custom_module_blacklist_marble[] = {
+#ifdef CONFIG_MACH_XIAOMI_MARBLE
     /* Not required */
     "qca6750", "icnss2", "cs35l41_dlkm", "cs35l43_dlkm", "atmel_mxt_ts", "focaltech_fts", "nt36xxx_i2c", "nt36xxx_spi", "synaptics_dsx",
     /* Useless logs */
@@ -3601,6 +3599,7 @@ static char *custom_module_blacklist_marble[] = {
     "stm_console", "stm_core", "stm_ftrace", "stm_p_basic", "stm_p_ost",
     /* EDAC */
     "qcom_edac", "kryo_arm64_edac"
+#endif
 };
 
 static bool blacklisted(const char *module_name)
@@ -3624,10 +3623,6 @@ custom_blacklist:
 	for (i = 0; i < ARRAY_SIZE(custom_module_blacklist); i++)
 		if (!strcmp(module_name, custom_module_blacklist[i]))
 			return true;
-	if (get_xiaomi_hwid_project() == 15)  // 15 represents marble
-		for (i = 0; i < ARRAY_SIZE(custom_module_blacklist_marble); i++)
-			if (!strcmp(module_name, custom_module_blacklist_marble[i]))
-				return true;
 
 	return false;
 }
