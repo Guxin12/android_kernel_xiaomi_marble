@@ -17,6 +17,9 @@
 		pinctrl-1 = <&aw882xx_reset_suspend_top>;
 		dc-flag = <0>;
 		sync-flag = <1>;
+		fade-flag = <1>;
+		sync-load = <1>;
+		mute-sync = <1>;
 		sound-channel = <0>;
 		aw-cali-mode = "aw_none ";
 		spksw-gpio = <&tlmm 52 0>;
@@ -33,6 +36,9 @@
 		pinctrl-1 = <&aw882xx_reset_suspend_bot>;
 		dc-flag = <0>;
 		sync-flag = <1>;
+		fade-flag = <1>;
+		sync-load = <1>;
+		mute-sync = <1>;
 		sound-channel = <1>;
 		aw-cali-mode = "aw_none ";
 		status = "ok";
