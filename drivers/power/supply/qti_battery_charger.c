@@ -740,9 +740,6 @@ static const char * const power_supply_usbc_text[] = {
 static bool report_real_capacity = false;
 module_param(report_real_capacity, bool, S_IRUGO);
 
-static bool fix_battery_usage = false;
-module_param(fix_battery_usage, bool, S_IRUGO);
-
 int StringToHex(char *str, unsigned char *out, unsigned int *outlen)
 {
 	char *p = str;
@@ -2121,17 +2118,11 @@ static int battery_psy_get_prop(struct power_supply *psy,
 			pval->intval = POWER_SUPPLY_STATUS_DISCHARGING;
 		break;
 	case POWER_SUPPLY_PROP_CHARGE_COUNTER:
-		if (fix_battery_usage)
-			pval->intval = pst->prop[prop_id] * 1000;
-		else
-			pval->intval = pst->prop[prop_id];
+		pval->intval = pst->prop[prop_id] * 1000;
 		break;
 	case POWER_SUPPLY_PROP_TIME_TO_FULL_AVG:
-		if (fix_battery_usage)
-			pval->intval = (pst->prop[prop_id] * 60) > 65535 ?
-				-1 : (pst->prop[prop_id] * 60);
-		else
-			pval->intval = pst->prop[prop_id];
+		pval->intval = (pst->prop[prop_id] * 60) > 65535 ?
+			-1 : (pst->prop[prop_id] * 60);
 		break;
 	default:
 		pval->intval = pst->prop[prop_id];
