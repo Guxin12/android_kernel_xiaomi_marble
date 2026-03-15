@@ -320,8 +320,9 @@ static int aw_afe_get_topology(uint32_t param_id)
 {
 	if (param_id == AW_MSG_ID_TX_SET_ENABLE)
 		return afe_get_topology(g_tx_port_id);
-	else
+	else if (param_id == AW_MSG_ID_RX_SET_ENABLE)
 		return afe_get_topology(g_rx_port_id);
+	return 0;
 }
 
 static void aw_check_dsp_ready(uint32_t param_id)
@@ -333,7 +334,7 @@ static void aw_check_dsp_ready(uint32_t param_id)
 	if (param_id == AW_MSG_ID_TX_SET_ENABLE) {
 		if (ret != g_tx_topo_id)
 			aw_pr_err("tx topo id is 0x%x", ret);
-	} else {
+	} else if (param_id == AW_MSG_ID_RX_SET_ENABLE) {
 		if (ret != g_rx_topo_id)
 			aw_pr_err("rx topo id is 0x%x", ret);
 	}
