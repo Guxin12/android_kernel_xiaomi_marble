@@ -14,7 +14,14 @@ if TOUCHSCREEN_GOODIX_BRL
 
 config TOUCHSCREEN_GOODIX_BRL_SPI
 	bool "support SPI bus connection"
+	default y
 	help
 		Say Y here if the touchscreen is connected via SPI bus.
+
+config TOUCHSCREEN_GOODIX_BRL_DEBUG
+	bool "Debug"
+
+config TOUCHSCREEN_GOODIX_BRL_PEN
+	bool "Add stylus support"
 
 endif

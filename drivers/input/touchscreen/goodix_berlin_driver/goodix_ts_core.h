@@ -286,7 +286,6 @@ struct goodix_module {
  * @reset_gpio: reset gpio number
  * @irq_gpio: interrupt gpio number
  * @irq_flag: irq trigger type
- * @swap_axis: whether swaw x y axis
  * @panel_max_x/y/w/p: resolution and size
  * @invert_xy: invert x and y for inversely mounted IC
  * @pannel_key_map: key map
@@ -302,14 +301,15 @@ struct goodix_ts_board_data {
 	int iovdd_gpio;
 	unsigned int  irq_flags;
 
-	unsigned int swap_axis;
 	unsigned int panel_max_x;
 	unsigned int panel_max_y;
 	unsigned int panel_max_w; /*major and minor*/
 	unsigned int panel_max_p; /*pressure*/
 	bool invert_xy;
 
+#ifdef CONFIG_TOUCHSCREEN_GOODIX_BRL_PEN
 	bool pen_enable;
+#endif
 	char fw_name[GOODIX_MAX_STR_LABLE_LEN];
 	char cfg_bin_name[GOODIX_MAX_STR_LABLE_LEN];
 
@@ -382,6 +382,7 @@ struct goodix_ts_coords {
 	unsigned int x, y, w, p;
 };
 
+#ifdef CONFIG_TOUCHSCREEN_GOODIX_BRL_PEN
 struct goodix_pen_coords {
 	int status; /* NONE, RELEASE, TOUCH */
 	int tool_type;  /* BTN_TOOL_RUBBER BTN_TOOL_PEN */
@@ -389,6 +390,7 @@ struct goodix_pen_coords {
 	signed char tilt_x;
 	signed char tilt_y;
 };
+#endif
 
 /* touch event data */
 struct goodix_touch_data {
@@ -401,10 +403,12 @@ struct goodix_ts_key {
 	int code;
 };
 
+#ifdef CONFIG_TOUCHSCREEN_GOODIX_BRL_PEN
 struct goodix_pen_data {
 	struct goodix_pen_coords coords;
 	struct goodix_ts_key keys[GOODIX_MAX_PEN_KEY];
 };
+#endif
 
 /*
  * struct goodix_ts_event - touch event struct
@@ -418,7 +422,9 @@ struct goodix_ts_event {
 	u8 gesture_type;
 	u8 gesture_data[GOODIX_GESTURE_DATA_LEN];
 	struct goodix_touch_data touch_data;
+#ifdef CONFIG_TOUCHSCREEN_GOODIX_BRL_PEN
 	struct goodix_pen_data pen_data;
+#endif
 };
 
 enum goodix_ic_bus_type {
@@ -503,7 +509,9 @@ struct goodix_ts_core {
 	struct goodix_ts_board_data board_data;
 	struct goodix_ts_hw_ops *hw_ops;
 	struct input_dev *input_dev;
+#ifdef CONFIG_TOUCHSCREEN_GOODIX_BRL_PEN
 	struct input_dev *pen_dev;
+#endif
 	/* TODO counld we remove this from core data? */
 	struct goodix_ts_event ts_event;
 
@@ -715,10 +723,19 @@ int goodix_do_fw_update(struct goodix_ic_config *ic_config, int mode);
 int goodix_get_ic_type(struct device_node *node, const struct of_device_id *goodix_dt_ids);
 int gesture_module_init(void);
 void gesture_module_exit(void);
+#ifdef CONFIG_TOUCHSCREEN_GOODIX_BRL_DEBUG
 int inspect_module_init(void);
 void inspect_module_exit(void);
 int goodix_tools_init(void);
 void goodix_tools_exit(void);
+int goodix_get_rawdata(struct device *dev, struct ts_rawdata_info *info);
+#else
+static inline int inspect_module_init(void) { return 0; }
+static inline void inspect_module_exit(void) { }
+static inline int goodix_tools_init(void) { return 0; }
+static inline void goodix_tools_exit(void) { }
+static inline int goodix_get_rawdata(struct device *dev, struct ts_rawdata_info *info) { return 0; }
+#endif
 int goodix_ts_esd_init(struct goodix_ts_core *cd);
 
 /* goodix FB test */

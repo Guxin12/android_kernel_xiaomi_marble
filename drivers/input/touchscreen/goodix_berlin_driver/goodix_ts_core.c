@@ -1154,11 +1154,13 @@ static int goodix_parse_dt(struct device_node *node,
 	}
 
 
+#ifdef CONFIG_TOUCHSCREEN_GOODIX_BRL_PEN
 	/*get pen-enable switch and pen keys, must after "key map"*/
 	board_data->pen_enable = of_property_read_bool(node,
 					"goodix,pen-enable");
 	if (board_data->pen_enable)
 		ts_info("goodix pen enabled");
+#endif
 
 	board_data->support_thp_fw = of_property_read_bool(node,
 					"goodix,support-thp-fw");
@@ -1170,6 +1172,7 @@ static int goodix_parse_dt(struct device_node *node,
 }
 #endif
 
+#ifdef CONFIG_TOUCHSCREEN_GOODIX_BRL_PEN
 static void goodix_ts_report_pen(struct input_dev *dev,
 		struct goodix_pen_data *pen_data)
 {
@@ -1206,6 +1209,7 @@ static void goodix_ts_report_pen(struct input_dev *dev,
 	input_sync(dev);
 	mutex_unlock(&dev->mutex);
 }
+#endif
 
 static void goodix_ts_report_finger(struct input_dev *dev,
 		struct goodix_touch_data *touch_data,
@@ -1328,11 +1332,13 @@ static irqreturn_t goodix_ts_threadirq_func(int irq, void *data)
 					&ts_event->touch_data,
 					core_data->board_data.invert_xy);
 		}
+#ifdef CONFIG_TOUCHSCREEN_GOODIX_BRL_PEN
 		if (core_data->board_data.pen_enable &&
 				ts_event->event_type == EVENT_PEN) {
 			goodix_ts_report_pen(core_data->pen_dev,
 					&ts_event->pen_data);
 		}
+#endif
 		if (ts_event->event_type == EVENT_REQUEST)
 			goodix_ts_request_handle(core_data, ts_event);
 	}
@@ -1571,6 +1577,7 @@ static int goodix_ts_input_dev_config(struct goodix_ts_core *core_data)
 	return 0;
 }
 
+#ifdef CONFIG_TOUCHSCREEN_GOODIX_BRL_PEN
 static int goodix_ts_pen_dev_config(struct goodix_ts_core *core_data)
 {
 	struct goodix_ts_board_data *ts_bdata = board_data(core_data);
@@ -1619,6 +1626,7 @@ static int goodix_ts_pen_dev_config(struct goodix_ts_core *core_data)
 
 	return 0;
 }
+#endif
 
 void goodix_ts_input_dev_remove(struct goodix_ts_core *core_data)
 {
@@ -1629,6 +1637,7 @@ void goodix_ts_input_dev_remove(struct goodix_ts_core *core_data)
 	core_data->input_dev = NULL;
 }
 
+#ifdef CONFIG_TOUCHSCREEN_GOODIX_BRL_PEN
 void goodix_ts_pen_dev_remove(struct goodix_ts_core *core_data)
 {
 	if (!core_data->pen_dev)
@@ -1637,6 +1646,7 @@ void goodix_ts_pen_dev_remove(struct goodix_ts_core *core_data)
 	input_free_device(core_data->pen_dev);
 	core_data->pen_dev = NULL;
 }
+#endif
 
 /**
  * goodix_ts_esd_work - check hardware status and recovery
@@ -2201,6 +2211,7 @@ int goodix_ts_stage2_init(struct goodix_ts_core *cd)
 		return ret;
 	}
 
+#ifdef CONFIG_TOUCHSCREEN_GOODIX_BRL_PEN
 	if (cd->board_data.pen_enable) {
 		ret = goodix_ts_pen_dev_config(cd);
 		if (ret < 0) {
@@ -2208,6 +2219,7 @@ int goodix_ts_stage2_init(struct goodix_ts_core *cd)
 			goto err_finger;
 		}
 	}
+#endif
 	/* request irq line */
 	ret = goodix_ts_irq_setup(cd);
 	if (ret < 0) {
@@ -2263,8 +2275,10 @@ int goodix_ts_stage2_init(struct goodix_ts_core *cd)
 
 	return 0;
 exit:
+#ifdef CONFIG_TOUCHSCREEN_GOODIX_BRL_PEN
 	goodix_ts_pen_dev_remove(cd);
 err_finger:
+#endif
 	goodix_ts_input_dev_remove(cd);
 	return ret;
 }
@@ -2628,7 +2642,9 @@ static int goodix_ts_remove(struct platform_device *pdev)
 
 		goodix_fw_update_uninit();
 		goodix_ts_input_dev_remove(core_data);
+#ifdef CONFIG_TOUCHSCREEN_GOODIX_BRL_PEN
 		goodix_ts_pen_dev_remove(core_data);
+#endif
 		goodix_ts_sysfs_exit(core_data);
 		goodix_ts_procfs_exit(core_data);
 		goodix_ts_power_off(core_data);
@@ -2670,9 +2686,11 @@ static int __init goodix_ts_core_init(void)
 	int ret = 0;
 
 	ts_info("Core layer init:%s", GOODIX_DRIVER_VERSION);
-
+#ifdef CONFIG_TOUCHSCREEN_GOODIX_BRL_SPI
 	ret = goodix_spi_bus_init();
-	ret |= goodix_i2c_bus_init();
+#else
+	ret = goodix_i2c_bus_init();
+#endif
 	if (ret) {
 		ts_err("failed add bus driver");
 		return ret;
@@ -2684,10 +2702,11 @@ static void __exit goodix_ts_core_exit(void)
 {
 	ts_info("Core layer exit");
 	platform_driver_unregister(&goodix_ts_driver);
-
+#ifdef CONFIG_TOUCHSCREEN_GOODIX_BRL_SPI
 	goodix_spi_bus_exit();
-
+#else
 	goodix_i2c_bus_exit();
+#endif
 }
 
 late_initcall(goodix_ts_core_init);
