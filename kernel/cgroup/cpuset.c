@@ -212,31 +212,6 @@ struct tmpmasks {
 	cpumask_var_t new_cpus;		/* For update_cpumasks_hier() */
 };
 
-#ifdef CONFIG_CPUSETS_ASSIST
-struct cs_target {
-	const char *name;
-	char *cpus;
-};
-#endif
-
-static inline bool task_is_booster(struct task_struct *tsk)
-{
-	char comm[sizeof(tsk->comm)];
-
-	get_task_comm(comm, tsk);
-	return !strcmp(comm, "init") || !strcmp(comm, "NodeLooperThrea") ||
-	       !strcmp(comm, "power@1.2-servi") ||
-	       !strcmp(comm, "power@1.3-servi") ||
-	       !strcmp(comm, "perf@1.0-servic") ||
-	       !strcmp(comm, "perf@2.0-servic") ||
-	       !strcmp(comm, "perf@2.1-servic") ||
-	       !strcmp(comm, "perf@2.2-servic") ||
-	       !strcmp(comm, "power@2.0-servic") ||
-	       !strcmp(comm, "iop@") ||
-	       !strcmp(comm, "PERFD-SERVER") ||
-	       !strcmp(comm, "init.qcom.post_");
-}
-
 static inline struct cpuset *css_cs(struct cgroup_subsys_state *css)
 {
 	return css ? container_of(css, struct cpuset, css) : NULL;
@@ -2538,6 +2513,8 @@ static ssize_t cpuset_write_resmask(struct kernfs_open_file *of,
 	struct cpuset *trialcs;
 	int retval = -ENODEV;
 
+	buf = strstrip(buf);
+
 	/*
 	 * CPU or memory hotunplug may leave @cs w/o any execution
 	 * resources, in which case the hotplug code asynchronously updates
@@ -2592,50 +2569,6 @@ out_unlock:
 	css_put(&cs->css);
 	flush_workqueue(cpuset_migrate_mm_wq);
 	return retval ?: nbytes;
-}
-
-#ifdef CONFIG_CPUSETS_ASSIST
-static ssize_t cpuset_write_resmask_assist(struct kernfs_open_file *of,
-					   struct cs_target tgt, size_t nbytes,
-					   loff_t off)
-{
-	pr_info("cpuset_assist: setting %s to %s\n", tgt.name, tgt.cpus);
-	return cpuset_write_resmask(of, tgt.cpus, nbytes, off);
-}
-#endif
-
-static ssize_t cpuset_write_resmask_wrapper(struct kernfs_open_file *of,
-					 char *buf, size_t nbytes, loff_t off)
-{
-#ifdef CONFIG_CPUSETS_ASSIST
-	static struct cs_target cs_targets[] = {
-		/* Little-only cpusets go first */
-		{ "top-app",		"0-7" },
-		{ "foreground",		"0-6" },
-		{ "background",		"0-2" },
-		{ "system-background",	"0-3" },
-		{ "restricted",		"0-2" },
-		{ "camera-background",	"0-3" },
-		{ "camera-daemon",	"0-7" },
-		{ "audio-app",		"2,3" },
-	};
-	struct cpuset *cs = css_cs(of_css(of));
-	int i;
-
-	if (task_is_booster(current)) {
-		for (i = 0; i < ARRAY_SIZE(cs_targets); i++) {
-			struct cs_target tgt = cs_targets[i];
-
-			if (!strcmp(cs->css.cgroup->kn->name, tgt.name))
-				return cpuset_write_resmask_assist(of, tgt,
-								   nbytes, off);
-		}
-	}
-#endif
-
-	buf = strstrip(buf);
-
-	return cpuset_write_resmask(of, buf, nbytes, off);
 }
 
 /*
@@ -2783,7 +2716,7 @@ static struct cftype legacy_files[] = {
 	{
 		.name = "cpus",
 		.seq_show = cpuset_common_seq_show,
-		.write = cpuset_write_resmask_wrapper,
+		.write = cpuset_write_resmask,
 		.max_write_len = (100U + 6 * NR_CPUS),
 		.private = FILE_CPULIST,
 	},
