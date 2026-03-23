@@ -899,9 +899,9 @@ screen_state_for_thermal_callback(enum panel_event_notifier_tag tag,
 		default:
 			return;
 		}
-		pr_err("%s: %s, screen_light = %d, %s\n", __func__,
-		       get_screen_state_name(notification->notif_type),
-		       screen_light, board_sensor_temp);
+		pr_debug("%s: %s, screen_light = %d, %s\n", __func__,
+			 get_screen_state_name(notification->notif_type),
+			 screen_light, board_sensor_temp);
 	}
 #if IS_ENABLED(CONFIG_HAVE_MULTI_SCREEN)
 	else if (tag == PANEL_EVENT_NOTIFICATION_SECONDARY) {
@@ -918,19 +918,19 @@ screen_state_for_thermal_callback(enum panel_event_notifier_tag tag,
 		default:
 			return;
 		}
-		pr_err("%s: %s, sencondery_screen_light = %d, %s\n", __func__,
-		       get_screen_state_name(notification->notif_type),
-		       screen_light, board_sensor_temp);
+		pr_debug("%s: %s, sencondery_screen_light = %d, %s\n", __func__,
+			 get_screen_state_name(notification->notif_type),
+			 screen_light, board_sensor_temp);
 	}
 #endif
 	if (screen_light) {
 		screen_state = 1;
-		pr_err("%s: screen_light = %d, so screen_state = %d, %s\n",
-		       __func__, screen_light, screen_state, board_sensor_temp);
+		pr_debug("%s: screen_light = %d, so screen_state = %d, %s\n",
+			 __func__, screen_light, screen_state, board_sensor_temp);
 	} else {
 		screen_state = 0;
-		pr_err("%s: screen_light = %d, so screen_state = %d, %s\n",
-		       __func__, screen_light, screen_state, board_sensor_temp);
+		pr_debug("%s: screen_light = %d, so screen_state = %d, %s\n",
+			 __func__, screen_light, screen_state, board_sensor_temp);
 	}
 	if (screen_last_status != screen_state) {
 		sysfs_notify(&mi_thermal_dev.dev->kobj, NULL, "screen_state");
@@ -956,7 +956,7 @@ static int thermal_check_panel(struct device_node *np)
 
 	for (i = 0; i < count; i++) {
 		node = of_parse_phandle(np, "panel", i);
-		pr_err("%s: try to add of node panel: %s\n", __func__, node);
+		pr_err("%s: try to add of node panel: 0x%lx\n", __func__, PTR_ERR(node));
 		panel = of_drm_find_panel(node);
 		of_node_put(node);
 		if (!IS_ERR(panel)) {
@@ -969,7 +969,7 @@ static int thermal_check_panel(struct device_node *np)
 	if (PTR_ERR(prim_panel) == -EPROBE_DEFER) {
 		pr_err("%s ERROR: Cannot fine prim_panel of node!", __func__);
 	}
-	pr_err("%s: count of panel in node PTR_ERR_prim_panel  is: %d\n",
+	pr_err("%s: count of panel in node PTR_ERR_prim_panel  is: 0x%lx\n",
 	       __func__, PTR_ERR(prim_panel));
 #if IS_ENABLED(CONFIG_HAVE_MULTI_SCREEN)
 find_sec_panel:
