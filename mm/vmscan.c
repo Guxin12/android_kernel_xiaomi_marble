@@ -3446,7 +3446,7 @@ unsigned long mem_cgroup_shrink_node(struct mem_cgroup *memcg,
 unsigned long try_to_free_mem_cgroup_pages(struct mem_cgroup *memcg,
 					   unsigned long nr_pages,
 					   gfp_t gfp_mask,
-					   unsigned int reclaim_options)
+					   bool may_swap)
 {
 	unsigned long nr_reclaimed;
 	unsigned int noreclaim_flag;
@@ -3459,8 +3459,8 @@ unsigned long try_to_free_mem_cgroup_pages(struct mem_cgroup *memcg,
 		.priority = DEF_PRIORITY,
 		.may_writepage = !laptop_mode,
 		.may_unmap = 1,
-		.may_swap = !!(reclaim_options & MEMCG_RECLAIM_MAY_SWAP),
-		.proactive = !!(reclaim_options & MEMCG_RECLAIM_PROACTIVE),
+		.may_swap = may_swap,
+		.proactive = false,
 	};
 	/*
 	 * Traverse the ZONELIST_FALLBACK zonelist of the current node to put
@@ -3482,6 +3482,47 @@ unsigned long try_to_free_mem_cgroup_pages(struct mem_cgroup *memcg,
 	return nr_reclaimed;
 }
 EXPORT_SYMBOL_GPL(try_to_free_mem_cgroup_pages);
+
+/* A copy of try_to_free_mem_cgroup_pages */
+unsigned long try_to_free_mem_cgroup_pages_proactive(
+					   struct mem_cgroup *memcg,
+					   unsigned long nr_pages,
+					   gfp_t gfp_mask,
+					   bool may_swap)
+{
+	unsigned long nr_reclaimed;
+	unsigned int noreclaim_flag;
+	struct scan_control sc = {
+		.nr_to_reclaim = max(nr_pages, SWAP_CLUSTER_MAX),
+		.gfp_mask = (current_gfp_context(gfp_mask) & GFP_RECLAIM_MASK) |
+				(GFP_HIGHUSER_MOVABLE & ~GFP_RECLAIM_MASK),
+		.reclaim_idx = MAX_NR_ZONES - 1,
+		.target_mem_cgroup = memcg,
+		.priority = DEF_PRIORITY,
+		.may_writepage = !laptop_mode,
+		.may_unmap = 1,
+		.may_swap = may_swap,
+		.proactive = true,
+	};
+	/*
+	 * Traverse the ZONELIST_FALLBACK zonelist of the current node to put
+	 * equal pressure on all the nodes. This is based on the assumption that
+	 * the reclaim does not bail out early.
+	 */
+	struct zonelist *zonelist = node_zonelist(numa_node_id(), sc.gfp_mask);
+
+	set_task_reclaim_state(current, &sc.reclaim_state);
+	trace_mm_vmscan_memcg_reclaim_begin(0, sc.gfp_mask);
+	noreclaim_flag = memalloc_noreclaim_save();
+
+	nr_reclaimed = do_try_to_free_pages(zonelist, &sc);
+
+	memalloc_noreclaim_restore(noreclaim_flag);
+	trace_mm_vmscan_memcg_reclaim_end(nr_reclaimed);
+	set_task_reclaim_state(current, NULL);
+
+	return nr_reclaimed;
+}
 #endif
 
 static void age_active_anon(struct pglist_data *pgdat,
