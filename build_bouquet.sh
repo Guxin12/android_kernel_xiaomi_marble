@@ -11,6 +11,8 @@ KDIR=$(pwd)
 DEFCONFIG=marble_defconfig
 IMAGE=${KDIR}/out/arch/arm64/boot/Image
 OUTPUT_DIR=${KDIR}/../Bouquet_marble_release
+KERNELSU_REPO=${KDIR}/../KernelSU
+SUSFS_REPO=${KDIR}/../susfs4ksu
 DEVICETREE="arch/arm64/boot/dts/vendor/qcom"
 
 USE_SLIM_LLVM=true
@@ -99,7 +101,37 @@ $no_ccache && {
 	make_flags+=" CCACHE="
 }
 
+kernel_tree_cleanup() {
+	rm ${KDIR}/drivers/kernelsu/.git
+	rm -rf ${KDIR}/drivers/kernelsu
+	rm -f ${KDIR}/fs/susfs.c ${KDIR}/include/linux/susfs.h ${KDIR}/include/linux/susfs_def.h 2>/dev/null
+	git checkout -- fs/ drivers/ include/ kernel/ security/
+}
+
+if ${with_ksu}; then
+	trap "kernel_tree_cleanup; exit" 0 SIGINT SIGTERM SIGQUIT SIGHUP
+fi
+
 ########## Make it ##########
+
+if ${with_ksu}; then
+	mkdir "${KDIR}/drivers/kernelsu"
+	ln -s "${KERNELSU_REPO}/.git" "${KDIR}/drivers/kernelsu/.git"
+	cp -r "${KERNELSU_REPO}/kernel" "${KDIR}/drivers/kernelsu/kernel"
+	[ -d "${KERNELSU_REPO}/uapi" ] && cp -r "${KERNELSU_REPO}/uapi" "${KDIR}/drivers/kernelsu/uapi"
+	sed -i '/drivers\/most\/Kconfig/asource\ "drivers\/kernelsu\/kernel\/Kconfig"' ${KDIR}/drivers/Kconfig
+	echo 'obj-y += kernelsu/kernel/' >> ${KDIR}/drivers/Makefile
+
+	if ${with_susfs}; then
+		cp ${SUSFS_REPO}/kernel_patches/fs/*            ${KDIR}/fs/
+		cp ${SUSFS_REPO}/kernel_patches/include/linux/* ${KDIR}/include/linux/
+
+		git apply ${SUSFS_REPO}/kernel_patches/50_add_susfs_in_gki-android12-5.10.patch || exit 1
+		sed -e 's|a/kernel/|a/drivers/kernelsu/kernel/|g' \
+		    -e 's|b/kernel/|b/drivers/kernelsu/kernel/|g' \
+		    ${SUSFS_REPO}/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch | git apply || exit 1
+	fi
+fi
 
 $no_mkclean || make $make_flags KCFLAGS="$make_kcflags" KBUILD_LDFLAGS="$make_kbuild_ldflags" mrproper
 make $make_flags KCFLAGS="$make_kcflags" KBUILD_LDFLAGS="$make_kbuild_ldflags" "$use_defconfig"
@@ -108,27 +140,9 @@ if [ -d "${KDIR}/${DEVICETREE}" ] && [ -d "${KDIR}/out/${DEVICETREE}" ]; then
 	rm -rf "${KDIR}/out/${DEVICETREE}"
 fi
 
-if ${with_ksu}; then
-	${KDIR}/scripts/config --file ${KDIR}/out/.config \
-	    -e KSU \
-	    -d KSU_DEBUG \
-	    -d KSU_SUSFS
-	if ${with_susfs}; then
-		# 禁用 `UNAME_OVERRIDE` (和 susfs 的 `KSU_SUSFS_SPOOF_UNAME` 冲突)
-		${KDIR}/scripts/config --file ${KDIR}/out/.config -d UNAME_OVERRIDE
-		# 启用所有 susfs 功能
-		${KDIR}/scripts/config --file ${KDIR}/out/.config \
-		    -e KSU_SUSFS \
-		    -e KSU_SUSFS_SUS_PATH \
-		    -e KSU_SUSFS_SUS_MOUNT \
-		    -e KSU_SUSFS_SUS_KSTAT \
-		    -e KSU_SUSFS_SPOOF_UNAME \
-		    -e KSU_SUSFS_ENABLE_LOG \
-		    -e KSU_SUSFS_HIDE_KSU_SUSFS_SYMBOLS \
-		    -e KSU_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG \
-		    -e KSU_SUSFS_OPEN_REDIRECT \
-		    -e KSU_SUSFS_SUS_MAP
-	fi
+if ${with_susfs}; then
+	# 禁用 `UNAME_OVERRIDE` (和 susfs 的 `KSU_SUSFS_SPOOF_UNAME` 冲突)
+	${KDIR}/scripts/config --file ${KDIR}/out/.config -d UNAME_OVERRIDE
 fi
 
 if [ "$(${KDIR}/scripts/config --file ${KDIR}/out/.config -s CFI_FORCE_SKIP_CHECK)" == "y" ]; then
