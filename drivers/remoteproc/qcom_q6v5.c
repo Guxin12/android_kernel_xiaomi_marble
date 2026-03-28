@@ -287,7 +287,7 @@ static const char *match_function(u32 addr)
 static void symbol_loader_work(struct work_struct *work)
 {
 	size_t len;
-	char *buf, *cur, *msg, *end, *token;
+	char *buf, *cur, *msg, *end, *token, *callstack_entry, *addr_start;
 	const char *func;
 	char uuid[UUID_LEN + 1];
 	char path[LINE_LEN];
@@ -327,7 +327,14 @@ static void symbol_loader_work(struct work_struct *work)
 		end = msg + len;
 		token = strsep(&cur, "|");	/* do this once to get rid of the header */
 		dev_err(q6v5->dev, "Stack Trace:\n");
-		while (cur < end && (token = strpbrk(strsep(&cur, "|"), ")") + 1) != (char *)1) {
+		while (cur && cur < end) {
+			callstack_entry = strsep(&cur, "|");
+			if (!callstack_entry)
+				break;
+			addr_start = strpbrk(callstack_entry, ")");
+			if (!addr_start)
+				break;
+			token = addr_start + 1;
 			if (token[0] == '\0')
 				continue;
 
@@ -368,15 +375,6 @@ static irqreturn_t q6v5_wdog_interrupt(int irq, void *data)
 		//strlcpy(last_modem_sfr_reason, msg, MAX_SSR_REASON_LEN);
 	}
 
-
-#ifdef CONFIG_QCOM_CRASH_SYMBOL_MATCH
-	if (queue_work(system_freezable_wq, &q6v5->symbol_loader)) {
-		dev_info(q6v5->dev, "Symbol loader work started\n");
-		flush_work(&q6v5->symbol_loader);
-	} else {
-		dev_err(q6v5->dev, "Failed to queue symbol loader work\n");
-	}
-#endif
 	q6v5->running = false;
 	temp_num = crash_num - 1;
 	while ((temp_num--) && crash_num && (crash_num >= 10))

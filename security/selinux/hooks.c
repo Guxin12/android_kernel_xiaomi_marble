@@ -3684,6 +3684,15 @@ static int selinux_file_ioctl(struct file *file, unsigned int cmd,
 	int error = 0;
 
 	switch (cmd) {
+	case TCGETS: {
+		struct inode *inode = file_inode(file);
+
+		if (!S_ISCHR(inode->i_mode)) {
+			error = -ENOTTY;
+			break;
+		}
+		fallthrough;
+	}
 	case FIONREAD:
 	case FIBMAP:
 	case FIGETBSZ:
