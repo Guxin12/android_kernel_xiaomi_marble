@@ -20,6 +20,7 @@
 #include <linux/seq_file.h>
 #include <linux/uaccess.h>
 #include <linux/soc/qcom/panel_event_notifier.h>
+#include <linux/power_supply.h>
 
 #if LINUX_VERSION_CODE > KERNEL_VERSION(2, 6, 38)
 #include <linux/input/mt.h>
@@ -1890,6 +1891,7 @@ static int goodix_ts_suspend(struct goodix_ts_core *core_data)
 	}
 	mutex_unlock(&goodix_modules.mutex);
 
+	core_data->work_status = TP_SLEEP;
 	/* enter sleep mode or power off */
 	if (hw_ops->suspend)
 		hw_ops->suspend(core_data);
@@ -1967,6 +1969,7 @@ static int goodix_ts_resume(struct goodix_ts_core *core_data)
 	if (hw_ops->resume)
 		hw_ops->resume(core_data);
 
+	core_data->work_status = TP_NORMAL;
 	mutex_lock(&goodix_modules.mutex);
 	if (!list_empty(&goodix_modules.head)) {
 		list_for_each_entry_safe(ext_module, next,
@@ -1986,6 +1989,10 @@ static int goodix_ts_resume(struct goodix_ts_core *core_data)
 	mutex_unlock(&goodix_modules.mutex);
 
 out:
+	/* enable charger mode */
+	core_data->work_status = TP_NORMAL;
+	if (core_data->charger_status)
+		hw_ops->charger_on(core_data, true);
 	/* enable irq */
 	hw_ops->irq_enable(core_data, true);
 	/* open esd */
@@ -2246,6 +2253,75 @@ static int goodix_generic_noti_callback(struct notifier_block *self,
 	return 0;
 }
 
+static int goodix_get_charging_status(void)
+{
+	struct power_supply *usb_psy;
+	struct power_supply *dc_psy;
+	union power_supply_propval val;
+	int rc = 0;
+	int is_charging = 0;
+
+	is_charging = !!power_supply_is_system_supplied();
+	if (!is_charging)
+		return 0;
+
+	dc_psy = power_supply_get_by_name("wireless");
+	if (dc_psy) {
+		rc = power_supply_get_property(dc_psy, POWER_SUPPLY_PROP_ONLINE, &val);
+		if (rc < 0)
+			ts_err("Couldn't get DC online status, rc=%d", rc);
+		else if (val.intval == 1)
+			return 1;
+	}
+
+	usb_psy = power_supply_get_by_name("usb");
+	if (usb_psy) {
+		rc = power_supply_get_property(usb_psy, POWER_SUPPLY_PROP_ONLINE, &val);
+		if (rc < 0)
+			ts_err("Couldn't get usb online status, rc=%d", rc);
+		else if (val.intval == 1)
+			return 1;
+	}
+
+	return 0;
+}
+
+static void charger_power_supply_work(struct work_struct *work)
+{
+	struct goodix_ts_core *core_data =
+		container_of(work, struct goodix_ts_core, power_supply_work);
+	const struct goodix_ts_hw_ops *hw_ops = core_data->hw_ops;
+	int charge_status = -1;
+
+	if (core_data->init_stage < CORE_INIT_STAGE2 || atomic_read(&core_data->suspended)) {
+		ts_debug("Init stage, forbid changing charger status");
+		return;
+	}
+	charge_status = !!goodix_get_charging_status();
+	ts_debug("power supply changed, Power_supply_event: %d", charge_status);
+	if (charge_status != core_data->charger_status || core_data->charger_status < 0) {
+		core_data->charger_status = charge_status;
+		if (charge_status) {
+			ts_info("charger usb in");
+			hw_ops->charger_on(core_data, true);
+		} else {
+			ts_info("charger usb exit");
+			hw_ops->charger_on(core_data, false);
+		}
+	}
+
+}
+
+static int charger_status_event_callback(struct notifier_block *nb, unsigned long event, void *ptr)
+{
+	struct goodix_ts_core *core_data = container_of(nb, struct goodix_ts_core, charger_notifier);
+
+	if (!core_data)
+		return 0;
+	queue_work(core_data->power_wq, &core_data->power_supply_work);
+	return 0;
+}
+
 int goodix_ts_stage2_init(struct goodix_ts_core *cd)
 {
 	int ret;
@@ -2305,6 +2381,14 @@ int goodix_ts_stage2_init(struct goodix_ts_core *cd)
 	if (fb_register_client(&cd->fb_notifier))
 		ts_err("Failed to register fb notifier client:%d", ret);
 #endif
+
+	/* register charger status change notifier */
+	INIT_WORK(&cd->power_supply_work, charger_power_supply_work);
+	cd->charger_notifier.notifier_call = charger_status_event_callback;
+	ret = power_supply_reg_notifier(&cd->charger_notifier);
+	if (ret)
+		ts_err("Failed to register charger notifier client:%d", ret);
+
 	/* create sysfs files */
 	goodix_ts_sysfs_init(cd);
 
@@ -2643,6 +2727,7 @@ static int goodix_ts_probe(struct platform_device *pdev)
 	goodix_tools_init();
 
 	core_data->init_stage = CORE_INIT_STAGE1;
+	core_data->charger_status = -1;
 	goodix_modules.core_data = core_data;
 	core_module_prob_sate = CORE_MODULE_PROB_SUCCESS;
 

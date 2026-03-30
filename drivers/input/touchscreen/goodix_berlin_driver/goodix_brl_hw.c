@@ -1570,6 +1570,28 @@ exit:
 	return ret;
 }
 
+#define GOODIX_CHARGER_CMD	0xAF
+static int brl_charger_on(struct goodix_ts_core *cd, bool on)
+{
+	struct goodix_ts_cmd cmd;
+
+	if (cd->work_status == TP_SLEEP) {
+		ts_info("Unsupported send charger cmd in sleep mode, ");
+		return 0;
+	}
+	cmd.cmd = GOODIX_CHARGER_CMD;
+	cmd.len = 5;
+	cmd.data[0] = (on == true) ? 1 : 0;
+	/* ts_info("gesture data :%*ph", 8, cmd.buf); */
+	if (cd->hw_ops->send_cmd(cd, &cmd)) {
+		ts_err("failed send charger cmd, on = %d", on);
+		return -EINVAL;
+	}
+	ts_info("charger mode %s", (on == true) ? "on" : "off");
+
+	return 0;
+}
+
 static struct goodix_ts_hw_ops brl_hw_ops = {
 	.power_on = brl_power_on,
 	.resume = brl_resume,
@@ -1588,6 +1610,7 @@ static struct goodix_ts_hw_ops brl_hw_ops = {
 	.event_handler = brl_event_handler,
 	.after_event_handler = brl_after_event_handler,
 	.get_capacitance_data = brl_get_capacitance_data,
+	.charger_on = brl_charger_on,
 	.set_coor_mode = brl_set_coor_mode,
 	.switch_report_rate = brl_switch_report_rate,
 };

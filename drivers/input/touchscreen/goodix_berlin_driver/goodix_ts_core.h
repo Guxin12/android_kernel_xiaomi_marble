@@ -475,6 +475,7 @@ struct goodix_ts_hw_ops {
 	int (*after_event_handler)(struct goodix_ts_core *cd);
 	int (*get_capacitance_data)(struct goodix_ts_core *cd,
 			struct ts_rawdata_info *info);
+	int (*charger_on)(struct goodix_ts_core *cd, bool on);
 	int (*set_coor_mode)(struct goodix_ts_core *cd);
 	int (*switch_report_rate)(struct goodix_ts_core *cd, bool high);
 };
@@ -503,6 +504,12 @@ enum goodix_core_init_stage {
 struct goodix_ic_config {
 	int len;
 	u8 data[GOODIX_CFG_MAX_SIZE];
+};
+
+enum ts_work_stat {
+	TP_NORMAL,
+	TP_GESTURE,  // Unused
+	TP_SLEEP,
 };
 
 struct goodix_ts_core {
@@ -562,9 +569,11 @@ struct goodix_ts_core {
 	atomic_t trusted_touch_mode;
 #endif
 
+	struct notifier_block charger_notifier;
 	struct workqueue_struct *power_wq;
 	struct work_struct resume_work;
 	struct work_struct suspend_work;
+	struct work_struct power_supply_work;
 
 	struct xiaomi_touch_interface xiaomi_touch;
 
@@ -573,6 +582,8 @@ struct goodix_ts_core {
 
 	bool nonui_enabled;
 	bool high_report_rate;
+	int work_status;
+	int charger_status;
 	bool irq_wake_enabled;
 };
 
