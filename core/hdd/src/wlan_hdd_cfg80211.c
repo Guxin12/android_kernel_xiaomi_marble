@@ -7346,7 +7346,7 @@ __wlan_hdd_cfg80211_get_logger_supp_feature(struct wiphy *wiphy,
 	int status;
 	uint32_t features;
 	struct sk_buff *reply_skb = NULL;
-	bool enable_ring_buffer;
+	uint32_t enable_ring_buffer;
 
 	hdd_enter_dev(wdev->netdev);
 
