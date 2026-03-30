@@ -3341,13 +3341,23 @@ cm_roam_stats_print_11kv_info(struct wmi_neighbor_report_data *neigh_rpt,
 
 	tmp = buf;
 	if (num_ch) {
-		buf_cons = qdf_snprint(tmp, buf_left, "{ ");
+                buf_cons = qdf_snprint(tmp, buf_left, "{ ");
 		buf_left -= buf_cons;
 		tmp += buf_cons;
 
 		for (i = 0; i < num_ch; i++) {
+			if (!buf_left) {
+				mlme_err("buf_left is empty");
+				qdf_mem_free(buf);
+				return;
+			}
 			buf_cons = qdf_snprint(tmp, buf_left, "%d ",
 					       neigh_rpt->freq[i]);
+			if (!buf_cons || buf_cons > buf_left) {
+				mlme_err("buf_cons is empty");
+				qdf_mem_free(buf);
+				return;
+			}
 			buf_left -= buf_cons;
 			tmp += buf_cons;
 		}
