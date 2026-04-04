@@ -108,6 +108,9 @@ struct scan_control {
 	/* Can pages be swapped as part of reclaim? */
 	unsigned int may_swap:1;
 
+	/* Proactive reclaim invoked by userspace through memory.reclaim */
+	unsigned int proactive:1;
+
 	/*
 	 * Cgroup memory below memory.low is protected as long as we
 	 * don't threaten to OOM. If any cgroup is reclaimed at
@@ -2775,9 +2778,10 @@ static void shrink_node_memcgs(pg_data_t *pgdat, struct scan_control *sc)
 			    sc->priority);
 
 		/* Record the group's reclaim efficiency */
-		vmpressure(sc->gfp_mask, memcg, false,
-			   sc->nr_scanned - scanned,
-			   sc->nr_reclaimed - reclaimed);
+		if (!sc->proactive)
+			vmpressure(sc->gfp_mask, memcg, false,
+				   sc->nr_scanned - scanned,
+				   sc->nr_reclaimed - reclaimed);
 
 	} while ((memcg = mem_cgroup_iter(target_memcg, memcg, NULL)));
 }
@@ -2894,9 +2898,10 @@ again:
 	}
 
 	/* Record the subtree's reclaim efficiency */
-	vmpressure(sc->gfp_mask, sc->target_mem_cgroup, true,
-		   sc->nr_scanned - nr_scanned,
-		   sc->nr_reclaimed - nr_reclaimed);
+	if (!sc->proactive)
+		vmpressure(sc->gfp_mask, sc->target_mem_cgroup, true,
+			   sc->nr_scanned - nr_scanned,
+			   sc->nr_reclaimed - nr_reclaimed);
 
 	if (sc->nr_reclaimed - nr_reclaimed)
 		reclaimable = true;
@@ -3145,8 +3150,9 @@ retry:
 		__count_zid_vm_events(ALLOCSTALL, sc->reclaim_idx, 1);
 
 	do {
-		vmpressure_prio(sc->gfp_mask, sc->target_mem_cgroup,
-				sc->priority);
+		if (!sc->proactive)
+			vmpressure_prio(sc->gfp_mask, sc->target_mem_cgroup,
+					sc->priority);
 		sc->nr_scanned = 0;
 		shrink_zones(zonelist, sc);
 
@@ -3454,6 +3460,7 @@ unsigned long try_to_free_mem_cgroup_pages(struct mem_cgroup *memcg,
 		.may_writepage = !laptop_mode,
 		.may_unmap = 1,
 		.may_swap = may_swap,
+		.proactive = false,
 	};
 	/*
 	 * Traverse the ZONELIST_FALLBACK zonelist of the current node to put
@@ -3475,6 +3482,47 @@ unsigned long try_to_free_mem_cgroup_pages(struct mem_cgroup *memcg,
 	return nr_reclaimed;
 }
 EXPORT_SYMBOL_GPL(try_to_free_mem_cgroup_pages);
+
+/* A copy of try_to_free_mem_cgroup_pages */
+unsigned long try_to_free_mem_cgroup_pages_proactive(
+					   struct mem_cgroup *memcg,
+					   unsigned long nr_pages,
+					   gfp_t gfp_mask,
+					   bool may_swap)
+{
+	unsigned long nr_reclaimed;
+	unsigned int noreclaim_flag;
+	struct scan_control sc = {
+		.nr_to_reclaim = max(nr_pages, SWAP_CLUSTER_MAX),
+		.gfp_mask = (current_gfp_context(gfp_mask) & GFP_RECLAIM_MASK) |
+				(GFP_HIGHUSER_MOVABLE & ~GFP_RECLAIM_MASK),
+		.reclaim_idx = MAX_NR_ZONES - 1,
+		.target_mem_cgroup = memcg,
+		.priority = DEF_PRIORITY,
+		.may_writepage = !laptop_mode,
+		.may_unmap = 1,
+		.may_swap = may_swap,
+		.proactive = true,
+	};
+	/*
+	 * Traverse the ZONELIST_FALLBACK zonelist of the current node to put
+	 * equal pressure on all the nodes. This is based on the assumption that
+	 * the reclaim does not bail out early.
+	 */
+	struct zonelist *zonelist = node_zonelist(numa_node_id(), sc.gfp_mask);
+
+	set_task_reclaim_state(current, &sc.reclaim_state);
+	trace_mm_vmscan_memcg_reclaim_begin(0, sc.gfp_mask);
+	noreclaim_flag = memalloc_noreclaim_save();
+
+	nr_reclaimed = do_try_to_free_pages(zonelist, &sc);
+
+	memalloc_noreclaim_restore(noreclaim_flag);
+	trace_mm_vmscan_memcg_reclaim_end(nr_reclaimed);
+	set_task_reclaim_state(current, NULL);
+
+	return nr_reclaimed;
+}
 #endif
 
 static void age_active_anon(struct pglist_data *pgdat,
