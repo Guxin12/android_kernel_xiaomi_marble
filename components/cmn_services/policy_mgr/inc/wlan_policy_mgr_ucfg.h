@@ -1,6 +1,7 @@
 /*
  * Copyright (c) 2018-2021 The Linux Foundation. All rights reserved.
  * Copyright (c) 2021-2023 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  *
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
@@ -297,6 +298,22 @@ ucfg_policy_mgr_init_chan_avoidance(struct wlan_objmgr_psoc *psoc,
  */
 QDF_STATUS ucfg_policy_mgr_get_sap_mandt_chnl(struct wlan_objmgr_psoc *psoc,
 					      uint8_t *sap_mandt_chnl);
+
+/*
+ * ucfg_policy_mgr_get_sap_force_20mhz_for_specific_country() - to find out
+ * if SAP forec 20Mhz is enabled and country is ID
+ * @psoc: pointer to psoc
+ * @freq: freq
+ *
+ * This API is used to find out whether SAP's force 20Mhz support
+ * is enabled
+ *
+ * Return: bool
+ */
+bool ucfg_policy_mgr_get_sap_force_20mhz_for_country_id(
+						struct wlan_objmgr_psoc *psoc,
+						qdf_freq_t freq);
+
 /**
  * ucfg_policy_mgr_get_indoor_chnl_marking() - to get if indoor channel can be
  *						marked as disabled
