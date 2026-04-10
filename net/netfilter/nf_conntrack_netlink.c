@@ -3241,7 +3241,7 @@ static int ctnetlink_dump_exp_ct_start(struct netlink_callback *cb)
 {
 	struct nf_conn *ct = cb->data;
 
-	if (!refcount_inc_not_zero(&ct->ct_general.use))
+	if (!atomic_inc_not_zero(&ct->ct_general.use))
 		return -ENOENT;
 	return 0;
 }
