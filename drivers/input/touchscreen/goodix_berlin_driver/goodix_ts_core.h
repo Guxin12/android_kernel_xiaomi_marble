@@ -67,6 +67,7 @@
 #define TS_DEFAULT_CFG_BIN				"goodix_cfg_group.bin"
 
 #define GOODIX_SUSPEND_GESTURE_ENABLE
+#define GOODIX_TOUCH_BOOST
 
 enum GOODIX_GESTURE_TYP {
 	GESTURE_SINGLE_TAP = (1 << 0),
