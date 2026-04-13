@@ -189,7 +189,6 @@ drivers/bus/mhi/devices/mhi_dev_uci.ko
 drivers/bus/mhi/host/mhi.ko
 drivers/char/frpc-adsprpc.ko
 drivers/char/hw_random/msm_rng.ko
-drivers/char/xlogchar.ko
 drivers/clk/qcom/camcc-diwali.ko
 drivers/clk/qcom/camcc-waipio.ko
 drivers/clk/qcom/debugcc-diwali.ko
@@ -249,7 +248,6 @@ drivers/net/wireless/cnss_prealloc/cnss_prealloc.ko
 drivers/net/wireless/cnss_utils/cnss_plat_ipc_qmi_svc.ko
 drivers/net/wireless/cnss_utils/cnss_utils.ko
 drivers/net/wireless/cnss_utils/wlan_firmware_service.ko
-drivers/net/wireless/mi_cnss_statistic/mi_cnss_statistic.ko
 drivers/nvmem/nvmem_qfprom.ko
 drivers/pci/controller/pci-msm-drv.ko
 drivers/phy/qualcomm/phy-qcom-ufs-qmp-14nm.ko
@@ -464,7 +462,6 @@ drivers/soc/qcom/smem.ko
 drivers/soc/qcom/socinfo.ko
 drivers/soc/qcom/tmecom/tmecom-intf.ko
 drivers/spmi/spmi-pmic-arb.ko
-drivers/staging/extend_reclaim/extend_reclaim.ko
 drivers/staging/kshrink_slabd/kshrink_slabd.ko
 drivers/staging/kshrink_lruvecd/kshrink_lruvecd.ko
 drivers/thermal/qcom/bcl_pmic5.ko
