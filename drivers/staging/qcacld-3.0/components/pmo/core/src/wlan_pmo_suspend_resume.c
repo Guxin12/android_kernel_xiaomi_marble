@@ -722,9 +722,6 @@ out:
 	return status;
 }
 
-//MIUI: ADD
-extern uint8_t wow_suspend_type;
-
 /**
  * pmo_core_enable_wow_in_fw() - enable wow in fw
  * @psoc: objmgr psoc handle
@@ -884,8 +881,6 @@ pmo_core_enable_wow_in_fw(struct wlan_objmgr_psoc *psoc,
 		htc_dump_counter_info(pmo_core_psoc_get_htc_handle(psoc));
 		qdf_trigger_self_recovery(psoc, QDF_SUSPEND_NO_CREDIT);
 	}
-	//MIUI: ADD
-	wow_suspend_type = type;
 	pmo_debug("WOW enabled successfully in fw: credits:%d pending_cmds: %d",
 		host_credits, wmi_pending_cmds);
 
