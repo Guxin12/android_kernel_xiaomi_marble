@@ -1,6 +1,5 @@
 /*
  * Copyright (c) 2018-2021 The Linux Foundation. All rights reserved.
- * Copyright (c) 2021-2023 Qualcomm Innovation Center, Inc. All rights reserved.
  * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  *
  * Permission to use, copy, modify, and/or distribute this software for
@@ -2593,6 +2592,7 @@ struct wlan_mlme_iot {
  * various roam triggers
  * @iot: IOT related CFG items
  * @reduce_pwr_scan_mode : reduce power scan mode enable/disable
+ * @passive_chan_discard_mode: discard passive channels
  */
 struct wlan_mlme_cfg {
 	struct wlan_mlme_chainmask chainmask_cfg;
@@ -2642,6 +2642,7 @@ struct wlan_mlme_cfg {
 	struct wlan_mlme_ratemask ratemask_cfg;
 	struct wlan_mlme_iot iot;
 	bool reduce_pwr_scan_mode;
+	uint8_t passive_chan_discard_mode;
 };
 
 enum pkt_origin {

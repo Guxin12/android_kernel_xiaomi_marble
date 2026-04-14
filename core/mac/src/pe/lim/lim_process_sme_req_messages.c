@@ -4085,6 +4085,9 @@ lim_fill_session_params(struct mac_context *mac_ctx,
 	if (req->assoc_ie.len)
 		QDF_TRACE_HEX_DUMP(QDF_MODULE_ID_PE, QDF_TRACE_LEVEL_DEBUG,
 				   req->assoc_ie.ptr, req->assoc_ie.len);
+	/* update assoc ie to cm */
+	cm_update_session_assoc_ie(mac_ctx->psoc, session->vdev_id,
+				   &req->assoc_ie);
 
 	status = lim_fill_crypto_params(mac_ctx, session, req);
 	if (QDF_IS_STATUS_ERROR(status)) {
@@ -4104,9 +4107,6 @@ lim_fill_session_params(struct mac_context *mac_ctx,
 	}
 
 	pe_debug("After stripping Assoc IE len: %d", req->assoc_ie.len);
-	/* update assoc ie to cm */
-	cm_update_session_assoc_ie(mac_ctx->psoc, session->vdev_id,
-				   &req->assoc_ie);
 
 	if (req->assoc_ie.len)
 		QDF_TRACE_HEX_DUMP(QDF_MODULE_ID_PE, QDF_TRACE_LEVEL_DEBUG,
@@ -4638,6 +4638,8 @@ static void lim_handle_reassoc_req(struct cm_vdev_join_req *req)
 	if (req->assoc_ie.len)
 		QDF_TRACE_HEX_DUMP(QDF_MODULE_ID_PE, QDF_TRACE_LEVEL_DEBUG,
 				   req->assoc_ie.ptr, req->assoc_ie.len);
+	/* update assoc ie to cm */
+	cm_update_session_assoc_ie(mac_ctx->psoc, vdev_id, &req->assoc_ie);
 
 	lim_strip_rsnx_ie(mac_ctx, session_entry, req);
 
@@ -4655,8 +4657,6 @@ static void lim_handle_reassoc_req(struct cm_vdev_join_req *req)
 	qdf_mem_copy(reassoc_req->addIEAssoc.addIEdata,
 		     req->assoc_ie.ptr, req->assoc_ie.len);
 	reassoc_req->addIEAssoc.length = req->assoc_ie.len;
-	/* update assoc ie to cm */
-	cm_update_session_assoc_ie(mac_ctx->psoc, vdev_id, &req->assoc_ie);
 	ucast_cipher = wlan_crypto_get_param(session_entry->vdev,
 					     WLAN_CRYPTO_PARAM_UCAST_CIPHER);
 	auth_mode = wlan_crypto_get_param(session_entry->vdev,
