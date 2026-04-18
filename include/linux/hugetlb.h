@@ -973,7 +973,7 @@ bool want_pmd_share(struct vm_area_struct *vma, unsigned long addr);
 #ifdef CONFIG_ARCH_WANT_HUGE_PMD_SHARE
 static inline bool hugetlb_pmd_shared(pte_t *pte)
 {
-	return atomic_read(&virt_to_page(pte)->pt_share_count);
+	return page_count(virt_to_page(pte)) > 1;
 }
 #else
 static inline bool hugetlb_pmd_shared(pte_t *pte)
