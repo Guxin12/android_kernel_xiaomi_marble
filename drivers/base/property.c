@@ -884,7 +884,7 @@ EXPORT_SYMBOL_GPL(device_get_child_node_count);
 
 bool device_dma_supported(struct device *dev)
 {
-	const struct fwnode_handle *fwnode = dev_fwnode(dev);
+	struct fwnode_handle *fwnode = dev_fwnode(dev);
 
 	/* For DT, this is always supported.
 	 * For ACPI, this depends on CCA, which
@@ -899,7 +899,7 @@ EXPORT_SYMBOL_GPL(device_dma_supported);
 
 enum dev_dma_attr device_get_dma_attr(struct device *dev)
 {
-	const struct fwnode_handle *fwnode = dev_fwnode(dev);
+	struct fwnode_handle *fwnode = dev_fwnode(dev);
 	enum dev_dma_attr attr = DEV_DMA_NOT_SUPPORTED;
 
 	if (is_of_node(fwnode)) {
