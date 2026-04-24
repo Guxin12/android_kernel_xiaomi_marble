@@ -82,7 +82,7 @@ fi
 
 export PATH=${CLANG_PATH}:${PATH}
 
-export LOCALVERSION=-v4.6
+export LOCALVERSION=-v4.7
 $with_ksu && {
 	while true; do
 		kversion_ksu_suffix=$(cat /dev/urandom | tr -dc 'a-zA-Z' | head -c 3)
