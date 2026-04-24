@@ -73,8 +73,8 @@ export KBUILD_BUILD_HOST="wsl2"
 export KBUILD_BUILD_USER="pzqqt"
 
 if $USE_SLIM_LLVM; then
-	echo -e "${gre}Building kernel with Slim LLVM 22.1.3 $white"
-	CLANG_PATH=/home/pzqqt/build_toolchain/llvm-22.1.3-x86_64/bin
+	echo -e "${gre}Building kernel with Slim LLVM 22.1.4 $white"
+	CLANG_PATH=/home/pzqqt/build_toolchain/llvm-22.1.4-x86_64/bin
 else
 	echo -e "${gre}Building kernel with Google clang 22.0.0 $white"
 	CLANG_PATH=/home/pzqqt/build_toolchain/clang-r584948-22.0.0/bin
