@@ -8249,6 +8249,12 @@ static void
 lim_revise_req_eht_cap_per_band(struct mlme_legacy_priv *mlme_priv,
 				struct pe_session *session)
 {
+	struct mac_context *mac = session->mac_ctx;
+
+	if (wlan_reg_is_24ghz_ch_freq(session->curr_op_freq)) {
+		mlme_priv->eht_config = mac->eht_cap_2g;
+		pe_debug("revise 2G eht cap");
+	}
 }
 
 void lim_copy_bss_eht_cap(struct pe_session *session)
@@ -8270,6 +8276,7 @@ void lim_copy_join_req_eht_cap(struct pe_session *session)
 	mlme_priv = wlan_vdev_mlme_get_ext_hdl(session->vdev);
 	if (!mlme_priv)
 		return;
+	lim_revise_req_eht_cap_per_band(mlme_priv, session);
 	qdf_mem_copy(&session->eht_config, &mlme_priv->eht_config,
 		     sizeof(session->eht_config));
 }
