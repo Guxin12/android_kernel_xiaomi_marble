@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2018-2021 The Linux Foundation. All rights reserved.
- * Copyright (c) 2022-2023 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  *
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
@@ -1736,3 +1736,21 @@ done:
 
 	return phymode;
 }
+
+QDF_STATUS
+ucfg_mlme_get_passive_discard_mode(struct wlan_objmgr_psoc *psoc,
+				   uint8_t *val)
+{
+	struct wlan_mlme_psoc_ext_obj *mlme_obj;
+
+	mlme_obj = mlme_get_psoc_ext_obj(psoc);
+	if (!mlme_obj) {
+		*val = cfg_default(CFG_DISCARD_PASSIVE_CHANNEL_FOR_MODE);
+		return QDF_STATUS_E_INVAL;
+	}
+
+	*val = mlme_obj->cfg.passive_chan_discard_mode;
+
+	return QDF_STATUS_SUCCESS;
+}
+
