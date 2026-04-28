@@ -748,6 +748,36 @@ typedef  enum  {
     WMI_SERVICE_RADAR_FLAGS_RSSI_DBM_SUPPORT = 484, /* Indicates FW support to add RSSI in dBm units in WMI radar event */
     WMI_SERVICE_WOW_STA_PS_PARAM_CACHE_SUPPORT = 485,  /* Indicates FW support for WOW timeline optimization feature */
     WMI_SERVICE_VENDOR_OUI_SUPPORT_EXCLUSIVE_MAC_ADDRESS = 486, /* FW supports parse exclusive_mac_address in wmi_vendor_oui_ext */
+    WMI_SERVICE_P2P_CANCEL_ONE_SHOT_NOA_SUPPORT = 487, /* Indicates FW support for P2P GO/GC cancel one-shot NOA feature */
+    WMI_SERVICE_SMD_BSS_TRANSITION_SUPPORT = 488, /* Indicates FW supports S(eamless)M(obility)D(omain) BSS transition */
+
+    /* Service caps related to SMD Roaming - start */
+    WMI_SERVICE_SMD_SUPPORT_ROAMING = 489,
+    WMI_SERVICE_SMD_SUPPORT_DL_FORWARD = 490,
+    WMI_SERVICE_SMD_SUPPORT_UL_FORWARD = 491,
+    /* Service caps related to SMD Roaming - end */
+
+    WMI_SERVICE_PEER_METADATA_V2_SUPPORT = 492, /* Support rx peer meta data v2 */
+    /* WMI_SERVICE_HANDLE_ROAMING_WITHOUT_RSO_STOP_FOR_4WAY_HS_OFFLOAD_DISABLE:
+     * Indicates support to handle roaming triggers while host is doing
+     * the EAPOL process for 4way HS offload disable case.
+     * FW needs to disable the roam triggers except deauth roaming.
+     */
+    WMI_SERVICE_HANDLE_ROAMING_WITHOUT_RSO_STOP_FOR_4WAY_HS_OFFLOAD_DISABLE = 493,
+    /* Indicates FW support for populating vdev operating param stats */
+    WMI_SERVICE_VDEV_OPERATING_PARAMS_EVENT_SUPPORT = 494,
+    WMI_SERVICE_SUPPORT_WOW_OLE_DAL = 495,
+    /* Indicate FW support for PASSTHRU VDEV Channel Hopping Schedule */
+    WMI_SERVICE_PASSTHRU_VDEV_CHAN_HOP_SCHEDULE_SUPPORT = 496,
+    /*
+     * Indicates FW support for shared memory model to pass
+     * ongoing TBTT count downs to Host.
+     */
+    WMI_SERVICE_SHARED_MEM_MODEL_TBTT_COUNT_DOWN = 497,
+    /* Indicate FW support for IPI (Idle Power Indicate) stats collection */
+    WMI_SERVICE_IDLE_POWER_INDICATE_SUPPORT = 498,
+    /* Indicates FW support to add Radar type and domain in WMI radar event */
+    WMI_SERVICE_RADAR_FLAGS_TYPE_SUPPORT = 499,
 
 
     WMI_MAX_EXT2_SERVICE
