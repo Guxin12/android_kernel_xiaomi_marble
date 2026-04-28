@@ -5607,6 +5607,14 @@ static bool is_service_enabled_tlv(wmi_unified_t wmi_handle,
 			return false;
 		}
 
+		if (service_id > WMI_MAX_EXT_SERVICE &&
+		    (service_id - WMI_MAX_EXT_SERVICE) / 32 >=
+		    soc->wmi_ext2_service_bitmap_len) {
+			wmi_err("WMI service ext2 bit = %d is not advertised by fw",
+				service_id);
+			return false;
+		}
+
 		return WMI_SERVICE_EXT2_IS_ENABLED(soc->wmi_service_bitmap,
 				soc->wmi_ext_service_bitmap,
 				soc->wmi_ext2_service_bitmap,
