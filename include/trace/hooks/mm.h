@@ -114,6 +114,9 @@ DECLARE_HOOK(android_vh_mm_dirty_limits,
 DECLARE_HOOK(android_vh_oom_check_panic,
 	TP_PROTO(struct oom_control *oc, int *ret),
 	TP_ARGS(oc, ret));
+DECLARE_HOOK(android_vh_get_page_wmark,
+	TP_PROTO(unsigned int alloc_flags, unsigned long *page_wmark),
+	TP_ARGS(alloc_flags, page_wmark));
 DECLARE_HOOK(android_vh_save_vmalloc_stack,
 	TP_PROTO(unsigned long flags, struct vm_struct *vm),
 	TP_ARGS(flags, vm));

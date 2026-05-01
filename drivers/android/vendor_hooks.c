@@ -333,6 +333,7 @@ EXPORT_TRACEPOINT_SYMBOL_GPL(android_vh_logbuf_pr_cont);
 EXPORT_TRACEPOINT_SYMBOL_GPL(android_vh_tune_scan_type);
 EXPORT_TRACEPOINT_SYMBOL_GPL(android_vh_tune_swappiness);
 EXPORT_TRACEPOINT_SYMBOL_GPL(android_vh_shrink_slab_bypass);
+EXPORT_TRACEPOINT_SYMBOL_GPL(android_vh_get_page_wmark);
 EXPORT_TRACEPOINT_SYMBOL_GPL(android_vh_handle_failed_page_trylock);
 EXPORT_TRACEPOINT_SYMBOL_GPL(android_vh_page_trylock_set);
 EXPORT_TRACEPOINT_SYMBOL_GPL(android_vh_page_trylock_clear);

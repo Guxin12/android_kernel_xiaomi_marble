@@ -3989,7 +3989,7 @@ static inline unsigned int current_alloc_flags(gfp_t gfp_mask,
 /*
  * get_page_from_freelist goes through the zonelist trying to allocate
  * a page.
- */
+ */		
 static struct page *
 get_page_from_freelist(gfp_t gfp_mask, unsigned int order, int alloc_flags,
 						const struct alloc_context *ac)
@@ -4061,6 +4061,7 @@ retry:
 		}
 
 		mark = wmark_pages(zone, alloc_flags & ALLOC_WMARK_MASK);
+		trace_android_vh_get_page_wmark(alloc_flags, &mark);
 		if (!zone_watermark_fast(zone, order, mark,
 				       ac->highest_zoneidx, alloc_flags,
 				       gfp_mask)) {
