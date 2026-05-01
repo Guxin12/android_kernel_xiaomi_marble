@@ -126,4 +126,6 @@ source "drivers/staging/kshrink_slabd/Kconfig"
 
 source "drivers/staging/kshrink_lruvecd/Kconfig"
 
+source "drivers/staging/mi_mem_engine/Kconfig"
+
 endif # STAGING
