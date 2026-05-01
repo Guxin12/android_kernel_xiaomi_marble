@@ -1,4 +1,3 @@
-
 // MIUI ADD: Performance_UnfairMem
 #define pr_fmt(fmt) "unfair_mem: " fmt
 #include <linux/module.h>
@@ -26,12 +25,13 @@ static int msf_pid;
 static void mi_get_page_wmark_boost(void *nouse,
             unsigned int alloc_flags, unsigned long *page_wmark)
 {
-    pid_t current_pid ;
+    pid_t current_pid;
     bool boost =false;
+    int i;  /* 提前声明循环变量 */
 
     current_pid = current->pid;
     if(boost_ing == APP_START_EXIT ){
-        for(int i = 0; i < MAX_PIDS && pid_array[i] !=0; ++i) {
+        for(i = 0; i < MAX_PIDS && pid_array[i] !=0; ++i) {
             if(current_pid == pid_array[i]){
             boost =true;
             break;
