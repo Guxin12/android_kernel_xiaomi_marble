@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2017-2019 The Linux Foundation. All rights reserved.
+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  *
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
@@ -94,6 +95,27 @@ QDF_STATUS
 pmo_core_get_ns_offload_params(struct wlan_objmgr_vdev *vdev,
 			       struct pmo_ns_offload_params *params);
 
+/**
+ * pmo_core_get_ns_offload_enable_dynamic() - get NS offload dynamic enable
+ * @vdev: vdev objmgr handle
+ *
+ * Return: true is NS offload dynamic enable, else false
+ */
+bool
+pmo_core_get_ns_offload_enable_dynamic(struct wlan_objmgr_vdev *vdev);
+
+/**
+ * pmo_core_set_ns_offload_enable_dynamic() - Set NS offload dynamic enable
+ * @vdev: vdev objmgr handle
+ * @trigger: pmo trigger
+ * @ns_offload_enable_dyn: NS offload enable dynamic
+ *
+ * Return: None
+ */
+void
+pmo_core_set_ns_offload_enable_dynamic(struct wlan_objmgr_vdev *vdev,
+				       enum pmo_offload_trigger trigger,
+				       bool ns_offload_enable_dyn);
 #endif /* WLAN_POWER_MANAGEMENT_OFFLOAD */
 
 #endif /* end  of _WLAN_PMO_NS_H_ */
