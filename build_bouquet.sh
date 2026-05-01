@@ -15,9 +15,6 @@ KERNELSU_REPO=${KDIR}/../KernelSU
 SUSFS_REPO=${KDIR}/../susfs4ksu
 DEVICETREE="arch/arm64/boot/dts/vendor/qcom"
 
-USE_SLIM_LLVM=true
-# USE_SLIM_LLVM=false
-
 mkdir -p $OUTPUT_DIR
 mkdir -p ${OUTPUT_DIR}/vendor_boot_modules
 mkdir -p ${OUTPUT_DIR}/vendor_dlkm_modules
@@ -72,15 +69,10 @@ done
 export KBUILD_BUILD_HOST="wsl2"
 export KBUILD_BUILD_USER="pzqqt"
 
-if $USE_SLIM_LLVM; then
-	echo -e "${gre}Building kernel with Slim LLVM 22.1.4 $white"
-	CLANG_PATH=/home/pzqqt/build_toolchain/llvm-22.1.4-x86_64/bin
-else
-	echo -e "${gre}Building kernel with Google clang 22.0.0 $white"
-	CLANG_PATH=/home/pzqqt/build_toolchain/clang-r584948-22.0.0/bin
-fi
+echo -e "${gre}Building kernel with Slim LLVM 22.1.4 $white"
+CLANG_PATH=~/build_toolchain/llvm-22.1.4-x86_64/bin
 
-export PATH=${CLANG_PATH}:${PATH}
+export PATH=$(realpath $CLANG_PATH):${PATH}
 
 export LOCALVERSION=-v4.7
 $with_ksu && {
@@ -148,9 +140,6 @@ fi
 if [ "$(${KDIR}/scripts/config --file ${KDIR}/out/.config -s CFI_FORCE_SKIP_CHECK)" == "y" ]; then
 	echo -e "${yellow}Warning: CFI checks is disabled! $white"
 fi
-
-# Slim llvm dose not support polly
-$USE_SLIM_LLVM && ${KDIR}/scripts/config --file ${KDIR}/out/.config -d LLVM_POLLY
 
 t_start=$(date +"%s")
 
