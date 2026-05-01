@@ -53,3 +53,6 @@ obj-$(CONFIG_EXTEND_RECLAIM)	+= extend_reclaim/
 obj-$(CONFIG_BINDER_PRIO)	+= binder_prio/
 obj-$(CONFIG_KSHRINK_SLABD)	+= kshrink_slabd/
 obj-$(CONFIG_KSHRINK_LRUVECD)	+= kshrink_lruvecd/
+# MIUI ADD: Performance_UnfairMem
+obj-$(CONFIG_MI_MEM_ENGINE)        += mi_mem_engine/
+# END Performance_UnfairMem
