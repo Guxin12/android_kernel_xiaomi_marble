@@ -3756,6 +3756,12 @@ static void lim_ht_switch_chnl_req(struct pe_session *session)
 		return;
 	}
 
+	if (mac->lim.stop_roaming_callback)
+		mac->lim.stop_roaming_callback(MAC_HANDLE(mac),
+					       session->smeSessionId,
+					       REASON_DRIVER_DISABLED,
+					       RSO_CHANNEL_SWITCH);
+
 	session->channelChangeReasonCode =
 			LIM_SWITCH_CHANNEL_HT_WIDTH;
 	mlme_set_chan_switch_in_progress(session->vdev, true);
