@@ -348,16 +348,21 @@ QDF_STATUS policy_mgr_get_sap_mandt_chnl(struct wlan_objmgr_psoc *psoc,
  * policy_mgr_get_sap_force_20mhz_for_country_id() - to find out if SAP
  * force 20Mhz is enabled and country code is ID
  * @psoc: pointer to psoc
+ * @vdev: vdev object pointer to check device mode
  * @freq: freq
  *
  * This API is used to find out whether SAP's force 20Mhz support
- * is enabled
+ * is enabled. Returns true only when all three conditions are met:
+ * 1. Device mode is SAP (verified via vdev opmode)
+ * 2. Frequency is in 5GHz UNII-3 band
+ * 3. Country code is Indonesia ("ID") and INI gForceSAP20Mhz_cc_id is enabled
  *
  * Return: bool
  */
 bool
 policy_mgr_get_sap_force_20mhz_for_country_id(
 					struct wlan_objmgr_psoc *psoc,
+					struct wlan_objmgr_vdev *vdev,
 					qdf_freq_t freq);
 
 /**
