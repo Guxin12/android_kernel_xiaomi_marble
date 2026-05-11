@@ -72,7 +72,7 @@ export KBUILD_BUILD_USER="pzqqt"
 echo -e "${gre}Building kernel with Slim LLVM 22.1.5 $white"
 CLANG_PATH=~/build_toolchain/llvm-22.1.5-x86_64/bin
 
-export PATH=$(realpath $CLANG_PATH):${PATH}
+export PATH=$(realpath $CLANG_PATH):$(realpath ${KDIR}/build-tools):${PATH}
 
 export LOCALVERSION=-v4.7
 $with_ksu && {
@@ -604,19 +604,14 @@ if [ -d ${KDIR}/${DEVICETREE} ] && [ -d ${KDIR}/out/${DEVICETREE} ]; then
 		cp ${d}/*.dtbo /tmp/devicetree_techpack/$(basename $d)/
 	done
 
-	# https://github.com/LineageOS/android_vendor_lineage/blob/lineage-23.2/build/tools/merge_dtbs.py
-	if which merge_dtbs.py &>/dev/null; then
-		echo ""
-		echo "Merging dtbs & dtbos..."
-		merge_dtbs.py -b /tmp/devicetree_base -t /tmp/devicetree_techpack -o ${OUTPUT_DIR}/devicetree
+	echo ""
+	echo "Merging dtbs & dtbos..."
+	merge_dtbs.py -b /tmp/devicetree_base -t /tmp/devicetree_techpack -o ${OUTPUT_DIR}/devicetree
 
-		if which mkdtboimg.py &>/dev/null; then
-			echo ""
-			echo "- Making dtbo.img ..."
-			mkdtboimg.py create ${OUTPUT_DIR}/devicetree/dtbo.img ${OUTPUT_DIR}/devicetree/marble-sm7475-pm8008-overlay.dtbo
-			avbtool add_hash_footer --partition_name dtbo --partition_size $((24 * 1024 * 1024)) --image ${OUTPUT_DIR}/devicetree/dtbo.img
-		fi
-	fi
+	echo ""
+	echo "- Making dtbo.img ..."
+	mkdtboimg.py create ${OUTPUT_DIR}/devicetree/dtbo.img ${OUTPUT_DIR}/devicetree/marble-sm7475-pm8008-overlay.dtbo
+	avbtool add_hash_footer --partition_name dtbo --partition_size $((24 * 1024 * 1024)) --image ${OUTPUT_DIR}/devicetree/dtbo.img
 
 	rm -rf /tmp/devicetree_base
 	rm -rf /tmp/devicetree_techpack
