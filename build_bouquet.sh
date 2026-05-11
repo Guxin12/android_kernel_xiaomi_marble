@@ -605,12 +605,12 @@ if [ -d ${KDIR}/${DEVICETREE} ] && [ -d ${KDIR}/out/${DEVICETREE} ]; then
 	done
 
 	# https://github.com/LineageOS/android_vendor_lineage/blob/lineage-23.2/build/tools/merge_dtbs.py
-	if which -s merge_dtbs.py; then
+	if which merge_dtbs.py &>/dev/null; then
 		echo ""
 		echo "Merging dtbs & dtbos..."
 		merge_dtbs.py -b /tmp/devicetree_base -t /tmp/devicetree_techpack -o ${OUTPUT_DIR}/devicetree
 
-		if which -s mkdtboimg.py; then
+		if which mkdtboimg.py &>/dev/null; then
 			echo ""
 			echo "- Making dtbo.img ..."
 			mkdtboimg.py create ${OUTPUT_DIR}/devicetree/dtbo.img ${OUTPUT_DIR}/devicetree/marble-sm7475-pm8008-overlay.dtbo
