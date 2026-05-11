@@ -13,6 +13,7 @@
 #include <linux/mm.h>
 #include <linux/slab.h>
 #include <linux/string.h>
+#include <linux/module.h>
 
 #define CREATE_TRACE_POINTS
 #include <trace/events/damon.h>
@@ -21,6 +22,14 @@
 #undef DAMON_MIN_REGION
 #define DAMON_MIN_REGION 1
 #endif
+
+#ifdef MODULE_PARAM_PREFIX
+#undef MODULE_PARAM_PREFIX
+#endif
+#define MODULE_PARAM_PREFIX "damon."
+
+static uint __read_mostly debug = 0;
+module_param(debug, uint, 0644);
 
 static DEFINE_MUTEX(damon_lock);
 static int nr_running_ctxs;
@@ -886,13 +895,13 @@ static void damos_update_stat(struct damos *s,
 	if (sz_applied)
 		s->stat.nr_applied++;
 	s->stat.sz_applied += sz_applied;
-	if (s->action == DAMOS_PAGEOUT && sz_applied) {
+	if (debug && s->action == DAMOS_PAGEOUT && sz_applied) {
 		if (sz_applied < 1024)
-			pr_info("%u bytes of memory reclaimed\n", sz_applied);
+			pr_info("%lu bytes of memory reclaimed\n", sz_applied);
 		else if (sz_applied < 1024 * 1024)
-			pr_info("%u KB of memory reclaimed\n", sz_applied >> 10);
+			pr_info("%lu KB of memory reclaimed\n", sz_applied >> 10);
 		else
-			pr_info("%u MB of memory reclaimed\n", sz_applied >> 20);
+			pr_info("%lu MB of memory reclaimed\n", sz_applied >> 20);
 	}
 }
 
@@ -1359,7 +1368,7 @@ static unsigned long damos_wmark_wait_us(struct damos *scheme)
 
 	/* higher than high watermark or lower than low watermark */
 	if (metric > scheme->wmarks.high || scheme->wmarks.low > metric) {
-		if (scheme->wmarks.activated)
+		if (scheme->wmarks.activated && debug)
 			pr_info("deactivate a scheme (%d) for %s wmark, "
 				"mem free rate: %ld%%\n",
 					scheme->action,
@@ -1375,7 +1384,7 @@ static unsigned long damos_wmark_wait_us(struct damos *scheme)
 			!scheme->wmarks.activated)
 		return scheme->wmarks.interval;
 
-	if (!scheme->wmarks.activated)
+	if (!scheme->wmarks.activated && debug)
 		pr_info("activate a scheme (%d), mem free rate: %ld%%\n",
 			scheme->action, metric / 10);
 	scheme->wmarks.activated = true;

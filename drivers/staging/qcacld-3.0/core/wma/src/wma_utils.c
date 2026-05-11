@@ -1367,6 +1367,15 @@ wma_fill_rx_stats(struct sir_wifi_ll_ext_stats *ll_stats,
 			 wmi_peer_rx, wmi_rx, peer_stats);
 		return QDF_STATUS_E_FAILURE;
 	}
+
+	/* Check if num_rx_stats is sufficient to avoid buffer overflow */
+	if (param_buf->num_rx_stats <
+	    fix_param->num_peer_ac_rx_stats * WLAN_MAX_AC) {
+		wma_err("Insufficient rx_stats buffer: available %d, required %d",
+			param_buf->num_rx_stats,
+			fix_param->num_peer_ac_rx_stats * WLAN_MAX_AC);
+		return QDF_STATUS_E_FAILURE;
+	}
 	for (i = 0; i < fix_param->num_peer_ac_rx_stats; i++) {
 		uint32_t peer_id = wmi_peer_rx[i].peer_id;
 		struct sir_wifi_rx *ac;

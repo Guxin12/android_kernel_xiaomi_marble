@@ -2725,6 +2725,12 @@ wma_update_pdev_hw_mode_trans_ind(tp_wma_handle wma,
 {
 	uint32_t i;
 
+	if (!trans_ind ||
+	    trans_ind->num_vdev_mac_entries > MAX_VDEV_SUPPORTED) {
+		wma_err("Inval trans_ind param");
+		return;
+	}
+
 	/* Store the vdev-mac map in WMA and send to policy manager */
 	for (i = 0; i < trans_ind->num_vdev_mac_entries; i++)
 		wma_update_intf_hw_mode_params(

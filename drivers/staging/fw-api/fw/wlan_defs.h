@@ -75,19 +75,6 @@
      */
     #define CONFIG_160MHZ_SUPPORT_UNDEF_WAR
   #endif
-#else
-  /*
-   * For backwards compatibility, if CONFIG_160MHZ_SUPPORT is not defined,
-   * default it to 0, if this is either a host build or a Rome target build.
-   * This maintains the prior behavior for the host and Rome target builds.
-   */
-  #if defined(AR6320) || !defined(ATH_TARGET)
-    /*
-     * Set a flag to indicate that at the end of the file,
-     * CONFIG_160MHZ_SUPPORT should be set to 0.
-     */
-    #define CONFIG_160MHZ_SUPPORT_UNDEF_WAR
-  #endif
 #endif
 
 #ifndef SUPPORT_11AX
