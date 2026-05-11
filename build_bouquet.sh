@@ -69,8 +69,8 @@ done
 export KBUILD_BUILD_HOST="wsl2"
 export KBUILD_BUILD_USER="pzqqt"
 
-echo -e "${gre}Building kernel with Slim LLVM 22.1.4 $white"
-CLANG_PATH=~/build_toolchain/llvm-22.1.4-x86_64/bin
+echo -e "${gre}Building kernel with Slim LLVM 22.1.5 $white"
+CLANG_PATH=~/build_toolchain/llvm-22.1.5-x86_64/bin
 
 export PATH=$(realpath $CLANG_PATH):${PATH}
 
