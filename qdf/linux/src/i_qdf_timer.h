@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2014-2021 The Linux Foundation. All rights reserved.
+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  *
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
@@ -49,7 +50,11 @@ struct __qdf_timer_t {
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 15, 0)
 static inline void __os_timer_shim(struct timer_list *os_timer)
 {
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 16, 0)
+	struct __qdf_timer_t *timer = timer_container_of(timer, os_timer, os_timer);
+#else
 	struct __qdf_timer_t *timer = from_timer(timer, os_timer, os_timer);
+#endif
 
 	timer->callback(timer->context);
 }
@@ -154,6 +159,37 @@ static inline bool __qdf_timer_mod(struct __qdf_timer_t *timer, uint32_t msec)
 			 jiffies + __qdf_scaled_msecs_to_jiffies(msec));
 }
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 15, 0))
+static inline bool __qdf_timer_stop(struct __qdf_timer_t *timer)
+{
+	return !!timer_delete(&timer->os_timer);
+}
+
+static inline void __qdf_timer_free(struct __qdf_timer_t *timer)
+{
+	struct timer_list *os_timer = &timer->os_timer;
+
+	timer_delete_sync(os_timer);
+
+	if (object_is_on_stack(os_timer))
+		timer_destroy_on_stack(os_timer);
+}
+
+static inline bool __qdf_timer_sync_cancel(struct __qdf_timer_t *timer)
+{
+	return timer_delete_sync(&timer->os_timer);
+}
+
+static inline int __qdf_timer_delete(struct timer_list *timer)
+{
+	return timer_delete(timer);
+}
+
+static inline int __qdf_timer_delete_sync(struct timer_list *timer)
+{
+	return timer_delete_sync(timer);
+}
+#else
 static inline bool __qdf_timer_stop(struct __qdf_timer_t *timer)
 {
 	return !!del_timer(&timer->os_timer);
@@ -173,5 +209,16 @@ static inline bool __qdf_timer_sync_cancel(struct __qdf_timer_t *timer)
 {
 	return del_timer_sync(&timer->os_timer);
 }
+
+static inline int __qdf_timer_delete(struct timer_list *timer)
+{
+	return del_timer(timer);
+}
+
+static inline int __qdf_timer_delete_sync(struct timer_list *timer)
+{
+	return del_timer_sync(timer);
+}
+#endif /* KERNEL_VERSION(6, 15, 0)*/
 
 #endif /* _I_QDF_TIMER_H */
