@@ -7346,7 +7346,7 @@ __wlan_hdd_cfg80211_get_logger_supp_feature(struct wiphy *wiphy,
 	int status;
 	uint32_t features;
 	struct sk_buff *reply_skb = NULL;
-	bool enable_ring_buffer;
+	uint32_t enable_ring_buffer;
 
 	hdd_enter_dev(wdev->netdev);
 
@@ -12200,6 +12200,7 @@ static int __wlan_hdd_cfg80211_wifi_logger_start(struct wiphy *wiphy,
 	struct nlattr *tb[QCA_WLAN_VENDOR_ATTR_WIFI_LOGGER_START_MAX + 1];
 	struct sir_wifi_start_log start_log = { 0 };
 	mac_handle_t mac_handle;
+	uint32_t enable_ring_buffer;
 
 	hdd_enter_dev(wdev->netdev);
 
@@ -12258,6 +12259,18 @@ static int __wlan_hdd_cfg80211_wifi_logger_start(struct wiphy *wiphy,
 	start_log.is_pktlog_buff_clear = false;
 
 	cds_set_ring_log_level(start_log.ring_id, start_log.verbose_level);
+
+	/* Get enable_ring_buffer INI value */
+	wlan_mlme_get_status_ring_buffer(hdd_ctx->psoc, &enable_ring_buffer);
+
+	/* Check if ring buffer is supported based on INI and verbose level */
+	if (enable_ring_buffer == 2) {
+		if (start_log.verbose_level <= LOG_LEVEL_NORMAL_COLLECT) {
+			hdd_debug("Ring buffer not supported for ring_id: %d, verbose_level: %d",
+				  start_log.ring_id, start_log.verbose_level);
+			return -EOPNOTSUPP;
+		}
+	}
 
 	if (start_log.ring_id == RING_ID_WAKELOCK) {
 		/* Start/stop wakelock events */
@@ -12357,6 +12370,8 @@ static int __wlan_hdd_cfg80211_wifi_logger_get_ring_data(struct wiphy *wiphy,
 	struct hdd_context *hdd_ctx = wiphy_priv(wiphy);
 	struct nlattr *tb
 		[QCA_WLAN_VENDOR_ATTR_WIFI_LOGGER_GET_RING_DATA_MAX + 1];
+	uint32_t enable_ring_buffer;
+	uint32_t verbose_level;
 
 	hdd_enter();
 
@@ -12385,6 +12400,23 @@ static int __wlan_hdd_cfg80211_wifi_logger_get_ring_data(struct wiphy *wiphy,
 
 	ring_id = nla_get_u32(
 			tb[QCA_WLAN_VENDOR_ATTR_WIFI_LOGGER_GET_RING_DATA_ID]);
+
+	/* Get enable_ring_buffer INI value */
+	wlan_mlme_get_status_ring_buffer(hdd_ctx->psoc, &enable_ring_buffer);
+
+	/* Check if ring buffer logging is enabled based on INI and
+	 * verbose level
+	 */
+	if (enable_ring_buffer == 2) {
+		/* Get the current verbose level for the ring */
+		verbose_level = cds_get_ring_log_level(ring_id);
+
+		if (verbose_level <= LOG_LEVEL_NORMAL_COLLECT) {
+			hdd_debug("Ring buffers are not enabled for ring_id: %d",
+				  ring_id);
+			return -EINVAL;
+		}
+	}
 
 	if (ring_id == RING_ID_PER_PACKET_STATS) {
 		wlan_logging_set_per_pkt_stats();

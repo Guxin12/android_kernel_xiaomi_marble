@@ -1,6 +1,5 @@
 /*
  * Copyright (c) 2018-2021 The Linux Foundation. All rights reserved.
- * Copyright (c) 2021-2023 Qualcomm Innovation Center, Inc. All rights reserved.
  * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  *
  * Permission to use, copy, modify, and/or distribute this software for
@@ -1380,7 +1379,7 @@ struct wlan_mlme_generic {
 	uint8_t mgmt_retry_max;
 	bool enable_he_mcs0_for_6ghz_mgmt;
 	bool bmiss_skip_full_scan;
-	bool enable_ring_buffer;
+	uint32_t enable_ring_buffer;
 	bool enable_peer_unmap_conf_support;
 	uint8_t dfs_chan_ageout_time;
 	bool bigtk_support;
@@ -2593,6 +2592,7 @@ struct wlan_mlme_iot {
  * various roam triggers
  * @iot: IOT related CFG items
  * @reduce_pwr_scan_mode : reduce power scan mode enable/disable
+ * @passive_chan_discard_mode: discard passive channels
  */
 struct wlan_mlme_cfg {
 	struct wlan_mlme_chainmask chainmask_cfg;
@@ -2642,6 +2642,7 @@ struct wlan_mlme_cfg {
 	struct wlan_mlme_ratemask ratemask_cfg;
 	struct wlan_mlme_iot iot;
 	bool reduce_pwr_scan_mode;
+	uint8_t passive_chan_discard_mode;
 };
 
 enum pkt_origin {

@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2018-2021 The Linux Foundation. All rights reserved.
- * Copyright (c) 2022-2023 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  *
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
@@ -4570,4 +4570,15 @@ ucfg_mlme_get_reduce_power_scan_mode(struct wlan_objmgr_psoc *psoc,
 {
 	return wlan_mlme_get_reduce_pwr_scan_mode(psoc, scan_mode);
 }
+
+/*
+ * ucfg_mlme_get_passive_discard_mode() - Get the passive discard mode
+ * @psoc: pointer to psoc object
+ * @val:  bit mask of mode for which passive channel need to discard
+ *
+ * Return: QDF Status
+ */
+QDF_STATUS
+ucfg_mlme_get_passive_discard_mode(struct wlan_objmgr_psoc *psoc,
+				   uint8_t *val);
 #endif /* _WLAN_MLME_UCFG_API_H_ */

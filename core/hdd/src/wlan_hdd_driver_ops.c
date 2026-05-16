@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2015-2021 The Linux Foundation. All rights reserved.
- * Copyright (c) 2021-2024 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  *
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
@@ -983,7 +983,6 @@ static void __hdd_soc_recovery_shutdown(void)
 
 	/* recovery starts via firmware down indication; ensure we got one */
 	QDF_BUG(cds_is_driver_recovering());
-	hdd_init_start_completion();
 
 	/*
 	 * Perform SSR related cleanup if it has not already been done as a
@@ -2101,6 +2100,7 @@ wlan_hdd_pld_uevent(struct device *dev, struct pld_uevent_data *event_data)
 		hdd_dump_log_buffer();
 		cds_set_target_ready(false);
 		cds_set_recovery_in_progress(true);
+		hdd_init_start_completion();
 
 		/* Notify external threads currently waiting on firmware
 		 * by forcefully completing waiting events with a "reset"

@@ -753,8 +753,8 @@ enum wlan_wds_mode {
  * <ini>
  * gEnableRingBuffer - Enable Ring Buffer for Bug Report
  * @Min: 0
- * @Max: 1
- * @Default: 1
+ * @Max: 2
+ * @Default: 2
  *
  * This ini is used to enable Ring Buffer
  *
@@ -766,9 +766,10 @@ enum wlan_wds_mode {
  *
  * </ini>
  */
-#define CFG_ENABLE_RING_BUFFER CFG_INI_BOOL( \
+#define CFG_ENABLE_RING_BUFFER CFG_INI_UINT( \
 		"gEnableRingBuffer", \
-		1, \
+		0, 2, 2, \
+		CFG_VALUE_OR_DEFAULT, \
 		"To Enable Ring Buffer")
 
 /*
