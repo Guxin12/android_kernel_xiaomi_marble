@@ -281,8 +281,8 @@ static int __qcom_mdt_load(struct device *dev, const struct firmware *fw, const 
 
 	if (!mdt_header_valid(fw))
 		return -EINVAL;
-
 	is_split = qcom_mdt_bins_are_split(fw);
+
 	ehdr = (struct elf32_hdr *)fw->data;
 	phdrs = (struct elf32_phdr *)(ehdr + 1);
 
