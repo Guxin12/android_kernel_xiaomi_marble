@@ -1,6 +1,7 @@
 /*
  * Copyright (c) 2012-2021 The Linux Foundation. All rights reserved.
  * Copyright (c) 2021-2023 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  *
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
@@ -312,6 +313,34 @@ QDF_STATUS policy_mgr_get_sap_mandt_chnl(struct wlan_objmgr_psoc *psoc,
 	*sap_mandt_chnl = pm_ctx->cfg.sap_mandatory_chnl_enable;
 
 	return QDF_STATUS_SUCCESS;
+}
+
+bool policy_mgr_get_sap_force_20mhz_for_country_id(
+					struct wlan_objmgr_psoc *psoc,
+					qdf_freq_t freq)
+{
+	struct policy_mgr_psoc_priv_obj *pm_ctx;
+	bool force_sap_20mhz_cc_id;
+	uint8_t country_code[REG_ALPHA2_LEN + 1] = {0};
+
+	pm_ctx = policy_mgr_get_context(psoc);
+	if (!pm_ctx) {
+		policy_mgr_err("pm_ctx is NULL");
+		return false;
+	}
+
+	force_sap_20mhz_cc_id = pm_ctx->cfg.force_sap_20mhz_cc_id;
+	wlan_reg_get_cc_and_src(psoc, country_code);
+
+	/**
+	 * Force SAP to 20MHz if freq is UNII3 band freq, INI is
+	 * enabled and country is Indonesia
+	 */
+	if (wlan_reg_is_5ghz_unii3_chan_freq(freq) &&
+	    !qdf_mem_cmp(country_code, "ID", 2) && force_sap_20mhz_cc_id)
+		return true;
+
+	return false;
 }
 
 QDF_STATUS
