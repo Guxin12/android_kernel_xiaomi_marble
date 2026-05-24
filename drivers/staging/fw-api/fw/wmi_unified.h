@@ -919,7 +919,11 @@ typedef enum {
     /* WMI_PEER_ASSOC_V2_CMDID: extended alternative for WMI_PEER_ASSOC_CMDID */
     WMI_PEER_ASSOC_V2_CMDID,
 
-    /* beacon/management specific commands */
+    /* WMI_PEER_UHR_OMP_CMDID for UHR OMP frame*/
+    WMI_PEER_UHR_OMP_CMDID,
+
+
+    /*--- beacon/management specific commands ---*/
 
     /** transmit beacon by reference . used for transmitting beacon on low latency interface like pcie */
     WMI_BCN_TX_CMDID = WMI_CMD_GRP_START_ID(WMI_GRP_MGMT),
@@ -2665,6 +2669,10 @@ typedef enum {
     WMI_NAN_PEER_SCHEDULE_CNF_EVENTID,
     /* Confirmation event that FW has received WMI_NAN_PEER_PARAMS_CMDID */
     WMI_NAN_PEER_PARAMS_CNF_EVENTID,
+    /* Indicate negotiated committed NDP channels information. */
+    WMI_NDP_CHANNEL_INFO_EVENTID,
+    /* Event to indicate availability of STA AP connection on DFS channel */
+    WMI_NAN_DFS_CHANNEL_AVAILABILITY_IND_EVENTID,
 
     /* Coex Event */
     WMI_COEX_REPORT_ANTENNA_ISOLATION_EVENTID = WMI_EVT_GRP_START_ID(WMI_GRP_COEX),
@@ -6112,6 +6120,7 @@ typedef enum {
     WMI_VENDOR1_REQ1_VERSION_4_20   = 7,
     WMI_VENDOR1_REQ1_VERSION_4_40   = 8,
     WMI_VENDOR1_REQ1_VERSION_4_50   = 9,
+    WMI_VENDOR1_REQ1_VERSION_4_60   = 10,
 } WMI_VENDOR1_REQ1_VERSION;
 
 typedef enum {
@@ -6120,6 +6129,7 @@ typedef enum {
     WMI_VENDOR1_REQ2_VERSION_3_20   = 2,
     WMI_VENDOR1_REQ2_VERSION_3_50   = 3,
     WMI_VENDOR1_REQ2_VERSION_3_61   = 4,
+    WMI_VENDOR1_REQ2_VERSION_3_70   = 5,
 } WMI_VENDOR1_REQ2_VERSION;
 
 typedef enum {
@@ -18059,7 +18069,13 @@ typedef struct {
     A_UINT32 vdev_stats_id;
     /** cfp_enable: indicate whether control frame protection is enabled */
     A_UINT32 cfp_enable;
-
+    /*
+     * VDEV ID that will be assigned for both legacy and MLD VAPs.
+     * This will be configured to rx_meta_data in the AST entry.
+     * This information will then be used by host to achieve intra-bss
+     * forwarding for the Rx packets.
+     */
+    A_UINT32 global_vdev_id;
 
 /* This TLV is followed by another TLV of array of structures
  *   wmi_vdev_txrx_streams cfg_txrx_streams[];
@@ -19195,13 +19211,6 @@ typedef struct {
     A_UINT32 vdev_op_ul_nss; /* vdev operating uplink nss. 1 ~ n: 1ss ~ nss */
     A_UINT32 vdev_op_dl_nss; /* vdev operating downlink nss. 1 ~ n: 1ss ~ nss */
     A_UINT32 uhr_ops; /* refer to WMI_UHR_OPS_XXX macros */
-    /*
-     * VDEV ID that will be assigned for both legacy and MLD VAPs.
-     * This will be configured to rx_meta_data in the AST entry.
-     * This information will then be used by host to achieve intra-bss
-     * forwarding for the Rx packets.
-     */
-    A_UINT32 global_vdev_id;
 
 /* The TLVs follows this structure:
  *     wmi_channel chan; <-- WMI channel
@@ -19220,6 +19229,8 @@ typedef struct {
  *         optional TLV used for SMD
  *     wmi_vdev_start_uhr_config uhr_config_info
  *         optional TLV used if VAP is 11BN
+ *     wmi_uhr_ap_npca_params npca_params
+ *         optional TLV used to update NPCA information
  */
 } wmi_vdev_start_request_cmd_fixed_param;
 
@@ -23751,6 +23762,67 @@ typedef struct {
 } wmi_peer_uhr_npca_op_params;
 
 typedef struct {
+    A_UINT32 tlv_header; /* TLV tag and len; tag equals WMITLV_TAG_STRUC_wmi_peer_uhr_omp_cmd_fixed_param */
+    A_UINT32 sw_peer_id;
+    A_UINT32 pdev_id;
+
+    /*
+     * Variable-length TLV arrays follow this fixed param:
+     *   wmi_peer_uhr_omp_npca_params peer_omp_npca_params[];
+     *   Place Holder for other TLVs
+     */
+} wmi_peer_uhr_omp_cmd_fixed_param;
+
+typedef struct{
+    A_UINT32 tlv_header; /* TLV tag and len; tag equals WMITLV_TAG_STRUC_wmi_peer_uhr_omp_npca_params */
+    /*
+     * Bit0:3:  NPCA hw_link_id
+     *          WMI_OMP_NPCA_HW_LINK_ID_GET /  _SET
+     * Bit4:    Enable/Disable  NPCA params
+     *          WMI_OMP_NPCA_ENABLE_GET / _SET
+     * Bit5:    Update NPCA params
+     *          WMI_OMP_NPCA_UPDATE_GET / _SET
+     * Bit6:31: Reserved
+    */
+    A_UINT32 omp_npca_caps;
+    /*
+     * Bit0:5:   NPCA Switch Delay
+     *           The time needed by an NPCA STA to switch from the
+     *           BSS primary channel to the NPCA primary channel,
+     *           in units of 4 us.
+     *           WMI_OMP_NPCA_SWITCH_DELAY_GET / _SET
+     *
+     * Bit6:11: NPCA Switch Back Delay
+     *           The time needed by an NPCA STA to switch from the
+     *           NPCA primary channel to the BSS primary channel,
+     *           in units of 4
+     *           WMI_OMP_NPCA_SWITCH_BACK_DELAY_GET / _SET
+     *
+     * Bit12:31: Reserved
+     */
+    A_UINT32 omp_npca_param;
+} wmi_peer_uhr_omp_npca_params;
+
+#define WMI_OMP_NPCA_HW_LINK_ID_GET(_var)       WMI_GET_BITS(_var, 0, 4)
+#define WMI_OMP_NPCA_HW_LINK_ID_SET(_var, _val) WMI_SET_BITS(_var, 0, 4, _val)
+
+#define WMI_OMP_NPCA_ENABLE_GET(_var)           WMI_GET_BITS(_var, 4, 1)
+#define WMI_OMP_NPCA_ENABLE_SET(_var, _val)     WMI_SET_BITS(_var, 4, 1, _val)
+
+#define WMI_OMP_NPCA_UPDATE_GET(_var)           WMI_GET_BITS(_var, 5, 1)
+#define WMI_OMP_NPCA_UPDATE_SET(_var, _val)     WMI_SET_BITS(_var, 5, 1, _val)
+
+#define WMI_OMP_NPCA_SWITCH_DELAY_GET(_var) \
+    WMI_GET_BITS(_var, 0, 6)
+#define WMI_OMP_NPCA_SWITCH_DELAY_SET(_var, _val) \
+    WMI_SET_BITS(_var, 0, 6, _val)
+
+#define WMI_OMP_NPCA_SWITCH_BACK_DELAY_GET(_var) \
+    WMI_GET_BITS(_var, 6, 6)
+#define WMI_OMP_NPCA_SWITCH_BACK_DELAY_SET(_var, _val) \
+    WMI_SET_BITS(_var, 6, 6, _val)
+
+typedef struct {
     A_UINT32 tlv_header; /* TLV tag and len; tag equals WMITLV_TAG_STRUC_wmi_vdev_get_ap_oper_bw_cmd_fixed_param */
     A_UINT32 vdev_id;
     A_UINT32 ap_phymode; /* contains a WLAN_PHY_MODE value */
@@ -24297,7 +24369,7 @@ typedef struct {
     /** unique id identifying the VDEV, generated by the caller */
     A_UINT32 vdev_id;
     /** roam scan RSSI threshold */
-    A_UINT32 roam_scan_rssi_thresh;
+    A_UINT32 roam_scan_rssi_thresh; /* 2 GHz threshold */
     /** When using Hw generated beacon RSSI interrupts */
     A_UINT32 roam_rssi_thresh_diff;
     /** 5G scan max count */
@@ -24312,6 +24384,15 @@ typedef struct {
     A_INT32 rssi_thresh_offset_5g;
     /** flags for WMI_ROAM_SCAN_RSSI_THRESHOLD Command */
     A_UINT32 flags; /* see WMI_ROAM_SCAN_RSSI_THRESHOLD_FLAG defs */
+    /*
+     * If roam_scan_rssi_thresh_5ghz and roam_scan_rssi_thresh_6ghz are 0
+     * (due to the host not explicitly filling in values for these fields),
+     * the FW shall apply the roam_scan_rssi_thresh specification to the
+     * 5 GHz and 6 GHz bands, along with the 2.4 GHz band that the
+     * roam_scan_rssi_thresh specification is predominantly intended for.
+     */
+    A_UINT32 roam_scan_rssi_thresh_5ghz; /* 5 GHz threshold */
+    A_UINT32 roam_scan_rssi_thresh_6ghz; /* 6 GHz threshold */
     /* The TLVs will follow.
      * wmi_roam_scan_extended_threshold_param extended_param;
      * wmi_roam_earlystop_rssi_thres_param earlystop_param;
@@ -24495,6 +24576,8 @@ typedef struct {
 #define WMI_ROAM_SCAN_CHAN_LIST_TYPE_NONE 0x1
 #define WMI_ROAM_SCAN_CHAN_LIST_TYPE_STATIC 0x2
 #define WMI_ROAM_SCAN_CHAN_LIST_TYPE_DYNAMIC 0x3
+/* Restrict RCL to Neighbor Report and BTM request channels only */
+#define WMI_ROAM_SCAN_CHAN_LIST_TYPE_NEIGHBOR_REPORT 0x4
 
 #define WMI_ROAM_SCAN_LIST_FLAG_FLUSH_STATIC 0x1 /* Flush static roam scan channel list in FW */
 #define WMI_ROAM_SCAN_LIST_FLAG_FLUSH_DYNAMIC 0x2 /* Flush dynamic roam scan channel list in FW */
@@ -26641,6 +26724,18 @@ typedef enum {
 
     /* WoW error if close to TBTT */
     WMI_WOW_NON_ACK_REASON_CLOSE_TO_TBTT = 12,
+
+    /* WoW error if platform not ready */
+    WMI_WOW_NON_ACK_REASON_PLATFORM = 13,
+
+    /* WoW error if resume n processs */
+    WMI_WOW_NON_ACK_RESUME_IN_PROCESS = 14,
+
+    /* WoW error UT command */
+    WMI_WOW_NON_ACK_REASON_UNIT_TEST_CMD = 15,
+
+    /* WoW error if MCC lite mode active */
+    WMI_WOW_NON_ACK_REASON_MCC_LITE = 16,
 } WMI_WOW_NACK_STATUS;
 
 typedef struct {
@@ -31559,10 +31654,21 @@ typedef struct {
      * specific parameter defined in WMI_NAN_CONFIG_CHANGE_PARAM.
      */
     A_UINT32 nan_conf_change_bitmap;
+    /* nan_availability_attributes_len:
+     * number of valid bytes (i.e. excluding final alignment-padding)
+     * in the TLV nan_availability_attributes_data[]
+     */
+    A_UINT32 nan_availability_attributes_len;
 /*
  * TLVs following this structure:
  *     wmi_nan_ctrl_config_param nan_ctrl_config[];
  *     wmi_nan_disc_band_config_param nan_disc_band_config[];
+ *     A_UINT8 nan_availability_attributes_data[]:
+ *         NAN availability attributes sent down (along with header)
+ *         are sent in stream of bytes (ieee80211 protocol order).
+ *         The host must manually byteswap these bytes within each 4-byte word
+ *         if the host's endianness doesn't match the target's, to ensure the
+ *         expected byte order is maintained.
  */
 } wmi_nan_config_cmd_fixed_param;
 
@@ -31672,6 +31778,12 @@ typedef struct {
  *     expected byte order is maintained.
  */
 } wmi_nan_peer_params_cmd_fixed_param;
+
+typedef enum {
+    WMI_NAN_STATUS_NO_NAN_AVAIL_DFS_CHANNEL_DETECTED  = 0x1,
+    WMI_NAN_STATUS_NO_DFS_BEACONS_RECEIVED            = 0x2,
+    WMI_NAN_STATUS_STA_DISCONNECTED_FROM_DFS          = 0x3,
+} WMI_NAN_DFS_CHANNEL_AVAILABILITY_STATUS_TYPE;
 
 #define WMI_NAN_GET_RANGING_INITIATOR_ROLE(flag)      WMI_GET_BITS(flag, 0, 1)
 #define WMI_NAN_SET_RANGING_INITIATOR_ROLE(flag, val) WMI_SET_BITS(flag, 0, 1, val)
@@ -31852,6 +31964,35 @@ typedef struct {
      */
     A_UINT32 status;
 } wmi_nan_peer_params_cnf_event_fixed_param;
+
+typedef struct {
+    A_UINT32 tlv_header; /** TLV tag and len; tag equals
+                          *  WMITLV_TAG_STRUC_wmi_nan_dfs_channel_availability_ind_event_fixed_param */
+    A_UINT32 vdev_id;
+    /** status:
+     * Status code; see WMI_NAN_DFS_CHANNEL_AVAILABILITY_STATUS_TYPE
+     */
+    A_UINT32 status;
+} wmi_nan_dfs_channel_availability_ind_event_fixed_param;
+
+typedef struct {
+    A_UINT32 tlv_header; /* TLV tag and len; tag equals WMITLV_TAG_STRUC_wmi_ndp_channel_info_event_fixed_param */
+
+    A_UINT32 vdev_id; /* Virtual device ID used for NDP operations (NDI VDEV) */
+    /** peer NDI MAC address */
+    wmi_mac_addr peer_ndi_macaddr;
+    /** Number of channels on this peer */
+    A_UINT32 num_ndp_channels;
+    /**
+     * TLV (tag length value) parameters follow the ndp_confirm
+     * structure. The TLV's are:
+     * wmi_channel ndp_channel_list[];
+     * A_UINT32 nss_list[]; // Nss indexing should match with channel indexing,
+     *                      // since Nss is associated with the channel.
+     * wmi_ndp_channel_info channel_info[]; // Indexing should match with
+     *                                      // channel indexing.
+     */
+} wmi_ndp_channel_info_event_fixed_param;
 
 typedef enum {
     WMI_NDP_BAND_CAP_2GHZ = 0x01,
@@ -42399,6 +42540,7 @@ static INLINE A_UINT8 *wmi_id_to_name(A_UINT32 wmi_command)
         WMI_RETURN_STRING(WMI_ENERGY_MGMT_OEM_DATA_CMDID);
         WMI_RETURN_STRING(WMI_TWT_ADD_CH_USAGE_CMDID);
         WMI_RETURN_STRING(WMI_COEX_GET_POLICY_STATS_CMDID);
+        WMI_RETURN_STRING(WMI_PEER_UHR_OMP_CMDID);
     }
 
     return (A_UINT8 *) "Invalid WMI cmd";
@@ -43576,6 +43718,8 @@ typedef struct {
      *     optional TLV for dbw_chan
      * wmi_dbw_chan_info dbw_chan_info
      *     optional TLV used for dbw_chan_info
+     * wmi_uhr_ap_npca_params npca_params
+     *      optional TLV used to update NPCA information
      */
 } wmi_pdev_multiple_vdev_restart_request_cmd_fixed_param;
 
@@ -46774,7 +46918,7 @@ typedef enum {
     WMI_6GHZ_REG_PWRMODE_C2C = 4, /*C2C client mode for AP and client products*/
     WMI_6GHZ_REG_PWRMODE_GVP = 5, /* GVP mode for AP and client products */
 
-    WMI_6GHZ_REG_PWRMODE_MAX = 5
+    WMI_6GHZ_REG_PWRMODE_MAX = 6
 } WMI_6GHZ_REG_PWRMODE_TYPE;
 
 typedef struct {
@@ -55069,13 +55213,13 @@ typedef struct {
      *           The time needed by an NPCA STA to switch from the
      *           BSS primary channel to the NPCA primary channel,
      *           in units of 4 us.
-     *           WMI_NPCA_AP_CAP_SWT_DELAY_GET / _SET
+     *           WMI_NPCA_AP_CAP_SWITCH_DELAY_GET / _SET
      *
      * Bit18:23: NPCA Switch Back Delay
      *           The time needed by an NPCA STA to switch from the
      *           NPCA primary channel to the BSS primary channel,
      *           in units of 4 us.
-     *           WMI_NPCA_AP_CAP_SWTB_DELAY_GET / _SET
+     *           WMI_NPCA_AP_CAP_SWITCH_BACK_DELAY_GET / _SET
      *
      * Bit24:25: The Initial NPCA QSRC field indicates the value
      *           that is used to initialize the EDCAF QSRC[AC] variables
