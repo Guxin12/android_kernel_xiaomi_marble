@@ -1714,15 +1714,20 @@ static bool
 hdd_is_sap_with_new_chan_width_needed(struct wlan_objmgr_psoc *psoc,
 				      struct wlan_objmgr_pdev *pdev,
 				      struct sap_config *sap_config,
-				      qdf_freq_t oper_freq)
+				      qdf_freq_t oper_freq,
+				      struct hdd_adapter *adapter)
 {
 	enum phy_ch_width new_ch_width;
 
 	new_ch_width = sap_config->ch_params.ch_width;
 
-	/* Force SAP to 20MHz if INI is enabled and country is Indonesia */
+	/* Force SAP to 20MHz if INI is enabled, country is Indonesia
+	 * and device mode is SAP
+	 */
 	if (sap_config->ch_params.ch_width != CH_WIDTH_20MHZ &&
-	    policy_mgr_get_sap_force_20mhz_for_country_id(psoc, oper_freq)) {
+	    adapter->vdev &&
+	    policy_mgr_get_sap_force_20mhz_for_country_id(
+			psoc, adapter->vdev, oper_freq)) {
 		hdd_debug("Force SAP to 20MHz due to INI and country code ID");
 		new_ch_width = CH_WIDTH_20MHZ;
 	}
@@ -1784,7 +1789,8 @@ static void hdd_country_change_update_sap(struct hdd_context *hdd_ctx)
 							hdd_ctx->psoc,
 							pdev,
 							sap_config,
-							oper_freq);
+							oper_freq,
+							adapter);
 			hdd_debug("phy_changes: %d, chan_width_changed: %d",
 				  phy_changed, chan_width_changed);
 
