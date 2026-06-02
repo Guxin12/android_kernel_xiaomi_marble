@@ -313,6 +313,9 @@ EXPORT_SYMBOL_GPL(fsnotify_put_mark);
  */
 static bool fsnotify_get_mark_safe(struct fsnotify_mark *mark)
 {
+	if (!mark)
+		return true;
+
 	if (refcount_inc_not_zero(&mark->refcnt)) {
 		spin_lock(&mark->lock);
 		if (mark->flags & FSNOTIFY_MARK_FLAG_ATTACHED) {
@@ -353,22 +356,15 @@ bool fsnotify_prepare_user_wait(struct fsnotify_iter_info *iter_info)
 	int type;
 
 	fsnotify_foreach_obj_type(type) {
-		struct fsnotify_mark *mark = iter_info->marks[type];
-
 		/* This can fail if mark is being removed */
-		while (mark && !fsnotify_get_mark_safe(mark)) {
-			if (mark->group == iter_info->current_group) {
-				__release(&fsnotify_mark_srcu);
-				goto fail;
-			}
-			/* This is a mark in an unrelated group, skip */
-			mark = fsnotify_next_mark(mark);
-			iter_info->marks[type] = mark;
+		if (!fsnotify_get_mark_safe(iter_info->marks[type])) {
+			__release(&fsnotify_mark_srcu);
+			goto fail;
 		}
 	}
 
 	/*
-	 * Now that all marks are pinned by refcount in the inode / vfsmount / etc
+	 * Now that both marks are pinned by refcount in the inode / vfsmount
 	 * lists, we can drop SRCU lock, and safely resume the list iteration
 	 * once userspace returns.
 	 */
