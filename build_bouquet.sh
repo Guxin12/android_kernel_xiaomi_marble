@@ -467,6 +467,7 @@ drivers/virt/gunyah/gh_virt_wdt.ko
 kernel/sched/walt/sched-walt.ko
 kernel/trace/qcom_ipc_logging.ko
 net/qrtr/qrtr.ko
+techpack/bootinfo/bootinfo.ko
 '
 
 # 额外需要在 vendor_dlkm 分区替换的内核模块
