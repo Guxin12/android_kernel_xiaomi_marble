@@ -1,6 +1,7 @@
 /*
  * Copyright (c) 2012-2021 The Linux Foundation. All rights reserved.
  * Copyright (c) 2021-2023 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  *
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
@@ -254,6 +255,7 @@ extern enum policy_mgr_conc_next_action
  * @go_force_scc: Enable/Disable P2P GO force SCC
  * @pcl_band_priority: PCL channel order between 5G and 6G.
  * @sbs_enable: To enable/disable SBS
+ * @force_sap_20mhz_cc_id: Force SAP on 20Mhz for country ID
  */
 struct policy_mgr_cfg {
 	uint8_t mcc_to_scc_switch;
@@ -278,6 +280,7 @@ struct policy_mgr_cfg {
 	uint8_t go_force_scc;
 	enum policy_mgr_pcl_band_priority pcl_band_priority;
 	bool sbs_enable;
+	bool force_sap_20mhz_cc_id;
 };
 
 /**

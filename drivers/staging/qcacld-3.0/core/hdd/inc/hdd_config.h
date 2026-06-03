@@ -1,6 +1,7 @@
 /*
  * Copyright (c) 2012-2021 The Linux Foundation. All rights reserved.
  * Copyright (c) 2021-2025 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  *
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
@@ -1975,6 +1976,29 @@ enum host_log_level {
 		0, \
 		"This ini is used to enable STA-SAP-P2P concurrency")
 
+/*
+ * <ini>
+ * gForceSAP20Mhz_cc_id - Force SAP to 20MHz bandwidth for country Indonesia
+ * @Min: 0
+ * @Max: 1
+ * @Default: 0
+ *
+ * This ini is used to force the SAP to operate in 20MHz bandwidth for
+ * country Indonesia regardless of other configurations.
+ *
+ * Related: None
+ *
+ * Supported Feature: SAP
+ *
+ * Usage: External
+ *
+ * </ini>
+ */
+#define CFG_FORCE_SAP_20MHZ_CC_ID_ENABLE CFG_INI_BOOL( \
+			"gForceSAP20Mhz_cc_id", \
+			0, \
+			"Force SAP to 20MHz bandwidth")
+
 #define CFG_HDD_ALL \
 	CFG_DYNAMIC_MAC_ADDR_UPDATE_SUPPORTED_ALL \
 	CFG_ENABLE_PACKET_LOG_ALL \
@@ -2029,5 +2053,6 @@ enum host_log_level {
 	CFG(CFG_NO_STA_NAN_CONCURRENCY) \
 	CFG(CFG_NO_SAP_NAN_CONCURRENCY) \
 	CFG(CFG_NO_P2P_CONCURRENCY) \
-	CFG(CFG_STA_SAP_P2P_CONCURRENCY)
+	CFG(CFG_STA_SAP_P2P_CONCURRENCY) \
+	CFG(CFG_FORCE_SAP_20MHZ_CC_ID_ENABLE)
 #endif
