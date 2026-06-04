@@ -283,9 +283,10 @@
  * 3.153 Add passthru_pkt flag in rx_peer_metadata structs.
  * 3.154 Add T2H PEER_DEL_ALL_GLOBAL_VDEV_ID_UNMAP msg def.
  * 3.155 Add rxmon hdrlen specs in rx_ring_selection_cfg_t.
+ * 3.156 Add qdata_consent_pkt flag in rx_peer_metadata_v1a and v2.
  */
 #define HTT_CURRENT_VERSION_MAJOR 3
-#define HTT_CURRENT_VERSION_MINOR 155
+#define HTT_CURRENT_VERSION_MINOR 156
 
 #define HTT_NUM_TX_FRAG_DESC  1024
 
@@ -22007,14 +22008,14 @@ PREPACK struct htt_rx_peer_metadata_v1 {
  */
 PREPACK struct htt_rx_peer_metadata_v1a {
     A_UINT32
-        peer_id:         13,
-        ml_peer_valid:   1,
-        vdev_id:         8,
-        logical_link_id: 4,
-        chip_id:         3,
-        qdata_refill:    1,
-        passthru_pkt:    1,
-        reserved2:       1;
+        peer_id:           13,
+        ml_peer_valid:     1,
+        vdev_id:           8,
+        logical_link_id:   4,
+        chip_id:           3,
+        qdata_refill:      1,
+        passthru_pkt:      1,
+        qdata_consent_pkt: 1;
 } POSTPACK;
 
 #define HTT_RX_PEER_META_DATA_V1A_PEER_ID_S    0
@@ -22092,6 +22093,17 @@ PREPACK struct htt_rx_peer_metadata_v1a {
     do {                                             \
         HTT_CHECK_SET_VAL(HTT_RX_PEER_META_DATA_V1A_PASSTHRU_PKT, _val);  \
         ((_var) |= ((_val) << HTT_RX_PEER_META_DATA_V1A_PASSTHRU_PKT_S)); \
+    } while (0)
+
+#define HTT_RX_PEER_META_DATA_V1A_QDATA_CONSENT_PKT_S    31
+#define HTT_RX_PEER_META_DATA_V1A_QDATA_CONSENT_PKT_M    0x80000000
+#define HTT_RX_PEER_META_DATA_V1A_QDATA_CONSENT_PKT_GET(_var) \
+    (((_var) & HTT_RX_PEER_META_DATA_V1A_QDATA_CONSENT_PKT_M) >> HTT_RX_PEER_META_DATA_V1A_QDATA_CONSENT_PKT_S)
+
+#define HTT_RX_PEER_META_DATA_V1A_QDATA_CONSENT_PKT_SET(_var, _val) \
+    do { \
+        HTT_CHECK_SET_VAL(HTT_RX_PEER_META_DATA_V1A_QDATA_CONSENT_PKT, _val);  \
+        ((_var) |= ((_val) << HTT_RX_PEER_META_DATA_V1A_QDATA_CONSENT_PKT_S)); \
     } while (0)
 
 
@@ -22201,14 +22213,15 @@ PREPACK struct htt_rx_peer_metadata_v1b {
  */
 PREPACK struct htt_rx_peer_metadata_v2 {
     A_UINT32
-        peer_id:          5,
-        ml_peer_valid:    1,
-        vdev_id:          3,
-        logical_link_id:  3,
-        qdata_refill:     1,
-        peer_session_id:  8,
-        passthru_pkt:     1,
-        reserved:        10;
+        peer_id:           5,
+        ml_peer_valid:     1,
+        vdev_id:           3,
+        logical_link_id:   3,
+        qdata_refill:      1,
+        peer_session_id:   8,
+        passthru_pkt:      1,
+        qdata_consent_pkt: 1,
+        reserved:          9;
 } POSTPACK;
 
 #define HTT_RX_PEER_META_DATA_V2_PEER_ID_S 0
@@ -22294,6 +22307,17 @@ PREPACK struct htt_rx_peer_metadata_v2 {
         ((_var) |= ((_val) << HTT_RX_PEER_META_DATA_V2_PASSTHRU_PKT_S)); \
     } while (0)
 
+#define HTT_RX_PEER_META_DATA_V2_QDATA_CONSENT_PKT_S 22
+#define HTT_RX_PEER_META_DATA_V2_QDATA_CONSENT_PKT_M 0x00400000
+#define HTT_RX_PEER_META_DATA_V2_QDATA_CONSENT_PKT_GET(_var) \
+    (((_var) & HTT_RX_PEER_META_DATA_V2_QDATA_CONSENT_PKT_M) >> HTT_RX_PEER_META_DATA_V2_QDATA_CONSENT_PKT_S)
+
+#define HTT_RX_PEER_META_DATA_V2_QDATA_CONSENT_PKT_SET(_var, _val) \
+    do { \
+        HTT_CHECK_SET_VAL(HTT_RX_PEER_META_DATA_V2_QDATA_CONSENT_PKT, _val);  \
+        ((_var) |= ((_val) << HTT_RX_PEER_META_DATA_V2_QDATA_CONSENT_PKT_S)); \
+    } while (0)
+
 
 /* generic variables for masks and shifts for various fields */
 extern A_UINT32 HTT_RX_PEER_META_DATA_PEER_ID_S;
@@ -22332,6 +22356,9 @@ extern void (*HTT_RX_PEER_META_DATA_PEER_SESSION_ID_SET) (A_UINT32 *var, A_UINT3
 
 extern A_UINT32 (*HTT_RX_PEER_META_DATA_DECAP_TYPE_GET) (A_UINT32 var);
 extern void (*HTT_RX_PEER_META_DATA_DECAP_TYPE_SET) (A_UINT32 *var, A_UINT32 val);
+
+extern A_UINT32 (*HTT_RX_PEER_META_DATA_PASSTHRU_PKT_GET) (A_UINT32 var);
+extern void (*HTT_RX_PEER_META_DATA_PASSTHRU_PKT_SET) (A_UINT32 *var, A_UINT32 val);
 
 
 /*

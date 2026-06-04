@@ -1,6 +1,7 @@
 /*
  * Copyright (c) 2012-2021 The Linux Foundation. All rights reserved.
  * Copyright (c) 2021-2024 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  *
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
@@ -2762,6 +2763,14 @@ static void sap_validate_chanmode_and_chwidth(struct mac_context *mac_ctx,
 					       sap_ctx->ch_params.sec_ch_offset,
 					       &sap_ctx->ch_params);
 	}
+
+	/**
+	 * Force SAP to 20MHz if INI is enabled and country is Indonesia
+	 */
+	if (policy_mgr_get_sap_force_20mhz_for_country_id(
+					mac_ctx->psoc,
+					(qdf_freq_t)sap_ctx->chan_freq))
+		sap_ctx->ch_params.ch_width = CH_WIDTH_20MHZ;
 
 	if (orig_ch_width != sap_ctx->ch_params.ch_width ||
 	    orig_phymode != sap_ctx->phyMode)

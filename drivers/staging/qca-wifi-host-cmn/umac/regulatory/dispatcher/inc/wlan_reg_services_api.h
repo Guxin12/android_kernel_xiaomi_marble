@@ -90,6 +90,18 @@ bool wlan_reg_is_24ghz_ch_freq(qdf_freq_t freq);
 bool wlan_reg_is_5ghz_ch_freq(qdf_freq_t freq);
 
 /**
+ * wlan_reg_is_5ghz_unii3_chan_freq() - Check if the given 5GHz channel
+ * frequency is uinii3 band frequency or not.
+ * @freq: Channel frequency
+ *
+ * Return: true if given 5GHz channel frequency is uinii3 band frequency
+ * frequency, else false
+ */
+bool wlan_reg_is_5ghz_unii3_chan_freq(qdf_freq_t freq);
+#define WLAN_REG_IS_5GHZ_UNII3_CHAN_FREQ(freq) \
+wlan_reg_is_5ghz_unii3_chan_freq(freq)
+
+/**
  * wlan_reg_is_range_overlap_2g() - Check if the given low_freq and high_freq
  * is in the 2G range.
  *
