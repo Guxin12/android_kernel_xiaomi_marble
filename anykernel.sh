@@ -4,7 +4,7 @@
 ### AnyKernel setup
 # global properties
 properties() { '
-kernel.string=Melt-Delta Kernel By Pzqqt && 酷安@初春在鹿野 
+kernel.string=Melt Kernel By Pzqqt && Coolapk@初春在鹿野
 do.devicecheck=1
 do.modules=0
 do.systemless=1
@@ -37,13 +37,20 @@ split_boot # skip ramdisk unpack
 
 ########## FLASH BOOT & VENDOR_DLKM START ##########
 
-SHA1_STOCK="369217ccf4464067996017977eb1b6d6ab92dc0f"
+. ${home}/langs/en.lang
+if ${BOOTMODE}; then
+	case "$(getprop persist.sys.locale)" in
+		zh*) . ${home}/langs/cn.lang;;
+	esac
+fi
+
+SHA1_STOCK="0"
 
 KEYCODE_UP=42
 KEYCODE_DOWN=41
 
 ln -s ${bin}/kmod ${bin}/depmod
-ln -s ${bin}/kmod ${bin}/modprobe
+ln -s ${bin}/kmod ${bin}/modinfo
 
 extract_erofs() {
 	local img_file=$1
@@ -70,6 +77,20 @@ mkfs_erofs() {
 is_mounted() { mount | grep -q " $1 "; }
 
 sha1() { ${bin}/magiskboot sha1 "$1"; }
+
+apply_patch() {
+	# apply_patch <src_path> <src_sha1> <dst_sha1> <bs_patch>
+	local src_path=$1
+	local src_sha1=$2
+	local dst_sha1=$3
+	local bs_patch=$4
+	local file_sha1
+
+	file_sha1=$(sha1 $src_path)
+	[ "$file_sha1" == "$dst_sha1" ] && return 0
+	[ "$file_sha1" == "$src_sha1" ] && ${bin}/hpatchz -f "$src_path" "$bs_patch" "$src_path" 
+	[ "$(sha1 $src_path)" == "$dst_sha1" ] || abort "! $_LANG_FAILED_TO_PATCH $src_path!"
+}
 
 get_keycheck_result() {
 	# Default behavior:
@@ -100,15 +121,15 @@ keycode_select() {
 		shift
 	done
 	ui_print "#"
-	ui_print "# 音量+ = 是, 音量- = 否."
-	ui_print "# 请按键..."
+	ui_print "# $_LANG_KEYCHECK_PROMPT_1"
+	ui_print "# $_LANG_KEYCHECK_PROMPT_2"
 	get_keycheck_result
 	r_keycode=$?
 	ui_print "#"
 	if [ "$r_keycode" -eq "0" ]; then
-		ui_print "- 你选择了: 是."
+		ui_print "- $_LANG_KEYCHECK_RESULT_YES"
 	else
-		ui_print "- 你选择了: 否."
+		ui_print "- $_LANG_KEYCHECK_RESULT_NO"
 	fi
 	ui_print " "
 	return $r_keycode
@@ -140,14 +161,14 @@ check_super_device_size() {
 	local block_device_size block_device_size_lp
 
 	block_device_size=$(get_size /dev/block/by-name/super) || \
-		abort "! 读取 super 分区大小失败 (by blockdev)!"
+		abort "! $_LANG_FAILED_TO_GET_SUPER_SIZE_BLKDEV"
 	block_device_size_lp=$(${bin}/lpdump 2>/dev/null | grep -m1 -E 'Size: [[:digit:]]+ bytes$' | awk '{print $2}') || \
-		abort "! 读取 super 分区大小失败 (by lpdump)!"
-	ui_print "- super 分区大小:"
-	ui_print "  - Read by blockdev: $block_device_size"
-	ui_print "  - Read by lpdump: $block_device_size_lp"
+		abort "! $_LANG_FAILED_TO_GET_SUPER_SIZE_LPDUMP"
+	ui_print "- ${_LANG_SUPER_SIZE}:"
+	ui_print "  - ${_LANG_SUPER_SIZE_BLKDEV}: $block_device_size"
+	ui_print "  - ${_LANG_SUPER_SIZE_LPDUMP}: $block_device_size_lp"
 	[ "$block_device_size" == "9663676416" ] && [ "$block_device_size_lp" == "9663676416" ] || \
-		abort "! super 分区大小不匹配!"
+		abort "! $_LANG_SUPER_SIZE_MISMATCH"
 }
 
 # copy_gpu_pwrlevels_conf <orig dtb file> <new dtb file>
@@ -221,9 +242,11 @@ depmod_regen() {
 	rm -rf "$temp_dir"
 }
 
+ui_print " ";
+
 # Check firmware
 if strings /dev/block/bootdevice/by-name/xbl_config${slot} | grep -q 'led_blink'; then
-	ui_print "检测到 HyperOS 固件!"
+	ui_print "$_LANG_HOS_FIRMWARE_DETECTED"
 	is_hyperos_fw=true
 	is_hyperos_fw_with_new_adsp2=false
 	is_hyperos_fw_with_newer_adsp2=false
@@ -239,16 +262,16 @@ if strings /dev/block/bootdevice/by-name/xbl_config${slot} | grep -q 'led_blink'
 		if [ -z "$modem_mount_path" ]; then
 			mkdir ${home}/_modem_mnt
 			mount /dev/block/bootdevice/by-name/modem${slot} ${home}/_modem_mnt -o ro || \
-				abort "! 无法挂载 modem partition!"
+				abort "! $_LANG_FAILED_TO_MOUNT modem partition!"
 			modem_mount_path=${home}/_modem_mnt
 		fi
 	fi
 
 	if strings "${modem_mount_path}/image/adsp2.b18" | grep -q 'audiostatus'; then
-		ui_print "检测到新版本 adsp2 固件!"
+		ui_print "$_LANG_NEW_ADSP2_FIRMWARE_DETECTED"
 		is_hyperos_fw_with_new_adsp2=true
 		if strings "${modem_mount_path}/image/adsp2.b18" | grep -q 'max_life_vol'; then
-			ui_print "检测到比新版本还新的 adsp2 固件!"
+			ui_print "$_LANG_NEWER_ADSP2_FIRMWARE_DETECTED"
 			is_hyperos_fw_with_newer_adsp2=true
 		fi
 	fi
@@ -260,14 +283,14 @@ if strings /dev/block/bootdevice/by-name/xbl_config${slot} | grep -q 'led_blink'
 
 	unset modem_mount_path
 else
-	ui_print "检测到 MIUI14 固件!"
+	ui_print "$_LANG_MIUI14_FIRMWARE_DETECTED"
 	is_hyperos_fw=false
 fi
 
 if ! ${is_hyperos_fw}; then
-	ui_print " " "抱歉! Melt-Delta Kernel 不支持 MIUI14 固件!"
+	ui_print " " "$_LANG_MIUI14_FIRMWARE_NOT_SUPPORT"
 	sleep 3
-	abort "中止..."
+	abort "$_LANG_ABORTING"
 fi
 unset is_hyperos_fw
 
@@ -281,22 +304,22 @@ ${bin}/snapshotupdater_static dump &>/dev/null
 rc=$?
 if [ "$rc" != 0 ]; then
 	ui_print " "
-	ui_print "无法通过 snapshotupdater_static 读取快照状态 rc=$rc."
+	ui_print "$_LANG_FAILED_TO_GET_SNAPSHOT_STATUS rc=$rc."
 	if ${BOOTMODE}; then
-		ui_print "试试用其他 app 安装."
-		ui_print "推荐 KernelFlasher:"
-		ui_print "  https://github.com/capntrips/KernelFlasher/releases"
+		ui_print "$_LANG_FAILED_TO_GET_SNAPSHOT_STATUS_PROMPT_1"
+		ui_print "$_LANG_FAILED_TO_GET_SNAPSHOT_STATUS_PROMPT_2"
+		ui_print "$_LANG_FAILED_TO_GET_SNAPSHOT_STATUS_PROMPT_3"
 	fi
-	abort "中止..."
+	abort "$_LANG_ABORTING"
 fi
 snapshot_status=$(${bin}/snapshotupdater_static dump 2>/dev/null | grep '^Update state:' | awk '{print $3}')
-ui_print "当前快照状态: $snapshot_status"
+ui_print "${_LANG_CURRENT_SNAPSHOT_STATUS}: $snapshot_status"
 if [ "$snapshot_status" != "none" ]; then
 	ui_print " "
-	ui_print "看起来你刚刚更新了 rom."
-	ui_print "请先使用 TWRP 高级菜单中的 \"合并快照\" 功能"
-	ui_print "以立即完成快照合并."
-	abort "中止..."
+	ui_print "$_LANG_CURRENT_SNAPSHOT_STATUS_PROMPT_1"
+	ui_print "$_LANG_CURRENT_SNAPSHOT_STATUS_PROMPT_2"
+	ui_print "$_LANG_CURRENT_SNAPSHOT_STATUS_PROMPT_3"
+	abort "$_LANG_ABORTING"
 fi
 unset rc snapshot_status
 
@@ -304,20 +327,20 @@ unset rc snapshot_status
 is_miui_rom=false
 is_aospa_rom=false
 is_oss_kernel_rom=false
-if [ -f /system/framework/MiuiBooster.jar ] && keycode_select "你当前的 rom 是 HyperOS 吗? (我猜是的)"; then
+if [ -f /system/framework/MiuiBooster.jar ] && keycode_select "$_LANG_GUESS_ROM_MIUI"; then
 	is_miui_rom=true
-elif cat /system/build.prop | grep -qi 'aospa' && keycode_select "你当前的 rom 是 AOSPA 吗? (我猜是的)"; then
+elif grep -qiE 'aospa|neoteric' /system/build.prop && keycode_select "$_LANG_GUESS_ROM_AOSPA"; then
 	is_aospa_rom=true
-elif keycode_select "你的 rom 是基于 OSS 内核的吗?"; then
+elif keycode_select "$_LANG_GUESS_ROM_OSS_KERNEL"; then
 	is_oss_kernel_rom=true
 fi
 
-[ -f ${home}/Image.7z ] || abort "! 找不到 ${home}/Image.7z!"
+[ -f ${home}/Image.7z ] || abort "! $_LANG_CANNOT_FOUND ${home}/Image.7z!"
 ui_print " "
-ui_print "- 正在解包内核镜像..."
-${bin}/7za x ${home}/Image.7z -o${home}/ && [ -f ${home}/Image ] || abort "! 无法解包 ${home}/Image.7z!"
+ui_print "- $_LANG_UNPACKING_KERNEL_IMAGE"
+${bin}/7za x ${home}/Image.7z -o${home}/ && [ -f ${home}/Image ] || abort "! $_LANG_FAILED_TO_UNPACK ${home}/Image.7z!"
 rm ${home}/Image.7z
-[ "$(sha1 ${home}/Image)" == "$SHA1_STOCK" ] || abort "! 内核镜像已损坏!"
+[ "$(sha1 ${home}/Image)" == "$SHA1_STOCK" ] || abort "! $_LANG_KERNEL_IMAGE_CORRUPTED"
 
 strings ${home}/Image 2>/dev/null | grep -E -m1 'Linux version.*#' > ${home}/vertmp
 
@@ -325,24 +348,24 @@ strings ${home}/Image 2>/dev/null | grep -E -m1 'Linux version.*#' > ${home}/ver
 [ -d /vendor_dlkm ] || mkdir /vendor_dlkm
 is_mounted /vendor_dlkm || \
 	mount /vendor_dlkm -o ro || mount /dev/block/mapper/vendor_dlkm${slot} /vendor_dlkm -o ro || \
-		abort "! 无法挂载 /vendor_dlkm"
+		abort "! $_LANG_FAILED_TO_MOUNT /vendor_dlkm"
 
 do_backup_flag=false
 if [ ! -f /vendor_dlkm/lib/modules/vertmp ]; then
 	do_backup_flag=true
 fi
+is_lineageos_xiaomi_touch=false
+if ${bin}/modinfo /vendor_dlkm/lib/modules/xiaomi_touch.ko | grep -qi lineage; then
+	is_lineageos_xiaomi_touch=true
+fi
 $BOOTMODE || umount /vendor_dlkm
 
-
-# Fix unable to mount image as read-write in recovery
-$BOOTMODE || setenforce 0
-
 ui_print " "
-ui_print "- 正在解包内核模块..."
+ui_print "- $_LANG_UNPACKING_KERNEL_MODULES"
 modules_pkg=${home}/_modules_hyperos.7z
-[ -f $modules_pkg ] || abort "! 找不到 ${modules_pkg}!"
+[ -f $modules_pkg ] || abort "! $_LANG_CANNOT_FOUND ${modules_pkg}!"
 ${bin}/7za x $modules_pkg -o${home}/ && [ -d ${home}/_vendor_boot_modules ] && [ -d ${home}/_vendor_dlkm_modules ] || \
-	abort "! 无法解包 ${modules_pkg}!"
+	abort "! $_LANG_FAILED_TO_UNPACK ${modules_pkg}!"
 if ${is_hyperos_fw_with_newer_adsp2}; then
 	cp -f ${home}/_alt/NEW2-qti_battery_charger_main.ko ${home}/_vendor_dlkm_modules/qti_battery_charger_main.ko
 	cp -f ${home}/_alt/NEW2-qti_battery_charger_main.ko ${home}/_vendor_boot_modules/qti_battery_charger_main.ko
@@ -376,35 +399,35 @@ vendor_dlkm_modules_options_file=${home}/_vendor_dlkm_modules/modules.options
 [ -f $vendor_dlkm_modules_options_file ] || touch $vendor_dlkm_modules_options_file
 
 # xiaomi_touch.ko
-if [ -n "$(ls /vendor/bin/hw/vendor.lineage.touch@* 2>/dev/null)" ]; then
+if ${is_lineageos_xiaomi_touch}; then
 	ui_print " "
-	ui_print "- 检测到 Lineage OSS xiaomi touch HAL."
-	ui_print "- 使用备选的触屏驱动."
+	ui_print "- $_LANG_DETECTED_OSS_XIAOMI_TOUCH_PROMPT_1"
+	ui_print "- $_LANG_DETECTED_OSS_XIAOMI_TOUCH_PROMPT_2"
+	cp -f ${home}/_alt/xiaomi_touch_los/panel_event_notifier.ko ${home}/_vendor_boot_modules/
 	cp -f ${home}/_alt/xiaomi_touch_los/* ${home}/_vendor_dlkm_modules/
-	sed -i \
-	    's/\/vendor\/lib\/modules\/xiaomi_touch\.ko:/\/vendor\/lib\/modules\/xiaomi_touch\.ko:\ \/vendor\/lib\/modules\/panel_event_notifier\.ko/g' \
-	    ${home}/_vendor_dlkm_modules/modules.dep
+	need_depmod_regen_vendor_boot=true
+	need_depmod_regen_vendor_dlkm=true
 fi
+unset is_lineageos_xiaomi_touch
 
 # goodix_core.ko
 if keycode_select \
-    "是否总是启用 360HZ 触控采样率?" \
+    "$_LANG_SELECT_360HZ" \
     " " \
-    "提示:" \
-    "总是启用 360HZ 触控采样率并不能提升你的日常" \
-    "使用体验, 并且可能增加耗电." \
-	" "; then
+    "$_LANG_NOTES" \
+    "$_LANG_SELECT_360HZ_PROMPT_1" \
+    "$_LANG_SELECT_360HZ_PROMPT_2"; then
 	echo "options goodix_core force_high_report_rate=y" >> $vendor_dlkm_modules_options_file
 fi
 
 # qti_battery_charger_main.ko
 qti_battery_charger_mod_options=""
 if keycode_select \
-    "是否显示更真实的电量百分比?" \
+    "$_LANG_SELECT_REAL_BATTERY" \
     " " \
-    "提示:" \
-    "这有可能会导致设备难以充满电到 100%." \
-    " "; then
+    "$_LANG_NOTES" \
+    "$_LANG_SELECT_REAL_BATTERY_PROMPT_1" \
+    "$_LANG_SELECT_REAL_BATTERY_PROMPT_2"; then
 	qti_battery_charger_mod_options="${qti_battery_charger_mod_options} report_real_capacity=y"
 fi
 
@@ -414,12 +437,11 @@ if ${is_oss_kernel_rom}; then
 elif ${is_miui_rom} || ${is_aospa_rom}; then
 	do_fix_battery_usage=false
 elif keycode_select \
-    "是否修复电池使用情况数据异常的问题?" \
+    "$_LANG_SELECT_FIX_BATTERY_USAGE" \
     " " \
-    "提示:" \
-    "如果你发现系统设置中电池使用情况数据" \
-    "无法正常显示, 请选择是." \
-	" "; then
+    "$_LANG_NOTES" \
+    "$_LANG_SELECT_FIX_BATTERY_USAGE_PROMPT_1" \
+    "$_LANG_SELECT_FIX_BATTERY_USAGE_PROMPT_2"; then
 	do_fix_battery_usage=true
 fi
 if ${do_fix_battery_usage}; then
@@ -440,12 +462,12 @@ if ${is_miui_rom}; then
 elif ${is_oss_kernel_rom} || ${is_aospa_rom}; then
 	use_wired_btn_altmode=true
 elif keycode_select \
-    "是否使用备选的有线耳机按键模式?" \
+    "$_LANG_SELECT_WIRED_BTN_ALTMODE" \
     " " \
-    "提示:" \
-    "如果你发现有线耳机的音量加减键不好使, 请选择是." \
-    "如果你在使用 MIUI/HyperOS rom, 请选择否." \
-    " "; then
+    "$_LANG_NOTES" \
+    "$_LANG_SELECT_WIRED_BTN_ALTMODE_PROMPT_1" \
+    "$_LANG_SELECT_WIRED_BTN_ALTMODE_PROMPT_2" \
+    "$_LANG_SELECT_WIRED_BTN_ALTMODE_PROMPT_3"; then
 	use_wired_btn_altmode=true
 fi
 if ${use_wired_btn_altmode}; then
@@ -460,19 +482,20 @@ if ${is_oss_kernel_rom} || ${is_aospa_rom} || [ -f /vendor/bin/sensor-notifier ]
 elif ! ${is_miui_rom}; then  # For roms ported from other OS
 	use_oss_msm_drm=false
 elif keycode_select \
-    "是否使用开源的显示驱动?" \
+    "$_LANG_SELECT_OSS_MSM_DRM" \
     " " \
-    "提示:" \
-    "如果你不知道这意味着什么, 请选择否." \
-	" "; then
+    "$_LANG_NOTES" \
+    "$_LANG_SELECT_OSS_MSM_DRM_PROMPT_1"; then
 	use_oss_msm_drm=true
 fi
 if ${use_oss_msm_drm}; then
 	if [ -f /vendor/etc/displayconfig/display_id_4630946370515662721.xml ] || [ -f /vendor/etc/displayconfig/display_id_4630946480857061761.xml ]; then
 		# https://github.com/cupid-development/android_device_xiaomi_marble/commit/eee64379280d5bc680e91371679d788b63fe5039
 		cp -f ${home}/_alt/OSS-msm_drm-2.ko ${home}/_vendor_dlkm_modules/msm_drm.ko
+		cp -f ${home}/_alt/OSS-msm_drm-2.ko ${home}/_vendor_boot_modules/msm_drm.ko
 	else
 		cp -f ${home}/_alt/OSS-msm_drm.ko ${home}/_vendor_dlkm_modules/msm_drm.ko
+		cp -f ${home}/_alt/OSS-msm_drm.ko ${home}/_vendor_boot_modules/msm_drm.ko
 	fi
 fi
 unset use_oss_msm_drm
@@ -484,11 +507,10 @@ if ${is_oss_kernel_rom} || ${is_aospa_rom}; then
 elif ! ${is_miui_rom}; then  # For roms ported from other OS
 	use_oss_camera_driver=false
 elif keycode_select \
-    "是否使用开源的相机驱动?" \
+    "$_LANG_SELECT_OSS_CAMERA" \
     " " \
-    "提示:" \
-    "如果你不知道这意味着什么, 请选择否." \
-	" "; then
+    "$_LANG_NOTES" \
+    "$_LANG_SELECT_OSS_CAMERA_PROMPT_1"; then
 	use_oss_camera_driver=true
 fi
 if ${use_oss_camera_driver}; then
@@ -501,122 +523,234 @@ use_oss_ir_driver=false
 if ${is_miui_rom}; then
 	use_oss_ir_driver=false
 elif [ -n "$(ls /vendor/bin/hw/android.hardware.ir@* 2>/dev/null)" ]; then
-	ui_print " " "- 检测到 Xiaomi stock IR HAL. 使用 stock 红外驱动."
+	ui_print " " "- $_LANG_IR_HAL_XIAOMI"
 	use_oss_ir_driver=false
 elif [ -f /vendor/bin/hw/android.hardware.ir-service.xiaomi ] || [ -f /vendor/bin/hw/android.hardware.ir-service.lineage ]; then
-	ui_print " " "- 检测到 Lineage OSS IR HAL. 使用 OSS 红外驱动."
+	ui_print " " "- $_LANG_IR_HAL_LOS_OSS"
 	use_oss_ir_driver=true
 elif keycode_select \
-    "是否使用开源的红外驱动?" \
+    "$_LANG_SELECT_OSS_IR" \
     " " \
-    "提示:" \
-    "如果你正在使用 AOSP rom 并且发现红外遥控" \
-    "不好使, 请选择是." \
-    "如果你在使用 MIUI/HyperOS rom, 请选择否." \
-	" "; then
+    "$_LANG_NOTES" \
+    "$_LANG_SELECT_OSS_IR_PROMPT_1" \
+    "$_LANG_SELECT_OSS_IR_PROMPT_2" \
+    "$_LANG_SELECT_OSS_IR_PROMPT_3"; then
 	use_oss_ir_driver=true
 fi
 if ${use_oss_ir_driver}; then
 	cp -f ${home}/_alt/OSS-ir-spi.ko ${home}/_vendor_dlkm_modules/ir-spi.ko
+	cp -f ${home}/_alt/OSS-ir-spi.ko ${home}/_vendor_boot_modules/ir-spi.ko
 fi
 unset use_oss_ir_driver
 
 # OSS zram.ko & zsmalloc.ko
 if ${is_miui_rom}; then
 	if ! keycode_select \
-	    "是否使用开源的 ZRAM 内核模块?" \
+	    "$_LANG_SELECT_OSS_ZRAM" \
 	    " " \
-	    "提示:" \
-	    "使用开源的 ZRAM 内核模块意味着你将放弃小米" \
-	    "针对 MIUI/HyperOS 的 ZRAM 的特殊优化." \
-	    " " \
-	    "如果你不知道这意味着什么, 请选择否." \
-		" "; then
-		cp -f ${home}/_alt/MI-zram.ko ${home}/_vendor_dlkm_modules/zram.ko
+	    "$_LANG_NOTES" \
+	    "$_LANG_SELECT_OSS_ZRAM_PROMPT_1" \
+	    "$_LANG_SELECT_OSS_ZRAM_PROMPT_2" \
+	    "$_LANG_SELECT_OSS_ZRAM_PROMPT_3" \
+	    "$_LANG_SELECT_OSS_ZRAM_PROMPT_4"; then
+		cp -f ${home}/_alt/MI-zram.ko     ${home}/_vendor_dlkm_modules/zram.ko
+		cp -f ${home}/_alt/MI-zram.ko     ${home}/_vendor_boot_modules/zram.ko
 		cp -f ${home}/_alt/MI-zsmalloc.ko ${home}/_vendor_dlkm_modules/zsmalloc.ko
+		cp -f ${home}/_alt/MI-zsmalloc.ko ${home}/_vendor_boot_modules/zsmalloc.ko
 	fi
 fi
 
 unset vendor_dlkm_modules_options_file
 
-KPM_Patch_State=false
-include_patch=false
-if [ -f "${bin}/patch_android" ]; then
+# ==================================================
+# KPM 内核模块补丁
+# ==================================================
+
+# 询问用户是否启用 KPM
+ui_print " "
+ui_print "=========================================="
+ui_print "        $_LANG_KPM_16"
+ui_print "=========================================="
+ui_print " "
+ui_print "$_LANG_KPM_17"
+ui_print "$_LANG_KPM_17_1"
+ui_print "$_LANG_KPM_17_2"
+ui_print "$_LANG_KPM_17_3"
+ui_print " "
+
+enable_kpm=false
+if keycode_select \
+    "$_LANG_KPM_18" \
+    " " \
+    "$_LANG_NOTES" \
+    "$_LANG_KPM_18_1" \
+    "$_LANG_KPM_18_2"; then
+    enable_kpm=true
+else
+    ui_print "$_LANG_KPM_18_3"
+    ui_print "$_LANG_KPM_19"
+fi
+
+if $enable_kpm; then
+    ui_print " "
+    ui_print "$_LANG_KPM_19_1"
+    ui_print "=========================================="
+
+    patch_bin="${bin}/patch_android"
+    original_image="${home}/Image"
+    max_retries=3
+    attempt=1
+    patch_success=false
+
+    # 验证必要文件
+    if [ ! -f "$patch_bin" ] || [ ! -f "$original_image" ]; then
+        abort "! $_LANG_KPM_4 $_LANG_KPM_5 $_LANG_FAILED"
+    fi
+
+    while [ $attempt -le $max_retries ] && ! $patch_success; do
+        ui_print " "
+        ui_print "${_LANG_KPM_6} [$attempt/$max_retries]"
+        ui_print "$_LANG_KPM_7"
+
+        # 创建临时目录
+        temp_dir="/data/local/tmp/kpm_patch_$(date +%Y%m%d_%H%M%S)_$$"
+        if ! mkdir -p "$temp_dir"; then
+            ui_print "! ${_LANG_KPM_8}: $temp_dir"
+            attempt=$((attempt + 1))
+            sleep 2
+            continue
+        fi
+
+        ui_print "- ${_LANG_KPM_9}: $(basename "$temp_dir")"
+
+        # 复制文件
+        if ! cp "$original_image" "$temp_dir/Image" || ! cp "$patch_bin" "$temp_dir/patch_android"; then
+            ui_print "! ${_LANG_FAILED_TO_EXTRACT}"
+            rm -rf "$temp_dir"
+            attempt=$((attempt + 1))
+            sleep 2
+            continue
+        fi
+
+        chmod +x "$temp_dir/patch_android"
+
+        # 执行补丁工具
+        ui_print "- $_LANG_KPM_1"
+        cd "$temp_dir" || {
+            rm -rf "$temp_dir"
+            attempt=$((attempt + 1))
+            sleep 2
+            continue
+        }
+
+        output=$("$temp_dir/patch_android" 2>&1)
+        exit_code=$?
+
+        ui_print "- ${_LANG_KPM_2}: $exit_code"
+        if [ $exit_code -ne 0 ] && [ -n "$output" ]; then
+            ui_print "! $_LANG_KPM_3"
+            echo "$output" | while IFS= read -r line; do
+                ui_print "   $line"
+            done
+        fi
+
+        # 检查生成文件
+        if [ ! -f "$temp_dir/oImage" ]; then
+            ui_print "! $_LANG_KPM_11"
+            rm -rf "$temp_dir"
+            attempt=$((attempt + 1))
+            sleep 2
+            continue
+        fi
+
+        # 替换原始镜像
+        if mv "$temp_dir/oImage" "$temp_dir/Image" && \
+           cp "$temp_dir/Image" "$original_image"; then
+            ui_print "- $_LANG_KPM_12"
+            patch_success=true
+        else
+            ui_print "! $_LANG_KPM_13"
+        fi
+
+        rm -rf "$temp_dir"
+
+        if ! $patch_success; then
+            attempt=$((attempt + 1))
+            sleep 2
+        fi
+    done
+
+    if $patch_success; then
+        ui_print " "
+        ui_print "$_LANG_KPM_19_2"
+        ui_print "=========================================="
+    else
+        ui_print " "
+        ui_print "! ${_LANG_KPM_15} $max_retries ${_LANG_KPM_15_1}"
+        ui_print "! $_LANG_KPM_19_3"
+        ui_print "=========================================="
+        abort "$_LANG_KPM_19_4"
+    fi
+fi
+# ===== End KPM =====
+
+# ===== Optional: perfmgr.ko 来自酷安@AviderMin=====
+include_perfmgr=false
+
+if [ -f "${home}/_extra_modules/perfmgr.ko" ]; then
     if keycode_select \
-        "是否需要启用 KPM 内核模块功能" \
+        "$_LANG_SELECT_PERFMGR" \
+        "$_LANG_SELECT_PERFMGR_1" \
         " " \
-        "提示:" \
-        "该功能可能会提高耗电量." \
-        "可能会带来内核不稳定导致的重启." \
-        "若不需要请选 否." \
+        "$_LANG_NOTES" \
+        "$_LANG_SELECT_PERFMGR_2" \
+        "$_LANG_SELECT_PERFMGR_3" \
+        "$_LANG_SELECT_PERFMGR_4" \
         " "; then
-        include_patch=true
+        include_perfmgr=true
     fi
 else
     ui_print " "
-    ui_print "- 没有找到修补工具无法修补 KPM 功能"
+    ui_print "- $_LANG_SELECT_PERFMGR_5"
 fi
 
-if ${include_patch}; then
-KPM_RETRIES=0
-MAX_RETRIES=3
+if ${include_perfmgr}; then
+    # 确保目标目录存在 / Ensure target directory exists
+    mkdir -p "${home}/_vendor_boot_modules"
 
-while [ "$KPM_Patch_State" = false ] && [ "$KPM_RETRIES" -lt "$MAX_RETRIES" ]; do
-    KPM_RETRIES=$((KPM_RETRIES + 1))
-    ui_print "-----------------------------------------"
-    ui_print "KPM补丁尝试次数: $KPM_RETRIES / $MAX_RETRIES"
-    ui_print "可能会异常重启1~2次"
+    # 复制 perfmgr.ko 到 vendor_boot_modules / Copy perfmgr.ko to vendor_boot_modules
+    cp -f "${home}/_extra_modules/perfmgr.ko" "${home}/_vendor_boot_modules/" \
+        || abort "! $_LANG_FAILED_TO_EXTRACT perfmgr.ko"
 
-    IMG_SRC="${home}/Image"
-    PATCH_BIN="${bin}/patch_android"
-    
-    ui_print "开始应用 KPM 补丁..."
-    [ ! -f "$PATCH_BIN" ] && abort "ERROR：找不到补丁工具"
-    
-    TMPDIR="/data/local/tmp/kpm_patch_$(date +%Y%m%d_%H%M%S)_$$"
-    mkdir -p "$TMPDIR" || abort "ERROR：创建临时目录失败"
-    cp "$IMG_SRC" "$TMPDIR/" || abort "ERROR：复制 内核镜像失败 失败"
-    cp "$PATCH_BIN" "$TMPDIR/" || abort "ERROR：复制 补丁工具 失败"
-    chmod +x "$TMPDIR/patch_android"
-    cd "$TMPDIR" || abort "ERROR: 切换到临时目录失败"
-    
-    ui_print "执行 补丁工具..."
-    
-    ./patch_android
-    PATCH_EXIT_CODE=$?
-    
-    ui_print "补丁工具 执行返回码: $PATCH_EXIT_CODE"
-    
-    if [ "$PATCH_EXIT_CODE" -eq 0 ]; then
-        [ ! -f "oImage" ] && abort "ERROR：oImage 未生成，补丁可能失败"
-        mv oImage Image
-        cp -rf Image "${home}" || abort "ERROR：复制补丁后 Image 到 原有目录并覆盖失败"
-        ui_print "KPM 补丁应用完成"
-        rm -rf "$TMPDIR"
-        KPM_Patch_State=true
-    else
-        ui_print "ERROR：patch_android 执行失败 (返回码: $PATCH_EXIT_CODE)"
-        rm -rf "$TMPDIR"
+    # 追加 modules.dep 依赖 / Append dependencies to modules.dep
+    dep_line="/lib/modules/perfmgr.ko: /lib/modules/qcom-dcvs.ko /lib/modules/dcvs_fp.ko /lib/modules/qcom_rpmh.ko /lib/modules/cmd-db.ko /lib/modules/qcom_ipc_logging.ko /lib/modules/minidump.ko /lib/modules/smem.ko /lib/modules/sched-walt.ko /lib/modules/qcom-cpufreq-hw.ko /lib/modules/metis.ko /lib/modules/mi_schedule.ko"
+    [ -f "${home}/_vendor_boot_modules/modules.dep" ] || touch "${home}/_vendor_boot_modules/modules.dep"
+    if ! grep -q "^/lib/modules/perfmgr\.ko:" "${home}/_vendor_boot_modules/modules.dep"; then
+        [ -s "${home}/_vendor_boot_modules/modules.dep" ] && echo "" >> "${home}/_vendor_boot_modules/modules.dep"
+        echo "$dep_line" >> "${home}/_vendor_boot_modules/modules.dep"
     fi
-    
-done
 
-[ "$KPM_Patch_State" = false ] && abort "ERROR：KPM 补丁尝试 $MAX_RETRIES 次后仍然失败，中止刷入"
-    
+    # 追加到 modules.load / Append to modules.load
+    [ -f "${home}/_vendor_boot_modules/modules.load" ] || touch "${home}/_vendor_boot_modules/modules.load"
+    if ! grep -q "^perfmgr\.ko$" "${home}/_vendor_boot_modules/modules.load"; then
+        [ -s "${home}/_vendor_boot_modules/modules.load" ] && echo "" >> "${home}/_vendor_boot_modules/modules.load"
+        echo "perfmgr.ko" >> "${home}/_vendor_boot_modules/modules.load"
+    fi
+
+    ui_print "- perfmgr.ko $_LANG_SELECT_PERFMGR_6"
 fi
+# ===== End perfmgr.ko =====
 
 # Disguised the GPU model as Adreno730v3
 disguised_adreno730=false
-
 if keycode_select \
-    "是否伪装 GPU 型号为 Adreno730?" \
+    "$_LANG_SELECT_DISGUISED_ADRENO730" \
     " " \
-    "提示:" \
-    "骁龙 8+ Gen1 的 GPU 型号即为 Adreno730." \
-    "将 GPU 型号伪装成 Adreno730 或许可以在" \
-    "某些手游中解锁更高的画质或帧率," \
-    "但副作用未知." \
-	" "; then
+    "$_LANG_NOTES" \
+    "$_LANG_SELECT_DISGUISED_ADRENO730_PROMPT_1" \
+    "$_LANG_SELECT_DISGUISED_ADRENO730_PROMPT_2" \
+    "$_LANG_SELECT_DISGUISED_ADRENO730_PROMPT_3" \
+    "$_LANG_SELECT_DISGUISED_ADRENO730_PROMPT_4"; then
 	disguised_adreno730=true
 fi
 
@@ -637,20 +771,19 @@ if ! ${is_miui_rom}; then
 fi
 
 if ${need_depmod_regen_vendor_boot}; then
-	depmod_regen "${home}/_vendor_boot_modules" "/lib/modules/" || abort "! 无法重新生成模块依赖信息!"
+	depmod_regen "${home}/_vendor_boot_modules" "/lib/modules/" || abort "! $_LANG_DEPMOD_REGEN_FAILED"
 fi
 if ${need_depmod_regen_vendor_dlkm}; then
-	depmod_regen "${home}/_vendor_dlkm_modules" "/vendor/lib/modules/" || abort "! 无法重新生成模块依赖信息!"
+	depmod_regen "${home}/_vendor_dlkm_modules" "/vendor/lib/modules/" || abort "! $_LANG_DEPMOD_REGEN_FAILED"
 fi
 unset need_depmod_regen_vendor_boot need_depmod_regen_vendor_dlkm
 
 if ! keycode_select \
-    "这是最后一个选项." \
+    "$_LANG_SELECT_LAST" \
     " " \
-    "选择是以正式开始安装." \
-    "选择否以取消安装." \
-	" "; then
-	abort "用户中止."
+    "$_LANG_SELECT_LAST_PROMPT_1" \
+    "$_LANG_SELECT_LAST_PROMPT_2"; then
+	abort "$_LANG_SELECT_LAST_ABORT"
 fi
 
 ui_print " "
@@ -664,11 +797,11 @@ if true; then  # I don't want to adjust the indentation of the code block below,
 
 	# Backup kernel and vendor_dlkm image
 	if ${do_backup_flag}; then
-		ui_print "- 看起来你是第一次安装 Melt-Delta Kernel."
+		ui_print "- $_LANG_BACKUP_KERNEL_NOTE"
 
-		if keycode_select "要备份当前的内核吗?"; then
-			ui_print "- 正在备份 kernel, vendor_boot, vendor_dlkm"
-			ui_print "  以及 dtbo 分区..."
+		if keycode_select "$_LANG_SELECT_BACKUP_KERNEL"; then
+			ui_print "- $_LANG_BACKUP_KERNEL_DOING_PROMPT_1"
+			ui_print "  $_LANG_BACKUP_KERNEL_DOING_PROMPT_2"
 
 			backup_package=/sdcard/Melt-Delta-restore-kernel-$(file_getprop /system/build.prop ro.build.version.incremental)-$(date +"%Y%m%d-%H%M%S").zip
 
@@ -682,14 +815,22 @@ if true; then  # I don't want to adjust the indentation of the code block below,
 			${bin}/7za rn -bd $backup_package _restore_anykernel.sh anykernel.sh
 			${bin}/7za rn -bd $backup_package vendor_boot${slot} vendor_boot.img
 			${bin}/7za rn -bd $backup_package dtbo${slot} dtbo.img
+			# Remove unused binaries
+			${bin}/7za d  -bd $backup_package \
+				tools/7za tools/hpatchz tools/dtp tools/lpdump \
+				tools/e2fsck tools/mkfs.erofs tools/extract.erofs \
+				tools/fdtget tools/fdtput tools/keycheck \
+				tools/kmod tools/depmod tools/modinfo tools/resize2fs \
+				tools/vbmeta-disable-verification tools/vendor_boot_fix
 			sync
 
 			ui_print " "
-			ui_print "- 当前的 kernel, vendor_boot, vendor_dlkm"
-			ui_print "  以及 dtbo 已备份到:"
+			ui_print "- $_LANG_BACKUP_KERNEL_DONE_PROMPT_1"
+			ui_print "  $_LANG_BACKUP_KERNEL_DONE_PROMPT_2"
 			ui_print "  $backup_package"
-			ui_print "- 如果遇到意外情况, 或者想要恢复到原版内核,"
-			ui_print "  请在 TWRP 或某些 app 中刷入它."
+			ui_print "- $_LANG_BACKUP_KERNEL_DONE_PROMPT_3"
+			ui_print "  $_LANG_BACKUP_KERNEL_DONE_PROMPT_4"
+			ui_print "  $_LANG_BACKUP_KERNEL_DONE_PROMPT_5"
 			ui_print " "
 			touch ${home}/do_backup_flag
 
@@ -706,7 +847,7 @@ if true; then  # I don't want to adjust the indentation of the code block below,
 		fi
 	fi
 
-	ui_print "- 正在解包 /vendor_dlkm 分区..."
+	ui_print "- $_LANG_VENDOR_DLKM_UNPACKING"
 	extract_vendor_dlkm_dir=${home}/_extract_vendor_dlkm_$(random_strings 3)
 	mkdir -p $extract_vendor_dlkm_dir
 	vendor_dlkm_is_ext4=false
@@ -714,25 +855,40 @@ if true; then  # I don't want to adjust the indentation of the code block below,
 	sync
 
 	if ${vendor_dlkm_is_ext4}; then
-		ui_print "- /vendor_dlkm 似乎是 ext4 文件系统."
+		ui_print "- $_LANG_VENDOR_DLKM_IS_EXT4"
+
+		# Fix unable to mount image as read-write
+		if ${BOOTMODE}; then
+			fix_sepolicy_rule='allow kernel { app_data_file tmpfs } file { read write }'
+			if [ -x /data/adb/ksu/bin/ksud ]; then
+				/data/adb/ksu/bin/ksud sepolicy patch "$fix_sepolicy_rule"
+			else
+				${bin}/magiskpolicy --live "$fix_sepolicy_rule"
+			fi
+			unset fix_sepolicy_rule
+		else
+			setenforce 0
+		fi
+		sleep 1
+
 		mount ${home}/vendor_dlkm.img $extract_vendor_dlkm_dir -o ro -t ext4 || \
-			abort "! 不支持的文件系统!"
+			abort "! $_LANG_VENDOR_DLKM_UNSUPPORTED"
 		vendor_dlkm_full_space=$(df -B1 | grep -E -m1 "$(basename $extract_vendor_dlkm_dir)\$" | awk '{print $2}')
 		vendor_dlkm_used_space=$(df -B1 | grep -E -m1 "$(basename $extract_vendor_dlkm_dir)\$" | awk '{print $3}')
 		vendor_dlkm_free_space=$(df -B1 | grep -E -m1 "$(basename $extract_vendor_dlkm_dir)\$" | awk '{print $4}')
 		vendor_dlkm_stock_modules_size=$(get_size ${extract_vendor_dlkm_dir}/lib/modules)
-		ui_print "- /vendor_dlkm 分区空间:"
-		ui_print "  - 总空间: $(bytes_to_mb $vendor_dlkm_full_space)"
-		ui_print "  - 已用空间: $(bytes_to_mb $vendor_dlkm_used_space)"
-		ui_print "  - 可用空间: $(bytes_to_mb $vendor_dlkm_free_space)"
+		ui_print "- ${_LANG_VENDOR_DLKM_SPACE}:"
+		ui_print "  - ${_LANG_VENDOR_DLKM_SPACE_TOTAL}: $(bytes_to_mb $vendor_dlkm_full_space)"
+		ui_print "  - ${_LANG_VENDOR_DLKM_SPACE_USED}: $(bytes_to_mb $vendor_dlkm_used_space)"
+		ui_print "  - ${_LANG_VENDOR_DLKM_SPACE_FREE}: $(bytes_to_mb $vendor_dlkm_free_space)"
 		umount $extract_vendor_dlkm_dir
 
 		vendor_dlkm_new_modules_size=$(get_size ${home}/_vendor_dlkm_modules)
 		vendor_dlkm_need_size=$((vendor_dlkm_used_space - vendor_dlkm_stock_modules_size + vendor_dlkm_new_modules_size + 10*1024*1024))
 		if [ "$vendor_dlkm_need_size" -ge "$vendor_dlkm_full_space" ]; then
 			# Resize vendor_dlkm image
-			ui_print "- /vendor_dlkm 分区没有足够的可用空间!"
-			ui_print "- 尝试扩容..."
+			ui_print "- $_LANG_VENDOR_DLKM_RESIZE_PROMPT_1"
+			ui_print "- $_LANG_VENDOR_DLKM_RESIZE_PROMPT_2"
 
 			${bin}/e2fsck -f -y ${home}/vendor_dlkm.img
 			if [ "$vendor_dlkm_need_size" -le $((128*1024*1024)) ]; then
@@ -741,20 +897,21 @@ if true; then  # I don't want to adjust the indentation of the code block below,
 				vendor_dlkm_resized_size=$(echo $vendor_dlkm_need_size | awk '{printf "%dM", ($1 / 1024 / 1024 + 1)}')
 			fi
 			${bin}/resize2fs ${home}/vendor_dlkm.img $vendor_dlkm_resized_size || \
-				abort "! 扩容 vendor_dlkm 镜像失败!"
-			ui_print "- 扩容后的 vendor_dlkm.img 镜像大小: ${vendor_dlkm_resized_size}."
+				abort "! $_LANG_VENDOR_DLKM_RESIZE_FAILED"
+			ui_print "- ${_LANG_VENDOR_DLKM_RESIZED}: ${vendor_dlkm_resized_size}."
 			# e2fsck again
 			${bin}/e2fsck -f -y ${home}/vendor_dlkm.img
 
 			do_check_super_device_size=true
 			unset vendor_dlkm_resized_size
 		else
-			ui_print "- /vendor_dlkm 分区有足够的可用空间."
+			ui_print "- $_LANG_VENDOR_DLKM_RESIZE_NO_NEED"
 		fi
 
-		ui_print "- 尝试挂载 vendor_dlkm 镜像为读写..."
+		ui_print "- $_LANG_VENDOR_DLKM_MOUNT_RW"
+
 		mount ${home}/vendor_dlkm.img $extract_vendor_dlkm_dir -o rw -t ext4 || \
-			abort "! 无法挂载 vendor_dlkm 镜像为读写!"
+			abort "! $_LANG_VENDOR_DLKM_MOUNT_RW_FAILED"
 
 		unset vendor_dlkm_full_space vendor_dlkm_used_space vendor_dlkm_free_space vendor_dlkm_stock_modules_size vendor_dlkm_new_modules_size vendor_dlkm_need_size
 		extract_vendor_dlkm_modules_dir=${extract_vendor_dlkm_dir}/lib/modules
@@ -762,10 +919,10 @@ if true; then  # I don't want to adjust the indentation of the code block below,
 		extract_vendor_dlkm_modules_dir=${extract_vendor_dlkm_dir}/vendor_dlkm/lib/modules
 	fi
 
-	ui_print "- 正在更新 /vendor_dlkm 镜像..."
+	ui_print "- $_LANG_VENDOR_DLKM_UPDATEING"
 	rm -f ${extract_vendor_dlkm_modules_dir}/*
 	cp ${home}/_vendor_dlkm_modules/* ${extract_vendor_dlkm_modules_dir}/ || \
-		abort "! 无法更新内核模块! 可用空间不够了?"
+		abort "! $_LANG_VENDOR_DLKM_UPDATE_FAILED"
 	cp ${home}/vertmp ${extract_vendor_dlkm_modules_dir}/vertmp
 	sync
 
@@ -778,10 +935,10 @@ if true; then  # I don't want to adjust the indentation of the code block below,
 			echo "vendor_dlkm/lib/modules/$(basename $f) 0 0 0644" >> ${extract_vendor_dlkm_dir}/config/vendor_dlkm_fs_config
 		done
 		echo '/vendor_dlkm/lib/modules/.+ u:object_r:vendor_file:s0' >> ${extract_vendor_dlkm_dir}/config/vendor_dlkm_file_contexts
-		ui_print "- 正在打包 /vendor_dlkm 镜像..."
+		ui_print "- $_LANG_VENDOR_DLKM_REPACKING"
 		rm -f ${home}/vendor_dlkm.img
 		mkfs_erofs ${extract_vendor_dlkm_dir}/vendor_dlkm ${home}/vendor_dlkm.img || \
-			abort "! 无法打包 /vendor_dlkm 镜像!"
+			abort "! $_LANG_VENDOR_DLKM_REPACK_FAILED"
 		rm -rf ${extract_vendor_dlkm_dir}
 
 		if [ "$(get_size ${home}/vendor_dlkm.img)" -gt "$vendor_dlkm_block_size" ]; then
@@ -794,10 +951,10 @@ if true; then  # I don't want to adjust the indentation of the code block below,
 
 	if ${do_check_super_device_size}; then
 		ui_print " "
-		ui_print "- 生成的镜像文件大小大于分区大小."
-		ui_print "- 需要检查 super 分区..."
+		ui_print "- $_LANG_SUPER_SIZE_NEED_CHECK_PROMPT_1"
+		ui_print "- $_LANG_SUPER_SIZE_NEED_CHECK_PROMPT_2"
 		check_super_device_size  # If the check here fails, it will be aborted directly.
-		ui_print "- 通过!"
+		ui_print "- $_LANG_SUPER_SIZE_NEED_CHECK_PASS"
 	fi
 
 	unset do_check_super_device_size vendor_dlkm_block_size vendor_dlkm_is_ext4 extract_vendor_dlkm_dir extract_vendor_dlkm_modules_dir
@@ -816,9 +973,6 @@ rm ${home}/boot.img
 rm ${home}/boot-new.img
 rm ${home}/vendor_dlkm.img
 
-unset magisk_patched
-rm ${home}/magisk_patched
-
 touch ${home}/rollback_if_abort_flag
 
 ########## FLASH VENDOR_BOOT START ##########
@@ -836,9 +990,9 @@ reset_ak
 # Try to fix vendor_ramdisk size and vendor_ramdisk table entry information that was corrupted by old versions of magiskboot.
 ${bin}/vendor_boot_fix "$block"
 case $? in
-	0) ui_print " " "- 成功修复 vendor_boot 分区!";;
+	0) ui_print " " "- $_LANG_VENDOR_BOOT_FIX_SUCCESS";;
 	2) ;;  # The vendor_boot partition is normal and does not need to be repaired.
-	*) abort "! 无法修复损坏的 vendor_boot 分区!";;
+	*) abort "! $_LANG_VENDOR_BOOT_FIX_FAILED";;
 esac
 
 # vendor_boot install
@@ -849,7 +1003,7 @@ rm ${vendor_boot_modules_dir}/*
 cp ${home}/_vendor_boot_modules/* ${vendor_boot_modules_dir}/
 set_perm 0 0 0644 ${vendor_boot_modules_dir}/*
 
-${bin}/7za x ${home}/_dtb.7z -o${home}/ || abort "! 无法解包 _dtb.7z!"
+${bin}/7za x ${home}/_dtb.7z -o${home}/ || abort "! $_LANG_FAILED_TO_UNPACK _dtb.7z!"
 
 if ${is_oss_kernel_rom}; then
 	mv ${home}/dtbo-1.img ${home}/dtbo.img
@@ -861,7 +1015,7 @@ fi
 
 mkdir ${home}/_dtbs
 cp ${split_img}/dtb ${home}/_dtbs/dtb
-dtb_img_splitted=$(${bin}/dtp -i ${home}/_dtbs/dtb | awk '{print $NF}') || abort "! 分割 dtb 文件失败!"
+dtb_img_splitted=$(${bin}/dtp -i ${home}/_dtbs/dtb | awk '{print $NF}') || abort "! $_LANG_DTB_SPLIT_FAILED"
 ukee_dtb=
 for dtb_file in $dtb_img_splitted; do
 	if [ "$(${bin}/fdtget $dtb_file / model -ts)" == "Qualcomm Technologies, Inc. Ukee SoC" ]; then
@@ -869,7 +1023,7 @@ for dtb_file in $dtb_img_splitted; do
 		break
 	fi
 done
-[ -z "$ukee_dtb" ] && abort "! 找不到 Ukee dtb 文件!"
+[ -z "$ukee_dtb" ] && abort "! $_LANG_DTB_NOT_FOUND_UKEE"
 
 if ${disguised_adreno730}; then
 	${bin}/fdtput ${home}/dtb "/soc/qcom,kgsl-3d0@3d00000" "qcom,gpu-model" "Adreno730v3" -ts
@@ -877,8 +1031,10 @@ fi
 unset disguised_adreno730
 
 # Copy the gpu frequency and voltage configuration of old dtb to the new dtb
-copy_gpu_pwrlevels_conf "$ukee_dtb" ${home}/dtb
-sync
+if [ "$(sha1 $ukee_dtb)" != "$(sha1 ${home}/dtb)" ]; then
+	copy_gpu_pwrlevels_conf "$ukee_dtb" ${home}/dtb
+	sync
+fi
 
 rm -rf ${home}/_dtbs
 
@@ -893,17 +1049,12 @@ unset is_miui_rom is_aospa_rom is_oss_kernel_rom is_hyperos_fw_with_new_adsp2 is
 # Patch vbmeta
 ui_print " "
 for vbmeta_blk in /dev/block/by-name/vbmeta*; do
-	ui_print "- Patching $(basename $vbmeta_blk) ..."
+	ui_print "- $_LANG_PATCHING $(basename $vbmeta_blk) ..."
 	${bin}/vbmeta-disable-verification $vbmeta_blk || {
-		ui_print "! 无法打补丁到 ${vbmeta_blk}!"
-		ui_print "- 如果安装完成后设备无法启动,"
-		ui_print "  请在 TWRP 中手动禁用 AVB."
+		ui_print "! $_LANG_FAILED_TO_PATCH ${vbmeta_blk}!"
+		ui_print "- $_LANG_VBMETA_FAILED_PROMPT_1"
+		ui_print "  $_LANG_VBMETA_FAILED_PROMPT_2"
 	}
 done
-
-ui_print " "
-ui_print "内核源码和刷写工具感谢@Pzqqt"
-ui_print "推荐添加QQ群获取最新版本"
-ui_print "QQ群: 1050617767"
 
 ## end boot install

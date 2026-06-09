@@ -131,7 +131,7 @@ split_boot() {
   else
     (set -o pipefail; timeout 20s $bin/magiskboot unpack -h $bootimg 2>&1 | tee infotmp >&2);
     case $? in
-      0) ;;
+      0|3) ;;
       2) touch chromeos;;
       *) splitfail=1;;
     esac;

@@ -558,7 +558,6 @@ if [ -f version ]; then
   ui_print " ";
 fi;
 ui_print " " "AnyKernel3 by osm0sis @ xda-developers" " ";
-ui_print " " "Melt-Delta Kernel BY Pzqqt && 酷安@初春在鹿野" " ";
 grep -oE 'AK_BASE.*' META-INF/com/google/android/updater-script >&2;
 ui_print " ";
 
