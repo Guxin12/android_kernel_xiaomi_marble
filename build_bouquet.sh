@@ -161,6 +161,7 @@ if [ -f "$IMAGE" ]; then
 		image_filename=Image
 	fi
 	cp -f "$IMAGE" ${OUTPUT_DIR}/${image_filename}
+	cp -f ${KDIR}/out/vmlinux.symvers ${OUTPUT_DIR}/${image_filename}_vmlinux.symvers
 	unset image_filename
 fi
 
