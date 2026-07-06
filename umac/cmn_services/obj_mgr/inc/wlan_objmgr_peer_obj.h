@@ -1043,7 +1043,7 @@ static inline void wlan_peer_mlme_flag_ext_clear(struct wlan_objmgr_peer *peer,
 static inline uint8_t wlan_peer_mlme_flag_ext_get(struct wlan_objmgr_peer *peer,
 						  uint32_t flag)
 {
-	return (peer->peer_mlme.peer_ext_flags & flag) ? 1 : 0;
+	return (peer && (peer->peer_mlme.peer_ext_flags & flag)) ? 1 : 0;
 }
 
 /**

@@ -44,6 +44,7 @@
 #define QCA6490_v2_1                    0x400c1211
 #define QCA6490_v2                      0x400c0200
 #define QCA6490_V2_2                    0x400C0210
+#define QCA6490_V3		        0x400c0110
 #define WCN3990_v2_2                    0x400f0000
 #define WCN6750_V1                      0x40140110
 #define WCN6750_V2                      0x40140120
