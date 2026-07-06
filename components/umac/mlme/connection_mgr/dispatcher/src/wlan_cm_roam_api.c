@@ -1765,6 +1765,9 @@ wlan_cm_roam_invoke(struct wlan_objmgr_pdev *pdev, uint8_t vdev_id,
 		return QDF_STATUS_E_NULL_VALUE;
 	}
 
+	mlme_debug("vdev: %d source: %d freq: %d bssid: " QDF_MAC_ADDR_FMT,
+		   vdev_id, source, chan_freq, QDF_MAC_ADDR_REF(bssid->bytes));
+
 	status = cm_start_roam_invoke(psoc, vdev, bssid, chan_freq, source);
 	wlan_objmgr_vdev_release_ref(vdev, WLAN_MLME_NB_ID);
 
@@ -3338,13 +3341,23 @@ cm_roam_stats_print_11kv_info(struct wmi_neighbor_report_data *neigh_rpt,
 
 	tmp = buf;
 	if (num_ch) {
-		buf_cons = qdf_snprint(tmp, buf_left, "{ ");
+                buf_cons = qdf_snprint(tmp, buf_left, "{ ");
 		buf_left -= buf_cons;
 		tmp += buf_cons;
 
 		for (i = 0; i < num_ch; i++) {
+			if (!buf_left) {
+				mlme_err("buf_left is empty");
+				qdf_mem_free(buf);
+				return;
+			}
 			buf_cons = qdf_snprint(tmp, buf_left, "%d ",
 					       neigh_rpt->freq[i]);
+			if (!buf_cons || buf_cons > buf_left) {
+				mlme_err("buf_cons is empty");
+				qdf_mem_free(buf);
+				return;
+			}
 			buf_left -= buf_cons;
 			tmp += buf_cons;
 		}

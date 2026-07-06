@@ -161,17 +161,16 @@ void wma_update_target_ext_eht_cap(struct target_psoc_info *tgt_hdl,
 		return;
 	}
 
-	supported_bands = host_cap->supported_bands;
 	for (i = 0; i < total_mac_phy_cnt; i++) {
+		supported_bands = host_cap[i].supported_bands;
 		qdf_mem_zero(&eht_cap_mac, sizeof(tDot11fIEeht_cap));
 		mac_cap = &mac_phy_cap[i];
 		if (supported_bands & WLAN_2G_CAPABILITY) {
 			wma_convert_eht_cap(&eht_cap_mac,
 					    mac_cap->eht_cap_info_2G,
 					    mac_cap->eht_cap_phy_info_2G);
-			wma_convert_eht_cap(eht_cap_2g,
-					    mac_cap->eht_cap_info_2G,
-					    mac_cap->eht_cap_phy_info_2G);
+			qdf_mem_copy(eht_cap_2g, &eht_cap_mac,
+				     sizeof(tDot11fIEeht_cap));
 		}
 
 		if (supported_bands & WLAN_5G_CAPABILITY) {
@@ -179,9 +178,8 @@ void wma_update_target_ext_eht_cap(struct target_psoc_info *tgt_hdl,
 			wma_convert_eht_cap(&eht_cap_mac,
 					    mac_cap->eht_cap_info_5G,
 					    mac_cap->eht_cap_phy_info_5G);
-			wma_convert_eht_cap(eht_cap_5g,
-					    mac_cap->eht_cap_info_5G,
-					    mac_cap->eht_cap_phy_info_5G);
+			qdf_mem_copy(eht_cap_5g, &eht_cap_mac,
+				     sizeof(tDot11fIEeht_cap));
 		}
 	}
 	qdf_mem_copy(eht_cap, &eht_cap_mac, sizeof(tDot11fIEeht_cap));
