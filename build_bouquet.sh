@@ -535,6 +535,7 @@ techpack/video/msm_video.ko
 alt_need_modules='
 techpack/display/msm/msm_drm.ko
 drivers/power/supply/qti_battery_charger_main.ko
+drivers/misc/ntsync.ko
 '
 
 rm ${OUTPUT_DIR}/*.ko 2>/dev/null
