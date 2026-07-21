@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2012-2021 The Linux Foundation. All rights reserved.
- * Copyright (c) 2021-2023 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  *
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
@@ -969,6 +969,7 @@ populate_dot11f_ht_caps(struct mac_context *mac,
 	QDF_STATUS nSirStatus;
 	uint8_t disable_high_ht_mcs_2x2 = 0;
 	struct ch_params ch_params = {0};
+	uint8_t cb_mode;
 
 	tSirMacTxBFCapabilityInfo *pTxBFCapabilityInfo;
 	tSirMacASCapabilityInfo *pASCapabilityInfo;
@@ -997,10 +998,11 @@ populate_dot11f_ht_caps(struct mac_context *mac,
 		pDot11f->shortGI20MHz = ht_cap_info->short_gi_20_mhz;
 		pDot11f->shortGI40MHz = ht_cap_info->short_gi_40_mhz;
 	} else {
+		cb_mode = lim_get_cb_mode_for_freq(mac, pe_session,
+						   pe_session->curr_op_freq);
 		if (WLAN_REG_IS_24GHZ_CH_FREQ(pe_session->curr_op_freq) &&
 		    LIM_IS_STA_ROLE(pe_session) &&
-		    WNI_CFG_CHANNEL_BONDING_MODE_DISABLE !=
-		    mac->roam.configParam.channelBondingMode24GHz) {
+		    cb_mode != WNI_CFG_CHANNEL_BONDING_MODE_DISABLE) {
 			pDot11f->supportedChannelWidthSet = 1;
 			ch_params.ch_width = CH_WIDTH_40MHZ;
 			wlan_reg_set_channel_params_for_freq(
@@ -1132,19 +1134,13 @@ ePhyChanBondState wlan_get_cb_mode(struct mac_context *mac,
 				   tDot11fBeaconIEs *ie_struct,
 				   struct pe_session *pe_session)
 {
+	struct wlan_crypto_params *crypto_params;
 	ePhyChanBondState cb_mode = PHY_SINGLE_CHANNEL_CENTERED;
 	uint32_t sec_ch_freq = 0;
 	uint32_t self_cb_mode;
 	struct ch_params ch_params = {0};
 
-	if (WLAN_REG_IS_24GHZ_CH_FREQ(ch_freq)) {
-		self_cb_mode =
-			mac->roam.configParam.channelBondingMode24GHz;
-	} else {
-		self_cb_mode =
-			mac->roam.configParam.channelBondingMode5GHz;
-	}
-
+	self_cb_mode = lim_get_cb_mode_for_freq(mac, pe_session, ch_freq);
 	if (self_cb_mode == WNI_CFG_CHANNEL_BONDING_MODE_DISABLE)
 		return PHY_SINGLE_CHANNEL_CENTERED;
 
@@ -1158,24 +1154,17 @@ ePhyChanBondState wlan_get_cb_mode(struct mac_context *mac,
 		return PHY_SINGLE_CHANNEL_CENTERED;
 	}
 
-	/* In Case WPA2 and TKIP is the only one cipher suite in Pairwise */
-	if ((ie_struct->RSN.present &&
-	    (ie_struct->RSN.pwise_cipher_suite_count == 1) &&
-	    !qdf_mem_cmp(&(ie_struct->RSN.pwise_cipher_suites[0][0]),
-			 "\x00\x0f\xac\x02", 4)) ||
-		/* In Case only WPA1 is supported and TKIP is
-		 * the only one cipher suite in Unicast.
-		 */
-	    (!ie_struct->RSN.present && (ie_struct->WPA.present &&
-	    (ie_struct->WPA.unicast_cipher_count == 1) &&
-	    !qdf_mem_cmp(&(ie_struct->WPA.unicast_ciphers[0][0]),
-			 "\x00\x50\xf2\x02", 4)))) {
-		pe_debug("No channel bonding in TKIP mode");
-		return PHY_SINGLE_CHANNEL_CENTERED;
-	}
-
 	if (!ie_struct->HTInfo.present)
 		return PHY_SINGLE_CHANNEL_CENTERED;
+
+	/* In Case WPA2 and TKIP is the only one cipher suite in Pairwise */
+	crypto_params = wlan_crypto_vdev_get_crypto_params(pe_session->vdev);
+	if (crypto_params && QDF_HAS_PARAM(crypto_params->ucastcipherset,
+					   WLAN_CRYPTO_CIPHER_TKIP)) {
+		pe_debug("No channel bonding in TKIP mode, ucast: %x",
+			 crypto_params->ucastcipherset);
+		return PHY_SINGLE_CHANNEL_CENTERED;
+	}
 
 	pe_debug("ch freq %d scws %u rtws %u sco %u", ch_freq,
 		 ie_struct->HTCaps.supportedChannelWidthSet,
@@ -4540,9 +4529,9 @@ sir_parse_beacon_ie(struct mac_context *mac,
 						 pBies->HTInfo.primaryChannel);
 	}
 
-	if (pBies->RSN.present) {
+	if (pBies->RSNOpaque.present) {
 		pBeaconStruct->rsnPresent = 1;
-		convert_rsn(mac, &pBeaconStruct->rsn, &pBies->RSN);
+		convert_rsn_opaque(mac, &pBeaconStruct->rsn, &pBies->RSNOpaque);
 	}
 
 	if (pBies->WPA.present) {
@@ -4882,9 +4871,10 @@ sir_convert_beacon_frame2_struct(struct mac_context *mac,
 		pe_debug_rl("In Beacon No Channel info");
 	}
 
-	if (pBeacon->RSN.present) {
+	if (pBeacon->RSNOpaque.present) {
 		pBeaconStruct->rsnPresent = 1;
-		convert_rsn(mac, &pBeaconStruct->rsn, &pBeacon->RSN);
+		convert_rsn_opaque(mac, &pBeaconStruct->rsn,
+				   &pBeacon->RSNOpaque);
 	}
 
 	if (pBeacon->WPA.present) {
@@ -6775,6 +6765,19 @@ QDF_STATUS populate_dot11f_he_caps(struct mac_context *mac_ctx, struct pe_sessio
 	return QDF_STATUS_SUCCESS;
 }
 
+QDF_STATUS
+populate_dot11f_he_caps_by_band(struct mac_context *mac_ctx,
+				bool is_2g,
+				tDot11fIEhe_cap *he_cap)
+{
+	if (is_2g)
+		qdf_mem_copy(he_cap, &mac_ctx->he_cap_2g, sizeof(*he_cap));
+	else
+		qdf_mem_copy(he_cap, &mac_ctx->he_cap_5g, sizeof(*he_cap));
+
+	return QDF_STATUS_SUCCESS;
+}
+
 /**
  * populate_dot11f_he_operation() - pouldate HE Operation IE
  * @mac_ctx: Global MAC context
@@ -6898,6 +6901,23 @@ QDF_STATUS populate_dot11f_eht_caps(struct mac_context *mac_ctx,
 
 	/** TODO: String items needs attention. **/
 	qdf_mem_copy(eht_cap, &session->eht_config, sizeof(*eht_cap));
+
+	return QDF_STATUS_SUCCESS;
+}
+
+QDF_STATUS
+populate_dot11f_eht_caps_by_band(struct mac_context *mac_ctx,
+				 bool is_2g,
+				 tDot11fIEeht_cap *eht_cap)
+{
+	if (is_2g)
+		qdf_mem_copy(eht_cap,
+			     &mac_ctx->eht_cap_2g,
+			     sizeof(tDot11fIEeht_cap));
+	else
+		qdf_mem_copy(eht_cap,
+			     &mac_ctx->eht_cap_5g,
+			     sizeof(tDot11fIEeht_cap));
 
 	return QDF_STATUS_SUCCESS;
 }
@@ -8714,6 +8734,7 @@ QDF_STATUS populate_dot11f_assoc_req_mlo_ie(struct mac_context *mac_ctx,
 	tDot11fIEeht_cap eht_caps;
 	tDot11fIESuppRates supp_rates;
 	tDot11fIEExtSuppRates ext_supp_rates;
+	bool is_2g;
 
 	if (!frm)
 		return QDF_STATUS_E_NULL_VALUE;
@@ -8858,7 +8879,8 @@ QDF_STATUS populate_dot11f_assoc_req_mlo_ie(struct mac_context *mac_ctx,
 		}
 		chan_freq = wlan_reg_chan_opclass_to_freq(chan, op_class,
 							  true);
-		if (WLAN_REG_IS_24GHZ_CH_FREQ(chan_freq)) {
+		is_2g = WLAN_REG_IS_24GHZ_CH_FREQ(chan_freq);
+		if (is_2g) {
 			wlan_populate_basic_rates(&b_rates, false, true);
 			wlan_populate_basic_rates(&e_rates, true, false);
 		} else {
@@ -8944,7 +8966,7 @@ QDF_STATUS populate_dot11f_assoc_req_mlo_ie(struct mac_context *mac_ctx,
 						DOT11F_EID_VHTCAPS;
 		}
 
-		populate_dot11f_he_caps(mac_ctx, NULL, &he_caps);
+		populate_dot11f_he_caps_by_band(mac_ctx, is_2g, &he_caps);
 		if ((he_caps.present && frm->he_cap.present &&
 		     qdf_mem_cmp(&he_caps, &frm->he_cap, sizeof(he_caps))) ||
 		     (he_caps.present && !frm->he_cap.present)) {
@@ -8977,7 +8999,7 @@ QDF_STATUS populate_dot11f_assoc_req_mlo_ie(struct mac_context *mac_ctx,
 						WLAN_EXTN_ELEMID_HE_6G_CAP;
 		}
 
-		populate_dot11f_eht_caps(mac_ctx, NULL, &eht_caps);
+		populate_dot11f_eht_caps_by_band(mac_ctx, is_2g, &eht_caps);
 		if ((eht_caps.present && frm->eht_cap.present &&
 		     qdf_mem_cmp(&eht_caps, &frm->eht_cap, sizeof(eht_caps))) ||
 		     (eht_caps.present && !frm->eht_cap.present)) {

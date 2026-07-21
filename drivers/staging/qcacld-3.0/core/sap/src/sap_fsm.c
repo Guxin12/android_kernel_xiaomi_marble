@@ -1,6 +1,5 @@
 /*
  * Copyright (c) 2012-2021 The Linux Foundation. All rights reserved.
- * Copyright (c) 2021-2024 Qualcomm Innovation Center, Inc. All rights reserved.
  * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  *
  * Permission to use, copy, modify, and/or distribute this software for
@@ -2769,6 +2768,7 @@ static void sap_validate_chanmode_and_chwidth(struct mac_context *mac_ctx,
 	 */
 	if (policy_mgr_get_sap_force_20mhz_for_country_id(
 					mac_ctx->psoc,
+					sap_ctx->vdev,
 					(qdf_freq_t)sap_ctx->chan_freq))
 		sap_ctx->ch_params.ch_width = CH_WIDTH_20MHZ;
 

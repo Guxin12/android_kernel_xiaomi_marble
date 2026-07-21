@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2012-2021 The Linux Foundation. All rights reserved.
- * Copyright (c) 2021-2024 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  *
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
@@ -434,8 +434,8 @@ sch_bcn_update_he_ies(struct mac_context *mac_ctx, tpDphHashNode sta_ds,
 
 static void
 sch_bcn_update_opmode_change(struct mac_context *mac_ctx, tpDphHashNode sta_ds,
-				struct pe_session *session, tpSchBeaconStruct bcn,
-				tpSirMacMgmtHdr mac_hdr, uint8_t cb_mode)
+			     struct pe_session *session, tpSchBeaconStruct bcn,
+			     tpSirMacMgmtHdr mac_hdr)
 {
 	bool skip_opmode_update = false;
 	uint8_t oper_mode;
@@ -443,7 +443,7 @@ sch_bcn_update_opmode_change(struct mac_context *mac_ctx, tpDphHashNode sta_ds,
 	uint8_t ch_width = 0, ch_bw;
 	tDot11fIEVHTCaps *vht_caps = NULL;
 	tDot11fIEVHTOperation *vht_op = NULL;
-	uint8_t bcn_vht_chwidth = 0;
+	uint8_t bcn_vht_chwidth = 0, cb_mode;
 
 	/*
 	 * Ignore opmode change during channel change The opmode will be updated
@@ -482,6 +482,8 @@ sch_bcn_update_opmode_change(struct mac_context *mac_ctx, tpDphHashNode sta_ds,
 	    (oper_mode < bcn_vht_chwidth))
 		skip_opmode_update = true;
 
+	cb_mode = lim_get_cb_mode_for_freq(mac_ctx, session,
+					   session->curr_op_freq);
 	if (WNI_CFG_CHANNEL_BONDING_MODE_DISABLE == cb_mode) {
 		/*
 		 * if channel bonding is disabled from INI do not
@@ -549,23 +551,13 @@ sch_bcn_process_sta_opmode(struct mac_context *mac_ctx,
 {
 	tpDphHashNode sta = NULL;
 	uint16_t aid;
-	uint8_t cb_mode;
 
-	if (wlan_reg_is_24ghz_ch_freq(session->curr_op_freq)) {
-		if (session->force_24ghz_in_ht20)
-			cb_mode = WNI_CFG_CHANNEL_BONDING_MODE_DISABLE;
-		else
-			cb_mode =
-			   mac_ctx->roam.configParam.channelBondingMode24GHz;
-	} else
-		cb_mode = mac_ctx->roam.configParam.channelBondingMode5GHz;
 	/* check for VHT capability */
 	sta = dph_lookup_hash_entry(mac_ctx, pMh->sa, &aid,
 			&session->dph.dphHashTable);
 	if ((!sta))
 		return;
-	sch_bcn_update_opmode_change(mac_ctx, sta, session, bcn, pMh,
-				     cb_mode);
+	sch_bcn_update_opmode_change(mac_ctx, sta, session, bcn, pMh);
 	sch_bcn_update_he_ies(mac_ctx, sta, session, bcn, pMh);
 	return;
 }

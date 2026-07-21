@@ -1,6 +1,5 @@
 /*
  * Copyright (c) 2018-2021 The Linux Foundation. All rights reserved.
- * Copyright (c) 2021-2023 Qualcomm Innovation Center, Inc. All rights reserved.
  * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  *
  * Permission to use, copy, modify, and/or distribute this software for
@@ -312,6 +311,7 @@ QDF_STATUS ucfg_policy_mgr_get_sap_mandt_chnl(struct wlan_objmgr_psoc *psoc,
  */
 bool ucfg_policy_mgr_get_sap_force_20mhz_for_country_id(
 						struct wlan_objmgr_psoc *psoc,
+						struct wlan_objmgr_vdev *vdev,
 						qdf_freq_t freq);
 
 /**

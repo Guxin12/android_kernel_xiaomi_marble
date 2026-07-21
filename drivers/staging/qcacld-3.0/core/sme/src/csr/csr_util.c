@@ -715,7 +715,8 @@ uint16_t csr_check_concurrent_channel_overlap(struct mac_context *mac_ctx,
 						 sap_ch_freq, vdev_id,
 						 cc_switch_mode);
 	} else if ((intf_ch_freq == sap_ch_freq) && (cc_switch_mode ==
-				QDF_MCC_TO_SCC_SWITCH_WITH_FAVORITE_CHANNEL)) {
+		    QDF_MCC_TO_SCC_SWITCH_WITH_FAVORITE_CHANNEL) &&
+		    policy_mgr_is_hw_dbs_capable(mac_ctx->psoc)) {
 		if (WLAN_REG_IS_24GHZ_CH_FREQ(intf_ch_freq) ||
 		    WLAN_REG_IS_6GHZ_CHAN_FREQ(sap_ch_freq)) {
 			status =
