@@ -947,11 +947,11 @@ static int icmpv6_rcv(struct sk_buff *skb)
 
 	case ICMPV6_MGM_QUERY:
 		igmp6_event_query(skb);
-		return 0;
+		break;
 
 	case ICMPV6_MGM_REPORT:
 		igmp6_event_report(skb);
-		return 0;
+		break;
 
 	case ICMPV6_MGM_REDUCTION:
 	case ICMPV6_NI_QUERY:
