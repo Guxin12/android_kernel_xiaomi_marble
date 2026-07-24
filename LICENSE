@@ -157,7 +157,7 @@ extract.erofs, mkfs.erofs:
     You don't need to register or pay for 7-Zip.
 
     Self-compiled binary from unmodified source:
-    https://github.com/ip7z/7zip/releases/download/26.01/7z2601-src.tar.xz
+    https://github.com/ip7z/7zip/releases/download/26.02/7z2601-src.tar.xz
 
 vbmeta-disable-verification: MIT License
 

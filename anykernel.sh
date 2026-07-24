@@ -245,11 +245,12 @@ depmod_regen() {
 ui_print " ";
 
 # Check firmware
+is_hyperos_fw=false
+is_hyperos_fw_with_new_adsp2=false
+is_hyperos_fw_with_newer_adsp2=false
 if strings /dev/block/bootdevice/by-name/xbl_config${slot} | grep -q 'led_blink'; then
 	ui_print "$_LANG_HOS_FIRMWARE_DETECTED"
 	is_hyperos_fw=true
-	is_hyperos_fw_with_new_adsp2=false
-	is_hyperos_fw_with_newer_adsp2=false
 	if is_mounted /vendor/firmware_mnt && [ -d /vendor/firmware_mnt/image ]; then
 		modem_mount_path=/vendor/firmware_mnt
 	else
@@ -752,6 +753,17 @@ if keycode_select \
     "$_LANG_SELECT_DISGUISED_ADRENO730_PROMPT_3" \
     "$_LANG_SELECT_DISGUISED_ADRENO730_PROMPT_4"; then
 	disguised_adreno730=true
+fi
+
+# ntsync.ko
+if keycode_select \
+    "$_LANG_SELECT_NTSYNC" \
+    " " \
+    "$_LANG_NOTES" \
+    "$_LANG_SELECT_NTSYNC_PROMPT_1"; then
+	cp -f ${home}/_alt/ntsync.ko ${home}/_vendor_dlkm_modules/ntsync.ko
+	echo 'ntsync.ko' >> ${home}/_vendor_dlkm_modules/modules.load
+	need_depmod_regen_vendor_dlkm=true
 fi
 
 # Do not load some Xiaomi special modules in AOSP roms
