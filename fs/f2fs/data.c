@@ -904,9 +904,9 @@ void f2fs_submit_all_merged_ipu_writes(struct f2fs_sb_info *sbi)
 		if (list_empty(&io->bio_list))
 			continue;
 
-		down_write(&io->bio_list_lock);
+		f2fs_down_write(&io->bio_list_lock);
 		list_splice_init(&io->bio_list, &list);
-		up_write(&io->bio_list_lock);
+		f2fs_up_write(&io->bio_list_lock);
 
 		list_for_each_entry_safe(be, tmp, &list, list) {
 			__submit_bio(sbi, be->bio, DATA);
