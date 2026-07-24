@@ -5211,9 +5211,9 @@ next:
 		fillargs->event = RTM_GETMULTICAST;
 
 		/* multicast address */
-		for (ifmca = rtnl_dereference(idev->mc_list);
+		for (ifmca = rcu_dereference(idev->mc_list);
 		     ifmca;
-		     ifmca = rtnl_dereference(ifmca->next), ip_idx++) {
+		     ifmca = rcu_dereference(ifmca->next), ip_idx++) {
 			if (ip_idx < s_ip_idx)
 				continue;
 			err = inet6_fill_ifmcaddr(skb, ifmca, fillargs);
