@@ -159,6 +159,10 @@ int fs_overflowgid = DEFAULT_FS_OVERFLOWGID;
 EXPORT_SYMBOL(fs_overflowuid);
 EXPORT_SYMBOL(fs_overflowgid);
 
+#ifdef CONFIG_UNAME_OVERRIDE_TARGET
+static char *uname_override_target = CONFIG_UNAME_OVERRIDE_TARGET;
+#endif
+
 /*
  * Returns true if current's euid is same as p's uid or euid,
  * or has CAP_SYS_NICE to p's user_ns.
@@ -1240,21 +1244,38 @@ DECLARE_RWSEM(uts_sem);
 #define override_architecture(name)	0
 #endif
 
-static void override_custom_release(char __user *release, size_t len)
+static void override_custom_release(char __user *release)
 {
 #ifdef CONFIG_UNAME_OVERRIDE
+	/* 64 is enough... maybe */
+	#define TARGET_BUF_LEN 64
+
 	char *buf;
+	char target_buf[TARGET_BUF_LEN];
+	const char *p;
+	size_t len;
 
 	buf = kstrdup_quotable_cmdline(current, GFP_KERNEL);
 	if (buf == NULL)
 		return;
 
-	if (strstr(buf, CONFIG_UNAME_OVERRIDE_TARGET)) {
-		copy_to_user(release, CONFIG_UNAME_OVERRIDE_STRING,
-			       strlen(CONFIG_UNAME_OVERRIDE_STRING) + 1);
+	for (p = uname_override_target; *p; p += len) {
+		len = strcspn(p, ",");
+		if (len < TARGET_BUF_LEN) {
+			memcpy(target_buf, p, len);
+			target_buf[len] = '\0';
+			if (strstr(buf, target_buf)) {
+				copy_to_user(release, CONFIG_UNAME_OVERRIDE_STRING,
+					       strlen(CONFIG_UNAME_OVERRIDE_STRING) + 1);
+				break;
+			}
+		}
+		if (p[len] == ',')
+			len++;
 	}
 
 	kfree(buf);
+	#undef TARGET_BUF_LEN
 #endif
 }
 
@@ -1300,7 +1321,7 @@ SYSCALL_DEFINE1(newuname, struct new_utsname __user *, name)
 	if (copy_to_user(name, &tmp, sizeof(tmp)))
 		return -EFAULT;
 
-	override_custom_release(name->release, sizeof(name->release));
+	override_custom_release(name->release);
 	if (override_release(name->release, sizeof(name->release)))
 		return -EFAULT;
 	if (override_architecture(name))
