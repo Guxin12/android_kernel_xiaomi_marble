@@ -97,7 +97,7 @@ kernel_tree_cleanup() {
 	rm ${KDIR}/drivers/kernelsu/.git
 	rm -rf ${KDIR}/drivers/kernelsu
 	rm -f ${KDIR}/fs/susfs.c ${KDIR}/include/linux/susfs.h ${KDIR}/include/linux/susfs_def.h 2>/dev/null
-	git checkout -- fs/ drivers/ include/ kernel/ security/
+	git checkout -- fs/ drivers/ include/ kernel/ security/ mm/
 }
 
 if ${with_ksu}; then
@@ -533,8 +533,6 @@ techpack/video/msm_video.ko
 
 # 备用
 alt_need_modules='
-techpack/display/msm/msm_drm.ko
-drivers/power/supply/qti_battery_charger_main.ko
 drivers/misc/ntsync.ko
 '
 
