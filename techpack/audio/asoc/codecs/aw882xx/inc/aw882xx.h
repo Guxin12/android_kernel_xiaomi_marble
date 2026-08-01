@@ -60,10 +60,12 @@ enum aw882xx_int_type {
 #define AW_KERNEL_VER_OVER_4_19_1
 #endif
 
+#if KERNEL_VERSION(5, 0, 0) <= LINUX_VERSION_CODE
+#define AW_KERNEL_VER_OVER_5_0_0
+#endif
 
 #if KERNEL_VERSION(5, 4, 0) <= LINUX_VERSION_CODE
 #define AW_KERNEL_VER_OVER_5_4_0
-MODULE_IMPORT_NS(VFS_internal_I_am_really_a_filesystem_and_am_NOT_a_driver);
 #endif
 
 #if KERNEL_VERSION(5, 10, 0) <= LINUX_VERSION_CODE
@@ -78,8 +80,20 @@ MODULE_IMPORT_NS(VFS_internal_I_am_really_a_filesystem_and_am_NOT_a_driver);
 #define AW_KERNEL_VER_OVER_6_1_0
 #endif
 
+#if KERNEL_VERSION(6, 4, 0) <= LINUX_VERSION_CODE
+#define AW_KERNEL_VER_OVER_6_4_0
+#endif
+
 #if KERNEL_VERSION(6, 6, 0) <= LINUX_VERSION_CODE
 #define AW_KERNEL_VER_OVER_6_6_0
+#endif
+
+#if KERNEL_VERSION(6, 18, 12) <= LINUX_VERSION_CODE
+#define AW_KERNEL_VER_OVER_6_18_12
+#endif
+
+#if defined(AW_KERNEL_VER_OVER_5_4_0) && !defined(AW_KERNEL_VER_OVER_6_18_12)
+MODULE_IMPORT_NS(VFS_internal_I_am_really_a_filesystem_and_am_NOT_a_driver);
 #endif
 
 #ifdef AW_KERNEL_VER_OVER_4_19_1
@@ -95,7 +109,11 @@ struct aw_componet_codec_ops {
 	void *(*codec_get_drvdata)(aw_snd_soc_codec_t *codec);
 	int (*add_codec_controls)(aw_snd_soc_codec_t *codec,
 		const struct snd_kcontrol_new *controls, unsigned int num_controls);
+#ifdef AW_KERNEL_VER_OVER_6_18_12
+	void (*unregister_codec)(struct device *dev, const aw_snd_soc_codec_driver_t *codec_drv);
+#else
 	void (*unregister_codec)(struct device *dev);
+#endif
 	int (*register_codec)(struct device *dev,
 			const aw_snd_soc_codec_driver_t *codec_drv,
 			struct snd_soc_dai_driver *dai_drv,
@@ -185,6 +203,7 @@ struct aw882xx {
 	unsigned char allow_pw;		/* allow power */
 	uint32_t rename_flag;
 	unsigned char sync_load;	/* sync load fw */
+	unsigned char lock_valid;
 
 	int reset_gpio;
 	int irq_gpio;
@@ -197,7 +216,9 @@ struct aw882xx {
 	unsigned char fw_status;
 	unsigned char fw_retry_cnt;
 	unsigned char rw_reg_addr;	/* rw attr node store read addr */
+	bool is_suspend;
 
+	struct list_head list;
 	aw_snd_soc_codec_t *codec;
 	struct aw_componet_codec_ops *codec_ops;
 
