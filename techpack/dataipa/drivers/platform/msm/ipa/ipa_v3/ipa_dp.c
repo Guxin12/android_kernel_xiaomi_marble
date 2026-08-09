@@ -2040,6 +2040,10 @@ int ipa3_teardown_sys_pipe(u32 clnt_hdl)
 
 	if (ep->sys->repl_hdlr == ipa3_replenish_rx_page_recycle) {
 		cancel_delayed_work_sync(&ep->sys->common_sys->freepage_work);
+
+		if (ep->sys->freepage_wq)
+			flush_workqueue(ep->sys->freepage_wq);
+
 		tasklet_kill(&ep->sys->common_sys->tasklet_find_freepage);
 	}
 

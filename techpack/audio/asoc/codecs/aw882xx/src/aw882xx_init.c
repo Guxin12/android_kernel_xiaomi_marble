@@ -945,6 +945,8 @@ static void aw_pid_2329_dev_init(struct aw_device *aw_pa)
 	aw_pa->lpc_desc.enable = AW_PID_2329_LPC_DETEN_ENABLE_VALUE;
 	aw_pa->lpc_desc.disable = AW_PID_2329_LPC_DETEN_DISABLE_VALUE;
 	aw_pa->lpc_desc.name = "btn pid 2329 lpc";
+
+	aw_pa->monitor_desc.reg_temp_scale = AW_PID_2329_TEMP_SCALE;
 }
 /******************************************************
  *
@@ -1040,6 +1042,8 @@ static void aw_pid_2418_dev_init(struct aw_device *aw_pa)
 	aw_pa->temp_desc.reg = AW_PID_2418_TEMP_REG;
 	aw_pa->temp_desc.neg_mask = AW_PID_2418_MONITOR_TEMP_NEG_MASK;
 	aw_pa->temp_desc.sign_mask = AW_PID_2418_MONITOR_TEMP_SIGN_MASK;
+
+	aw_pa->monitor_desc.reg_temp_scale = AW_PID_2418_TEMP_SCALE;
 
 	aw_pa->dither_desc.reg = AW_PID_2418_DBGCTRL_REG;
 	aw_pa->dither_desc.mask = AW_PID_2418_DITHER_EN_MASK;
@@ -1171,6 +1175,8 @@ void aw_dev_init_cmm(struct aw_device *aw_pa)
 	aw_pa->bop_desc.enable = AW_BOP_EN_ENABLE_VALUE;
 	aw_pa->bop_desc.disable = AW_BOP_EN_DISABLE_VALUE;
 	aw_pa->bop_desc.name = "btn bop";
+
+	aw_pa->monitor_desc.reg_temp_scale = AW_MONITOR_TEMP_SCALE_DEFAULT;
 
 	aw_pa->soft_rst.reg = AW_SOFT_RST_REG;
 	aw_pa->soft_rst.reg_value = AW_SOFT_RST_VAL;

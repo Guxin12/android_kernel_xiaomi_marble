@@ -210,6 +210,7 @@ struct aw_monitor_desc {
 	uint8_t db_offset;
 	uint8_t monitor_mode;
 	uint8_t monitor_data_src;
+	int16_t reg_temp_scale;
 
 	uint32_t pre_vmax;
 	struct aw_monitor_trace temp_trace;

@@ -40,6 +40,8 @@ static DEFINE_MUTEX(g_aw_dsp_lock);
 #define AW_MSG_ID_VERSION		(0x00000008)
 #define AW_MSG_ID_AUDIO_MIX		(0x0000000B)
 #define AW_MSG_ID_VERSION_NEW		(0x00000012)
+#define AW_MSG_ID_DTC_STATUS_L		(0x00000018)
+#define AW_MSG_ID_DTC_STATUS_R		(0x00000019)
 #define AW_MSG_ID_VOLTAGE_OFFSET	(0x0000001F)
 
 /*dsp params id*/
@@ -1112,6 +1114,60 @@ int aw882xx_dsp_read_run_state_avg(struct aw_device *aw_dev, char *data, unsigne
 		return ret;
 	}
 	aw_dev_dbg(aw_dev->dev, "read run state avg done");
+
+	return ret;
+}
+
+int aw882xx_dsp_read_dtc_status(struct aw_device *aw_dev, char *data, unsigned int data_len)
+{
+	uint32_t msg_id = -EINVAL;
+	int ret = 0;
+
+	if (aw_dev->channel == AW_DEV_CH_PRI_L ||
+			aw_dev->channel == AW_DEV_CH_SEC_L ||
+				aw_dev->channel == AW_DEV_CH_TERT_L ||
+					aw_dev->channel == AW_DEV_CH_QUAT_L) {
+		msg_id = AW_MSG_ID_DTC_STATUS_L;
+	} else if (aw_dev->channel == AW_DEV_CH_PRI_R ||
+			aw_dev->channel == AW_DEV_CH_SEC_R ||
+				aw_dev->channel == AW_DEV_CH_TERT_R ||
+					aw_dev->channel == AW_DEV_CH_QUAT_R) {
+		msg_id = AW_MSG_ID_DTC_STATUS_R;
+	} else {
+		aw_dev_err(aw_dev->dev, "unsupport dev channel");
+		return -EINVAL;
+	}
+
+	ret = aw882xx_dsp_read_dsp_msg(aw_dev, msg_id, (char *)data, sizeof(int32_t) * 6);
+	if (ret)
+		aw_dev_err(aw_dev->dev, "read dtc failed ");
+
+	return ret;
+}
+
+int aw882xx_dsp_write_dtc_status(struct aw_device *aw_dev, char *data, unsigned int data_len)
+{
+	uint32_t msg_id = -EINVAL;
+	int ret = 0;
+
+	if (aw_dev->channel == AW_DEV_CH_PRI_L ||
+			aw_dev->channel == AW_DEV_CH_SEC_L ||
+				aw_dev->channel == AW_DEV_CH_TERT_L ||
+					aw_dev->channel == AW_DEV_CH_QUAT_L) {
+		msg_id = AW_MSG_ID_DTC_STATUS_L;
+	} else if (aw_dev->channel == AW_DEV_CH_PRI_R ||
+			aw_dev->channel == AW_DEV_CH_SEC_R ||
+				aw_dev->channel == AW_DEV_CH_TERT_R ||
+					aw_dev->channel == AW_DEV_CH_QUAT_R) {
+		msg_id = AW_MSG_ID_DTC_STATUS_R;
+	} else {
+		aw_dev_err(aw_dev->dev, "unsupport dev channel");
+		return -EINVAL;
+	}
+
+	ret = aw882xx_dsp_write_dsp_msg(aw_dev, msg_id, data, data_len);
+	if (ret)
+		aw_dev_err(aw_dev->dev, "write dtc failed ");
 
 	return ret;
 }

@@ -762,7 +762,8 @@ int32_t cam_actuator_i2c_pkt_parse(struct cam_actuator_ctrl_t *a_ctrl,
 		if (!csl_packet->num_cmd_buf) {
 			CAM_ERR(CAM_ACTUATOR, "Invalid num_cmd_buffer = %d",
 				csl_packet->num_cmd_buf);
-			return -EINVAL;
+			rc = -EINVAL;
+			goto end;
 		}
 		if (a_ctrl->cam_act_state < CAM_ACTUATOR_CONFIG) {
 			rc = -EINVAL;
@@ -918,9 +919,6 @@ int32_t cam_actuator_i2c_pkt_parse(struct cam_actuator_ctrl_t *a_ctrl,
 		rc = -EINVAL;
 		goto end;
 	}
-
-	cam_mem_put_cpu_buf(config.packet_handle);
-	return rc;
 
 end:
 	cam_common_mem_free(csl_packet);

@@ -270,6 +270,16 @@ void
 lim_process_beacon_tx_success_ind(struct mac_context *mac, uint16_t msgType,
 				  void *event);
 
+/**
+ * lim_handle_sta_csa_param() - Handle CSA offload param
+ * @mac_ctx: pointer to global adapter context
+ * @csa_params: csa parameters.
+ *
+ * Return: None
+ */
+void lim_handle_sta_csa_param(struct mac_context *mac_ctx,
+			      struct csa_offload_params *csa_params);
+
 #ifdef WLAN_FEATURE_11BE_MLO
 /**
  * lim_handle_mlo_sta_csa_param() - handle mlo sta csa parameters
