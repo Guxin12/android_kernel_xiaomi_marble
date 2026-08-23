@@ -1459,7 +1459,7 @@ static int i2c_register_adapter(struct i2c_adapter *adap)
 		goto err_put_adap;
 	}
 
-	res = i2c_setup_smbus_alert(adap);
+	res = of_i2c_setup_smbus_alert(adap);
 	if (res)
 		goto out_reg;
 
