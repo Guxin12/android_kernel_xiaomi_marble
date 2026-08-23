@@ -29,7 +29,9 @@
 #include <linux/string.h>
 #include <linux/msg.h>
 #include <net/flow.h>
+#ifndef __GENKSYMS__
 #include <net/sock.h>
+#endif
 
 #define MAX_LSM_EVM_XATTR	2
 
