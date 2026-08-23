@@ -1006,7 +1006,7 @@ void psi_cgroup_free(struct cgroup *cgroup)
 	 * destruction may have re-armed the timer after psi_trigger_destroy()
 	 * deleted it. Spurious firing while the group is alive is harmless.
 	 */
-	timer_delete_sync(&cgroup->psi.poll_timer);
+	del_timer_sync(&cgroup->psi.poll_timer);
 	free_percpu(cgroup->psi.pcpu);
 	/* All triggers must be removed by now */
 	WARN_ONCE(cgroup->psi.poll_states, "psi: trigger leak\n");

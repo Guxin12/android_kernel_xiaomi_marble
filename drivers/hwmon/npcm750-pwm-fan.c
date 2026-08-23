@@ -362,7 +362,7 @@ static void npcm7xx_fan_polling(struct timer_list *t)
 
 static void npcm7xx_fan_cleanup(void *timer)
 {
-	timer_delete_sync(timer);
+	del_timer_sync(timer);
 }
 
 static inline void npcm7xx_fan_compute(struct npcm7xx_pwm_fan_data *data,
