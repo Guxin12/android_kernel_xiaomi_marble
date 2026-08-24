@@ -948,6 +948,8 @@ enum htt_dbg_ext_stats_type {
      */
     HTT_DBG_EXT_STATS_DPD = 85,
 
+    HTT_DBG_EXT_STATS_NPCA = 86,
+
 
     /* keep this last */
     HTT_DBG_NUM_EXT_STATS = 256,
@@ -1197,7 +1199,9 @@ typedef struct {
 #define HTT_TX_PDEV_STATS_CMN_MAC_ID_GET(_var) \
     (((_var) & HTT_TX_PDEV_STATS_CMN_MAC_ID_M) >> \
      HTT_TX_PDEV_STATS_CMN_MAC_ID_S)
-
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_TX_PDEV_CMN_MAC_ID_GET(_var) \
+    HTT_TX_PDEV_STATS_CMN_MAC_ID_GET(_var)
 #define HTT_TX_PDEV_STATS_CMN_MAC_ID_SET(_var, _val) \
     do { \
         HTT_CHECK_SET_VAL(HTT_TX_PDEV_STATS_CMN_MAC_ID, _val); \
@@ -1621,6 +1625,11 @@ typedef struct {
     A_UINT32 mu_mimo_num_seq_posted[HTT_STATS_NUM_NR_BINS];
 
     A_UINT32 mu_mimo_num_ppdu_posted_per_burst[HTT_STATS_MAX_NUM_MU_PPDU_PER_BURST_WORDS];
+    /**
+     * Wi-Fi version identifier to differentiate stats while printing
+     * (contains enum HTT_RX_TX_PDEV_STATS_WIFI_VERSION value).
+     */
+    A_UINT32 wifi_version;
 } htt_stats_mu_ppdu_dist_tlv;
 /* preserve old name alias for new name consistent with the tag name */
 typedef htt_stats_mu_ppdu_dist_tlv htt_pdev_mu_ppdu_dist_tlv_v;
@@ -1807,6 +1816,9 @@ typedef struct {
 /* preserve old name alias for new name consistent with the tag name */
 typedef htt_stats_hw_pdev_errs_tlv htt_hw_stats_pdev_errs_tlv;
 
+#define HTT_STATS_HW_PDEV_ERRS_MAC_ID_GET(word) \
+    ((word >> 0) & 0xff)
+
 typedef struct {
     htt_tlv_hdr_t tlv_hdr;
 
@@ -1835,6 +1847,9 @@ typedef struct {
 } htt_stats_whal_tx_tlv;
 /* preserve old name alias for new name consistent with the tag name */
 typedef htt_stats_whal_tx_tlv htt_hw_stats_whal_tx_tlv;
+
+#define HTT_STATS_WHAL_TX_MAC_ID_GET(word) \
+    (((word) >> 0) & 0xff)
 
 typedef struct {
     htt_tlv_hdr_t tlv_hdr;
@@ -1910,6 +1925,9 @@ typedef struct _htt_pdev_err_stats {
 #define HTT_MSDU_FLOW_STATS_TX_FLOW_NUM_GET(_var) \
     (((_var) & HTT_MSDU_FLOW_STATS_TX_FLOW_NUM_M) >> \
      HTT_MSDU_FLOW_STATS_TX_FLOW_NUM_S)
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_PEER_MSDU_FLOWQ_TX_FLOW_NUMBER_GET(_var) \
+    HTT_MSDU_FLOW_STATS_TX_FLOW_NUM_GET(_var)
 
 #define HTT_MSDU_FLOW_STATS_TX_FLOW_NUM_SET(_var, _val) \
     do { \
@@ -1920,6 +1938,9 @@ typedef struct _htt_pdev_err_stats {
 #define HTT_MSDU_FLOW_STATS_TID_NUM_GET(_var) \
     (((_var) & HTT_MSDU_FLOW_STATS_TID_NUM_M) >> \
      HTT_MSDU_FLOW_STATS_TID_NUM_S)
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_PEER_MSDU_FLOWQ_TID_NUM_GET(_var) \
+    HTT_MSDU_FLOW_STATS_TID_NUM_GET(_var)
 
 #define HTT_MSDU_FLOW_STATS_TID_NUM_SET(_var, _val) \
     do { \
@@ -1930,6 +1951,9 @@ typedef struct _htt_pdev_err_stats {
 #define HTT_MSDU_FLOW_STATS_DROP_GET(_var) \
     (((_var) & HTT_MSDU_FLOW_STATS_DROP_M) >> \
      HTT_MSDU_FLOW_STATS_DROP_S)
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_PEER_MSDU_FLOWQ_DROP_RULE_GET(_var) \
+    HTT_MSDU_FLOW_STATS_DROP_GET(_var)
 
 #define HTT_MSDU_FLOW_STATS_DROP_SET(_var, _val) \
     do { \
@@ -1985,7 +2009,9 @@ typedef htt_stats_peer_msdu_flowq_tlv htt_msdu_flow_stats_tlv;
 #define HTT_TX_TID_STATS_SW_PEER_ID_GET(_var) \
     (((_var) & HTT_TX_TID_STATS_SW_PEER_ID_M) >> \
      HTT_TX_TID_STATS_SW_PEER_ID_S)
-
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_TX_TID_DETAILS_SW_PEER_ID_GET(_var) \
+    HTT_TX_TID_STATS_SW_PEER_ID_GET(_var)
 #define HTT_TX_TID_STATS_SW_PEER_ID_SET(_var, _val) \
     do { \
         HTT_CHECK_SET_VAL(HTT_TX_TID_STATS_SW_PEER_ID, _val); \
@@ -1995,7 +2021,9 @@ typedef htt_stats_peer_msdu_flowq_tlv htt_msdu_flow_stats_tlv;
 #define HTT_TX_TID_STATS_TID_NUM_GET(_var) \
     (((_var) & HTT_TX_TID_STATS_TID_NUM_M) >> \
      HTT_TX_TID_STATS_TID_NUM_S)
-
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_TX_TID_DETAILS_TID_NUM_GET(_var) \
+    HTT_TX_TID_STATS_TID_NUM_GET(_var)
 #define HTT_TX_TID_STATS_TID_NUM_SET(_var, _val) \
     do { \
         HTT_CHECK_SET_VAL(HTT_TX_TID_STATS_TID_NUM, _val); \
@@ -2011,7 +2039,9 @@ typedef htt_stats_peer_msdu_flowq_tlv htt_msdu_flow_stats_tlv;
 #define HTT_TX_TID_STATS_NUM_SCHED_PENDING_GET(_var) \
     (((_var) & HTT_TX_TID_STATS_NUM_SCHED_PENDING_M) >> \
      HTT_TX_TID_STATS_NUM_SCHED_PENDING_S)
-
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_TX_TID_DETAILS_NUM_SCHED_PENDING_GET(_var) \
+    HTT_TX_TID_STATS_NUM_SCHED_PENDING_GET(_var)
 #define HTT_TX_TID_STATS_NUM_SCHED_PENDING_SET(_var, _val) \
     do { \
         HTT_CHECK_SET_VAL(HTT_TX_TID_STATS_NUM_SCHED_PENDING, _val); \
@@ -2021,7 +2051,9 @@ typedef htt_stats_peer_msdu_flowq_tlv htt_msdu_flow_stats_tlv;
 #define HTT_TX_TID_STATS_NUM_PPDU_IN_HWQ_GET(_var) \
     (((_var) & HTT_TX_TID_STATS_NUM_PPDU_IN_HWQ_M) >> \
      HTT_TX_TID_STATS_NUM_PPDU_IN_HWQ_S)
-
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_TX_TID_DETAILS_NUM_PPDU_IN_HWQ_GET(_var) \
+    HTT_TX_TID_STATS_NUM_PPDU_IN_HWQ_GET(_var)
 #define HTT_TX_TID_STATS_NUM_PPDU_IN_HWQ_SET(_var, _val) \
     do { \
         HTT_CHECK_SET_VAL(HTT_TX_TID_STATS_NUM_PPDU_IN_HWQ, _val); \
@@ -2159,6 +2191,15 @@ typedef struct _htt_tx_tid_stats_v1_tlv {
 /* preserve old name alias for new name consistent with the tag name */
 typedef htt_stats_tx_tid_details_v1_tlv htt_tx_tid_stats_v1_tlv;
 
+#define HTT_STATS_TX_TID_DETAILS_V1_SW_PEER_ID_GET(word) \
+    (((word) >> 0) & 0xffff)
+#define HTT_STATS_TX_TID_DETAILS_V1_TID_NUM_GET(word) \
+    (((word) >> 16) & 0xffff)
+#define HTT_STATS_TX_TID_DETAILS_V1_NUM_SCHED_PENDING_GET(word) \
+    (((word) >> 0) & 0xff)
+#define HTT_STATS_TX_TID_DETAILS_V1_NUM_PPDU_IN_HWQ_GET(word) \
+    (((word) >> 8) & 0xff)
+
 #define HTT_RX_TID_STATS_SW_PEER_ID_M 0x0000ffff
 #define HTT_RX_TID_STATS_SW_PEER_ID_S 0
 #define HTT_RX_TID_STATS_TID_NUM_M 0xffff0000
@@ -2167,7 +2208,9 @@ typedef htt_stats_tx_tid_details_v1_tlv htt_tx_tid_stats_v1_tlv;
 #define HTT_RX_TID_STATS_SW_PEER_ID_GET(_var) \
     (((_var) & HTT_RX_TID_STATS_SW_PEER_ID_M) >> \
      HTT_RX_TID_STATS_SW_PEER_ID_S)
-
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_RX_TID_DETAILS_SW_PEER_ID_GET(_var) \
+    HTT_RX_TID_STATS_SW_PEER_ID_GET(_var)
 #define HTT_RX_TID_STATS_SW_PEER_ID_SET(_var, _val) \
     do { \
         HTT_CHECK_SET_VAL(HTT_RX_TID_STATS_SW_PEER_ID, _val); \
@@ -2177,7 +2220,9 @@ typedef htt_stats_tx_tid_details_v1_tlv htt_tx_tid_stats_v1_tlv;
 #define HTT_RX_TID_STATS_TID_NUM_GET(_var) \
     (((_var) & HTT_RX_TID_STATS_TID_NUM_M) >> \
      HTT_RX_TID_STATS_TID_NUM_S)
-
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_RX_TID_DETAILS_TID_NUM_GET(_var) \
+    HTT_RX_TID_STATS_TID_NUM_GET(_var)
 #define HTT_RX_TID_STATS_TID_NUM_SET(_var, _val) \
     do { \
         HTT_CHECK_SET_VAL(HTT_RX_TID_STATS_TID_NUM, _val); \
@@ -2438,7 +2483,9 @@ typedef struct {
 #define HTT_STATS_RX_PEER_TID_REO_QUEUE_BA_MPDU_CNT_GET(_var) \
     (((_var) & HTT_STATS_RX_PEER_TID_REO_QUEUE_BA_MPDU_CNT_M) >> \
      HTT_STATS_RX_PEER_TID_REO_QUEUE_BA_MPDU_CNT_S)
-
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_RX_PEER_TID_REO_QUEUE_BA_CURRENT_MPDU_CNT_GET(_var) \
+    HTT_STATS_RX_PEER_TID_REO_QUEUE_BA_MPDU_CNT_GET(_var)
 #define HTT_STATS_RX_PEER_TID_REO_QUEUE_BA_MPDU_CNT_SET(_var, _val) \
     do { \
         HTT_CHECK_SET_VAL(HTT_STATS_RX_PEER_TID_REO_QUEUE_BA_MPDU_CNT, _val); \
@@ -2448,7 +2495,9 @@ typedef struct {
 #define HTT_STATS_RX_PEER_TID_REO_QUEUE_BA_MSDU_CNT_GET(_var) \
     (((_var) & HTT_STATS_RX_PEER_TID_REO_QUEUE_BA_MSDU_CNT_M) >> \
      HTT_STATS_RX_PEER_TID_REO_QUEUE_BA_MSDU_CNT_S)
-
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_RX_PEER_TID_REO_QUEUE_BA_CURRENT_MSDU_CNT_GET(_var) \
+    HTT_STATS_RX_PEER_TID_REO_QUEUE_BA_MSDU_CNT_GET(_var)
 #define HTT_STATS_RX_PEER_TID_REO_QUEUE_BA_MSDU_CNT_SET(_var, _val) \
     do { \
         HTT_CHECK_SET_VAL(HTT_STATS_RX_PEER_TID_REO_QUEUE_BA_MSDU_CNT, _val); \
@@ -2635,8 +2684,14 @@ typedef htt_stats_peer_details_tlv htt_peer_details_tlv;
     HTT_PEER_DETAILS_GET(word, PEER_PS_EXIT)
 #define HTT_STATS_PEER_DETAILS_PEER_PSPOLL_TRIGGER_GET(word) \
     HTT_PEER_DETAILS_GET(word, PEER_PSPOLL_TRIGGER)
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_PEER_DETAILS_PEER_PSPOLL_TRIGGER_RECEIVED_GET(word) \
+    HTT_STATS_PEER_DETAILS_PEER_PSPOLL_TRIGGER_GET(word)
 #define HTT_STATS_PEER_DETAILS_PEER_UAPSD_TRIGGER_GET(word) \
     HTT_PEER_DETAILS_GET(word, PEER_UAPSD_TRIGGER)
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_PEER_DETAILS_PEER_UAPSD_TRIGGER_RECEIVED_GET(word) \
+    HTT_STATS_PEER_DETAILS_PEER_UAPSD_TRIGGER_GET(word)
 #define HTT_STATS_PEER_DETAILS_PEER_PS_HISTOGRAM_0_GET(word) \
     HTT_PEER_DETAILS_GET(word, PEER_PS_HISTOGRAM_0)
 #define HTT_STATS_PEER_DETAILS_PEER_PS_HISTOGRAM_1_GET(word) \
@@ -2650,17 +2705,17 @@ typedef struct {
     A_UINT32     ast_index;
     htt_mac_addr mac_addr;
     A_UINT32
-        pdev_id        : 2,
-        vdev_id        : 8,
-        next_hop       : 1,
-        mcast          : 1,
-        monitor_direct : 1,
-        mesh_sta       : 1,
-        mec            : 1,
-        intra_bss      : 1,
-        chip_id        : 2,
-        ml_peer_id     : 13,
-        on_chip        : 1;
+        pdev_id        : 2,  /* bits 1:0 */
+        vdev_id        : 8,  /* bits 9:2 */
+        next_hop       : 1,  /* bit 10 */
+        mcast          : 1,  /* bit 11 */
+        monitor_direct : 1,  /* bit 12 */
+        mesh_sta       : 1,  /* bit 13 */
+        mec            : 1,  /* bit 14 */
+        intra_bss      : 1,  /* bit 15 */
+        chip_id        : 2,  /* bit 17:16 */
+        ml_peer_id     : 13, /* bit 30:18 */
+        on_chip        : 1;  /* bit 31 */
     A_UINT32
         tx_monitor_override_sta : 1,
         rx_monitor_override_sta : 1,
@@ -2668,6 +2723,34 @@ typedef struct {
 } htt_stats_ast_entry_tlv;
 /* preserve old name alias for new name consistent with the tag name */
 typedef htt_stats_ast_entry_tlv htt_ast_entry_tlv;
+
+#define HTT_STATS_AST_ENTRY_PDEV_ID_GET(word32) \
+    ((word32 >> 0) & 0x3)
+#define HTT_STATS_AST_ENTRY_VDEV_ID_GET(word32) \
+    ((word32 >> 2) & 0xff)
+#define HTT_STATS_AST_ENTRY_NEXT_HOP_GET(word32) \
+    ((word32 >> 10) & 0x1)
+#define HTT_STATS_AST_ENTRY_MCAST_GET(word32) \
+    ((word32 >> 11) & 0x1)
+#define HTT_STATS_AST_ENTRY_MONITOR_DIRECT_GET(word32) \
+    ((word32 >> 12) & 0x1)
+#define HTT_STATS_AST_ENTRY_MESH_STA_GET(word32) \
+    ((word32 >> 13) & 0x1)
+#define HTT_STATS_AST_ENTRY_MEC_GET(word32) \
+    ((word32 >> 14) & 0x1)
+#define HTT_STATS_AST_ENTRY_INTRA_BSS_GET(word32) \
+    ((word32 >> 15) & 0x1)
+#define HTT_STATS_AST_ENTRY_CHIP_ID_GET(word32) \
+    ((word32 >> 16) & 0x3)
+#define HTT_STATS_AST_ENTRY_ML_PEER_ID_GET(word32) \
+    ((word32 >> 18) & 0x1fff)
+#define HTT_STATS_AST_ENTRY_ON_CHIP_GET(word32) \
+    ((word32 >> 31) & 0x1)
+
+#define HTT_STATS_AST_ENTRY_TX_MONITOR_OVERRIDE_STA_GET(word32) \
+    ((word32 >> 0) & 0x1)
+#define HTT_STATS_AST_ENTRY_RX_MONITOR_OVERRIDE_STA_GET(word32) \
+    ((word32 >> 1) & 0x1)
 
 typedef enum {
     HTT_STATS_DIRECTION_TX,
@@ -3701,6 +3784,9 @@ typedef struct {
 /* preserve old name alias for new name consistent with the tag name */
 typedef htt_stats_tx_selfgen_cmn_stats_tlv htt_tx_selfgen_cmn_stats_tlv;
 
+#define HTT_STATS_TX_SELFGEN_CMN_STATS_MAC_ID_GET(word) \
+    (((word) >> 0) & 0xff)
+
 typedef struct {
     htt_tlv_hdr_t tlv_hdr;
     /** 11AC VHT SU NDPA frame sent over the air */
@@ -3905,6 +3991,11 @@ typedef struct {
     A_UINT32 standalone_be_ulmumimo_trigger_tried[HTT_NUM_AC_WMM];
     /** 11BE EHT MU Standalone UL MU-MIMO Basic Trigger completed with error(s) */
     A_UINT32 standalone_be_ulmumimo_trigger_err[HTT_NUM_AC_WMM];
+    /**
+     * Wi-Fi version identifier to differentiate stats while printing
+     * (contains enum HTT_RX_TX_PDEV_STATS_WIFI_VERSION value).
+     */
+    A_UINT32 wifi_version;
 } htt_stats_tx_selfgen_be_stats_tlv;
 /* preserve old name alias for new name consistent with the tag name */
 typedef htt_stats_tx_selfgen_be_stats_tlv htt_tx_selfgen_be_stats_tlv;
@@ -3970,6 +4061,9 @@ typedef struct {
     A_UINT32 sta_dps_bn_bsr_trigger_err[HTT_NUM_AC_WMM];
     /** 11bn UHR MU RTS trigger to DPS client completed with errors(s) */
     A_UINT32 sta_dps_bn_mu_rts_trigger_err[HTT_NUM_AC_WMM];
+
+    /** 11BN UHR UL OFDMA RU allocation mode - trigger error count */
+    A_UINT32 bn_basic_trig_ru_alloc_mode_err[HTT_BN_UL_OFDMA_NUM_RU_ALLOC_MODES];
 } htt_stats_tx_selfgen_bn_tlv;
 
 typedef struct { /* DEPRECATED */
@@ -4713,6 +4807,11 @@ typedef struct {
     A_UINT32 be_mu_rts_trigger_blocked;
     /** 11BE EHT MU BSR Trigger frame blocked due to partner link TX/RX(eMLSR) */
     A_UINT32 be_bsr_trigger_blocked;
+    /**
+     * Wi-Fi version identifier to differentiate stats while printing
+     * (contains enum HTT_RX_TX_PDEV_STATS_WIFI_VERSION value).
+     */
+    A_UINT32 wifi_version;
 } htt_stats_tx_selfgen_be_err_stats_tlv;
 /* preserve old name alias for new name consistent with the tag name */
 typedef htt_stats_tx_selfgen_be_err_stats_tlv htt_tx_selfgen_be_err_stats_tlv;
@@ -4873,6 +4972,11 @@ typedef struct {
     A_UINT32 be_ulmumimo_trig_sch_status[HTT_TX_PDEV_STATS_NUM_TX_ERR_STATUS];
     /** 11BE EHT UL MUMIMO Basic Trigger scheduler error code */
     A_UINT32 be_ulmumimo_trig_sch_flag_err[HTT_TX_SELFGEN_NUM_SCH_TSFLAG_ERROR_STATS];
+    /**
+     * Wi-Fi version identifier to differentiate stats while printing
+     * (contains enum HTT_RX_TX_PDEV_STATS_WIFI_VERSION value).
+     */
+    A_UINT32 wifi_version;
 } htt_stats_tx_selfgen_be_sched_status_stats_tlv;
 /* preserve old name alias for new name consistent with the tag name */
 typedef htt_stats_tx_selfgen_be_sched_status_stats_tlv
@@ -4981,6 +5085,11 @@ typedef struct {
     A_UINT32 be_mu_mimo_sch_posted_per_grp_sz[HTT_TX_PDEV_STATS_NUM_BE_MUMIMO_USER_STATS];
     /** Number of 11AC DL MU MIMO schedules posted per group size (4-7) */
     A_UINT32 ac_mu_mimo_sch_posted_per_grp_sz_ext[HTT_TX_PDEV_STATS_NUM_AC_MUMIMO_USER_STATS];
+    /**
+     * Wi-Fi version identifier to differentiate stats while printing
+     * (contains enum HTT_RX_TX_PDEV_STATS_WIFI_VERSION value).
+     */
+    A_UINT32 wifi_version;
 } htt_stats_tx_pdev_mu_mimo_stats_tlv;
 /* preserve old name alias for new name consistent with the tag name */
 typedef htt_stats_tx_pdev_mu_mimo_stats_tlv htt_tx_pdev_mu_mimo_sch_stats_tlv;
@@ -5040,6 +5149,11 @@ typedef struct {
     A_UINT32 be_mu_mimo_sch_posted_per_grp_sz[HTT_TX_PDEV_STATS_NUM_BE_MUMIMO_USER_STATS];
     /** Number of 11AC DL MU MIMO schedules posted per group size (4 - 7)*/
     A_UINT32 ac_mu_mimo_sch_posted_per_grp_sz_ext[HTT_TX_PDEV_STATS_NUM_AC_MUMIMO_USER_STATS];
+    /**
+     * Wi-Fi version identifier to differentiate stats while printing
+     * (contains enum HTT_RX_TX_PDEV_STATS_WIFI_VERSION value).
+     */
+    A_UINT32 wifi_version;
 } htt_stats_tx_pdev_dl_mu_mimo_stats_tlv;
 /* preserve old name alias for new name consistent with the tag name */
 typedef htt_stats_tx_pdev_dl_mu_mimo_stats_tlv
@@ -5067,7 +5181,10 @@ typedef struct {
     htt_tlv_hdr_t tlv_hdr;
     /** Represents the count for 11BN DL MU OFDMA sequences */
     A_UINT32 bn_mu_ofdma_sch_nusers[HTT_TX_PDEV_STATS_NUM_BN_OFDMA_USER_STATS];
-} htt_stats_tx_pdev_bn_dl_mu_ofdma_tlv;
+} htt_stats_tx_pdev_bn_dl_mu_ofdma_stats_tlv;
+/* preserve old name alias for new name consistent with the tag name */
+typedef htt_stats_tx_pdev_bn_dl_mu_ofdma_stats_tlv
+    htt_stats_tx_pdev_bn_dl_mu_ofdma_tlv;
 
 typedef struct {
     htt_tlv_hdr_t tlv_hdr;
@@ -5132,7 +5249,10 @@ typedef struct {
     /**
      * TODO_BORON_OFDMA : Add array for BN_BRP number of users
      */
-} htt_stats_tx_pdev_bn_ul_mu_ofdma_tlv;
+} htt_stats_tx_pdev_bn_ul_mu_ofdma_stats_tlv;
+/* preserve old name alias for new name consistent with the tag name */
+typedef htt_stats_tx_pdev_bn_ul_mu_ofdma_stats_tlv
+    htt_stats_tx_pdev_bn_ul_mu_ofdma_tlv;
 
 typedef struct {
     htt_tlv_hdr_t tlv_hdr;
@@ -5247,6 +5367,11 @@ typedef struct {
     A_UINT32 user_index;
     /** HTT_STATS_TX_SCHED_MODE_xxx */
     A_UINT32 tx_sched_mode;
+    /**
+     * Wi-Fi version identifier to differentiate stats while printing
+     * (contains enum HTT_RX_TX_PDEV_STATS_WIFI_VERSION value).
+     */
+    A_UINT32 wifi_version;
 } htt_stats_tx_pdev_mpdu_stats_tlv;
 /* preserve old name alias for new name consistent with the tag name */
 typedef htt_stats_tx_pdev_mpdu_stats_tlv htt_tx_pdev_mpdu_stats_tlv;
@@ -5323,6 +5448,35 @@ typedef struct {
     htt_tlv_hdr_t tlv_hdr;
     A_UINT32 htt_stats_type;
 } htt_stats_error_tlv_v;
+/* Multiple TLV tag values
+ * (HTT_STATS_UNSUPPORTED_ERROR_STATS_TAG,
+ * HTT_STATS_UNAVAILABLE_ERROR_STATS_TAG)
+ * correspond to this htt_stats_error_tlv_v struct.
+ * Provide aliases that have the expected names
+ * that are consistent with the TLV tag enum names.
+ */
+typedef htt_stats_error_tlv_v
+    htt_stats_unsupported_error_stats_tlv;
+typedef htt_stats_error_tlv_v
+    htt_stats_unavailable_error_stats_tlv;
+
+/* NOTE: Variable length TLV, use length spec to infer array size */
+#define HTT_STATS_SCHED_TXQ_TX_MODE_SIMPLIFIED_TLV_SZ(_num_elems) \
+    (sizeof(A_UINT32) * (_num_elems))
+typedef struct {
+    htt_tlv_hdr_t tlv_hdr;
+    /** Scheduler command posted per tx_mode (length = num tx modes+1) */
+    HTT_STATS_VAR_LEN_ARRAY1(A_UINT32, sched_tx_mode_simplified);
+} htt_stats_sched_txq_tx_mode_simplified_tlv;
+
+/* NOTE: Variable length TLV, use length spec to infer array size */
+#define HTT_STATS_SCHED_TXQ_TX_MODE_WINNER_TLV_SZ(_num_elems) \
+    (sizeof(A_UINT32) * (_num_elems))
+typedef struct {
+    htt_tlv_hdr_t tlv_hdr;
+    /** Scheduler command posted per tx_mode (length = num tx modes+1) */
+    HTT_STATS_VAR_LEN_ARRAY1(A_UINT32, sched_tx_mode_winner);
+} htt_stats_sched_txq_tx_mode_winner_tlv;
 
 typedef enum {
     HTT_SCHED_TID_SKIP_SCHED_MASK_DISABLED = 0, /* Skip the tid when WAL_TID_DISABLE_TX_SCHED_MASK is true                                       */
@@ -5472,7 +5626,10 @@ typedef struct {
      * Indexed by htt_sched_txq_combined_seq_status_tlv_enum.
      */
     HTT_STATS_VAR_LEN_ARRAY1(A_UINT32, combined_seq_state);
-} htt_stats_sched_txq_combined_seq_state_tlv;
+} htt_stats_txq_combined_seq_state_tlv;
+/* preserve old name alias for new name consistent with the tag name */
+typedef htt_stats_txq_combined_seq_state_tlv
+     htt_stats_sched_txq_combined_seq_state_tlv;
 
 typedef struct {
     htt_tlv_hdr_t tlv_hdr;
@@ -5807,7 +5964,9 @@ typedef htt_stats_tx_tqm_pdev_tlv htt_tx_tqm_pdev_stats_tlv_v;
 #define HTT_TX_TQM_CMN_STATS_MAC_ID_GET(_var) \
     (((_var) & HTT_TX_TQM_CMN_STATS_MAC_ID_M) >> \
      HTT_TX_TQM_CMN_STATS_MAC_ID_S)
-
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_TX_TQM_CMN_MAC_ID_GET(_var) \
+    HTT_TX_TQM_CMN_STATS_MAC_ID_GET(_var)
 #define HTT_TX_TQM_CMN_STATS_MAC_ID_SET(_var, _val) \
     do { \
         HTT_CHECK_SET_VAL(HTT_TX_TQM_CMN_STATS_MAC_ID, _val); \
@@ -5918,7 +6077,9 @@ typedef struct {
 #define HTT_TX_TQM_CMDQ_STATUS_MAC_ID_GET(_var) \
     (((_var) & HTT_TX_TQM_CMDQ_STATUS_MAC_ID_M) >> \
      HTT_TX_TQM_CMDQ_STATUS_MAC_ID_S)
-
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_TX_TQM_CMDQ_STATUS_MAC_ID_GET(_var) \
+    HTT_TX_TQM_CMDQ_STATUS_MAC_ID_GET(_var)
 #define HTT_TX_TQM_CMDQ_STATUS_MAC_ID_SET(_var, _val) \
     do { \
         HTT_CHECK_SET_VAL(HTT_TX_TQM_CMDQ_STATUS_MAC_ID, _val); \
@@ -5928,7 +6089,9 @@ typedef struct {
 #define HTT_TX_TQM_CMDQ_STATUS_CMDQ_ID_GET(_var) \
     (((_var) & HTT_TX_TQM_CMDQ_STATUS_CMDQ_ID_M) >> \
      HTT_TX_TQM_CMDQ_STATUS_CMDQ_ID_S)
-
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_TX_TQM_CMDQ_STATUS_CMDQ_ID_GET(_var) \
+    HTT_TX_TQM_CMDQ_STATUS_CMDQ_ID_GET(_var)
 #define HTT_TX_TQM_CMDQ_STATUS_CMDQ_ID_SET(_var, _val) \
     do { \
         HTT_CHECK_SET_VAL(HTT_TX_TQM_CMDQ_STATUS_CMDQ_ID, _val); \
@@ -6209,6 +6372,9 @@ typedef struct {
 /* preserve old name alias for new name consistent with the tag name */
 typedef htt_stats_tx_de_cmn_tlv htt_tx_de_cmn_stats_tlv;
 
+#define HTT_STATS_TX_DE_CMN_MAC_ID_GET(word) \
+    (((word) >> 0) & 0xff)
+
 #define HTT_STATS_RX_FW_RING_SIZE_NUM_ENTRIES(dword) ((dword >> 0)  & 0xffff)
 #define HTT_STATS_RX_FW_RING_CURR_NUM_ENTRIES(dword) ((dword >> 16) & 0xffff)
 
@@ -6457,6 +6623,9 @@ typedef htt_stats_ring_if_tlv htt_ring_if_stats_tlv;
 #define HTT_RING_IF_CMN_MAC_ID_GET(_var) \
     (((_var) & HTT_RING_IF_CMN_MAC_ID_M) >> \
      HTT_RING_IF_CMN_MAC_ID_S)
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_RING_IF_CMN_MAC_ID_GET(_var) \
+    HTT_RING_IF_CMN_MAC_ID_GET(_var)
 
 #define HTT_RING_IF_CMN_MAC_ID_SET(_var, _val) \
     do { \
@@ -6543,7 +6712,9 @@ typedef htt_stats_sfm_client_tlv htt_sfm_client_tlv;
 #define HTT_SFM_CMN_MAC_ID_GET(_var) \
     (((_var) & HTT_SFM_CMN_MAC_ID_M) >> \
      HTT_SFM_CMN_MAC_ID_S)
-
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_SFM_CMN_MAC_ID_GET(_var) \
+    HTT_SFM_CMN_MAC_ID_GET(_var)
 #define HTT_SFM_CMN_MAC_ID_SET(_var, _val) \
     do { \
         HTT_CHECK_SET_VAL(HTT_SFM_CMN_MAC_ID, _val); \
@@ -6622,7 +6793,9 @@ typedef struct {
 #define HTT_SRING_STATS_MAC_ID_GET(_var) \
     (((_var) & HTT_SRING_STATS_MAC_ID_M) >> \
      HTT_SRING_STATS_MAC_ID_S)
-
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_SRING_STATS_MAC_ID_GET(_var)  \
+    HTT_SRING_STATS_MAC_ID_GET(_var)
 #define HTT_SRING_STATS_MAC_ID_SET(_var, _val) \
     do { \
         HTT_CHECK_SET_VAL(HTT_SRING_STATS_MAC_ID, _val); \
@@ -6632,7 +6805,9 @@ typedef struct {
 #define HTT_SRING_STATS_RING_ID_GET(_var) \
     (((_var) & HTT_SRING_STATS_RING_ID_M) >> \
      HTT_SRING_STATS_RING_ID_S)
-
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_SRING_STATS_RING_ID_GET(_var) \
+    HTT_SRING_STATS_RING_ID_GET(_var)
 #define HTT_SRING_STATS_RING_ID_SET(_var, _val) \
     do { \
         HTT_CHECK_SET_VAL(HTT_SRING_STATS_RING_ID, _val); \
@@ -6642,7 +6817,9 @@ typedef struct {
 #define HTT_SRING_STATS_ARENA_GET(_var) \
     (((_var) & HTT_SRING_STATS_ARENA_M) >> \
      HTT_SRING_STATS_ARENA_S)
-
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_SRING_STATS_ARENA_GET(_var) \
+    HTT_SRING_STATS_ARENA_GET(_var)
 #define HTT_SRING_STATS_ARENA_SET(_var, _val) \
     do { \
         HTT_CHECK_SET_VAL(HTT_SRING_STATS_ARENA, _val); \
@@ -6652,7 +6829,9 @@ typedef struct {
 #define HTT_SRING_STATS_EP_TYPE_GET(_var) \
     (((_var) & HTT_SRING_STATS_EP_TYPE_M) >> \
      HTT_SRING_STATS_EP_TYPE_S)
-
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_SRING_STATS_EP_GET(_var) \
+    HTT_SRING_STATS_EP_TYPE_GET(_var)
 #define HTT_SRING_STATS_EP_TYPE_SET(_var, _val) \
     do { \
         HTT_CHECK_SET_VAL(HTT_SRING_STATS_EP_TYPE, _val); \
@@ -6669,7 +6848,9 @@ typedef struct {
 #define HTT_SRING_STATS_NUM_AVAIL_WORDS_GET(_var) \
     (((_var) & HTT_SRING_STATS_NUM_AVAIL_WORDS_M) >> \
      HTT_SRING_STATS_NUM_AVAIL_WORDS_S)
-
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_SRING_STATS_NUM_AVAIL_WORDS_GET(_var) \
+    HTT_SRING_STATS_NUM_AVAIL_WORDS_GET(_var)
 #define HTT_SRING_STATS_NUM_AVAIL_WORDS_SET(_var, _val) \
     do { \
         HTT_CHECK_SET_VAL(HTT_SRING_STATS_NUM_AVAIL_WORDS, _val); \
@@ -6679,7 +6860,9 @@ typedef struct {
 #define HTT_SRING_STATS_NUM_VALID_WORDS_GET(_var) \
     (((_var) & HTT_SRING_STATS_NUM_VALID_WORDS_M) >> \
      HTT_SRING_STATS_NUM_VALID_WORDS_S)
-
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_SRING_STATS_NUM_VALID_WORDS_GET(_var) \
+    HTT_SRING_STATS_NUM_VALID_WORDS_GET(_var)
 #define HTT_SRING_STATS_NUM_VALID_WORDS_SET(_var, _val) \
     do { \
         HTT_CHECK_SET_VAL(HTT_SRING_STATS_NUM_VALID_WORDS, _val); \
@@ -6696,7 +6879,9 @@ typedef struct {
 #define HTT_SRING_STATS_HEAD_PTR_GET(_var) \
     (((_var) & HTT_SRING_STATS_HEAD_PTR_M) >> \
      HTT_SRING_STATS_HEAD_PTR_S)
-
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_SRING_STATS_HEAD_PTR_GET(_var) \
+    HTT_SRING_STATS_HEAD_PTR_GET(_var)
 #define HTT_SRING_STATS_HEAD_PTR_SET(_var, _val) \
     do { \
         HTT_CHECK_SET_VAL(HTT_SRING_STATS_HEAD_PTR, _val); \
@@ -6706,7 +6891,9 @@ typedef struct {
 #define HTT_SRING_STATS_TAIL_PTR_GET(_var) \
     (((_var) & HTT_SRING_STATS_TAIL_PTR_M) >> \
      HTT_SRING_STATS_TAIL_PTR_S)
-
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_SRING_STATS_TAIL_PTR_GET(_var) \
+    HTT_SRING_STATS_TAIL_PTR_GET(_var)
 #define HTT_SRING_STATS_TAIL_PTR_SET(_var, _val) \
     do { \
         HTT_CHECK_SET_VAL(HTT_SRING_STATS_TAIL_PTR, _val); \
@@ -6723,7 +6910,9 @@ typedef struct {
 #define HTT_SRING_STATS_CONSUMER_EMPTY_GET(_var) \
     (((_var) & HTT_SRING_STATS_CONSUMER_EMPTY_M) >> \
      HTT_SRING_STATS_CONSUMER_EMPTY_S)
-
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_SRING_STATS_CONSUMER_EMPTY_GET(_var) \
+    HTT_SRING_STATS_CONSUMER_EMPTY_GET(_var)
 #define HTT_SRING_STATS_CONSUMER_EMPTY_SET(_var, _val) \
     do { \
         HTT_CHECK_SET_VAL(HTT_SRING_STATS_CONSUMER_EMPTY, _val); \
@@ -6733,7 +6922,9 @@ typedef struct {
 #define HTT_SRING_STATS_PRODUCER_FULL_GET(_var) \
     (((_var) & HTT_SRING_STATS_PRODUCER_FULL_M) >> \
      HTT_SRING_STATS_PRODUCER_FULL_S)
-
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_SRING_STATS_PRODUCER_FULL_GET(_var) \
+    HTT_SRING_STATS_PRODUCER_FULL_GET(_var)
 #define HTT_SRING_STATS_PRODUCER_FULL_SET(_var, _val) \
     do { \
         HTT_CHECK_SET_VAL(HTT_SRING_STATS_PRODUCER_FULL, _val); \
@@ -6750,7 +6941,9 @@ typedef struct {
 #define HTT_SRING_STATS_PREFETCH_COUNT_GET(_var) \
     (((_var) & HTT_SRING_STATS_PREFETCH_COUNT_M) >> \
      HTT_SRING_STATS_PREFETCH_COUNT_S)
-
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_SRING_STATS_PREFETCH_COUNT_GET(_var) \
+    HTT_SRING_STATS_PREFETCH_COUNT_GET(_var)
 #define HTT_SRING_STATS_PREFETCH_COUNT_SET(_var, _val) \
     do { \
         HTT_CHECK_SET_VAL(HTT_SRING_STATS_PREFETCH_COUNT, _val); \
@@ -6760,7 +6953,9 @@ typedef struct {
 #define HTT_SRING_STATS_INTERNAL_TP_GET(_var) \
     (((_var) & HTT_SRING_STATS_INTERNAL_TP_M) >> \
      HTT_SRING_STATS_INTERNAL_TP_S)
-
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_SRING_STATS_INTERNAL_TAIL_PTR_GET(_var) \
+    HTT_SRING_STATS_INTERNAL_TP_GET(_var)
 #define HTT_SRING_STATS_INTERNAL_TP_SET(_var, _val) \
     do { \
         HTT_CHECK_SET_VAL(HTT_SRING_STATS_INTERNAL_TP, _val); \
@@ -7191,6 +7386,11 @@ typedef struct {
 /* preserve old name alias for new name consistent with the tag name */
 typedef htt_stats_tx_pdev_rate_stats_tlv htt_tx_pdev_rate_stats_tlv;
 
+#define HTT_STATS_TX_PDEV_RATE_STATS_MAC_ID_GET(word) \
+    (((word) >> 0) & 0xff)
+#define HTT_STATS_TX_PDEV_RATE_STATS_WIFI_VERSION_GET(word) \
+    (((word) >> 8) & 0xf)
+
 typedef struct {
     htt_tlv_hdr_t tlv_hdr;
     A_UINT32 vdev_id; /* which vdev produced these per-Nss tx stats */
@@ -7218,6 +7418,11 @@ typedef struct {
     A_UINT32 be_mu_mimo_tx_gi[HTT_TX_PDEV_STATS_NUM_GI_COUNTERS][HTT_TX_PDEV_STATS_NUM_BE_MCS_COUNTERS];
     /** 11BE DL MU MIMO LDPC count */
     A_UINT32 be_mu_mimo_tx_ldpc;
+    /**
+     * Wi-Fi version identifier to differentiate stats while printing
+     * (contains enum HTT_RX_TX_PDEV_STATS_WIFI_VERSION value).
+     */
+    A_UINT32 wifi_version;
 } htt_stats_tx_pdev_be_rate_stats_tlv;
 /* preserve old name alias for new name consistent with the tag name */
 typedef htt_stats_tx_pdev_be_rate_stats_tlv htt_tx_pdev_rate_stats_be_tlv;
@@ -7323,6 +7528,9 @@ typedef htt_stats_tx_pdev_rate_be_bn_ofdma_tlv
 typedef htt_stats_tx_pdev_rate_be_bn_ofdma_tlv
     htt_tx_pdev_rate_stats_be_ofdma_tlv;
 
+#define HTT_STATS_TX_PDEV_RATE_BE_BN_OFDMA_MAC_ID_GET(word) \
+    (((word) >> 0) & 0xff)
+
 typedef struct {
     htt_tlv_hdr_t tlv_hdr;
     /** tx_ppdu_dur_hist:
@@ -7369,6 +7577,9 @@ typedef struct {
 #define HTT_TX_PDEV_BN_RATE_STATS_MAC_ID_GET(_var) \
     (((_var) & HTT_TX_PDEV_BN_RATE_STATS_MAC_ID_M) >> \
      HTT_TX_PDEV_BN_RATE_STATS_MAC_ID_S)
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_TX_PDEV_BN_RATE_MAC_ID_GET(_var) \
+    HTT_TX_PDEV_BN_RATE_STATS_MAC_ID_GET(_var)
 #define HTT_TX_PDEV_BN_RATE_STATS_MAC_ID_SET(_var, _val) \
     do { \
         HTT_CHECK_SET_VAL(HTT_TX_PDEV_BN_RATE_STATS_MAC_ID, _val); \
@@ -7380,6 +7591,9 @@ typedef struct {
 #define HTT_TX_PDEV_BN_RATE_STATS_WIFI_VERSION_GET(_var) \
     (((_var) & HTT_TX_PDEV_BN_RATE_STATS_WIFI_VERSION_M) >> \
      HTT_TX_PDEV_BN_RATE_STATS_WIFI_VERSION_S)
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_TX_PDEV_BN_RATE_WIFI_VERSION_GET(_var) \
+    HTT_TX_PDEV_BN_RATE_STATS_WIFI_VERSION_GET(_var)
 #define HTT_TX_PDEV_BN_RATE_STATS_WIFI_VERSION_SET(_var, _val) \
     do { \
         HTT_CHECK_SET_VAL(HTT_TX_PDEV_BN_RATE_STATS_WIFI_VERSION, _val); \
@@ -7413,7 +7627,6 @@ typedef struct {
     /* Stats for UHR ELR */
     A_UINT32 tx_11bn_su_elr;
 } htt_stats_tx_pdev_bn_rate_tlv;
-
 
 /* STATS_TYPE : HTT_DBG_EXT_STATS_PDEV_TX_RATE
  * TLV_TAGS:
@@ -7696,6 +7909,9 @@ typedef struct {
 /* preserve old name alias for new name consistent with the tag name */
 typedef htt_stats_rx_pdev_rate_stats_tlv htt_rx_pdev_rate_stats_tlv;
 
+#define HTT_STATS_RX_PDEV_RATE_STATS_MAC_ID_GET(word) \
+    (((word) >> 0) & 0xff)
+
 typedef struct {
     htt_tlv_hdr_t tlv_hdr;
     /** Tx PPDU duration histogram **/
@@ -7745,6 +7961,9 @@ typedef struct {
 #define HTT_RX_EXT_PDEV_RATE_STATS_WIFI_VERSION_GET(_var) \
     (((_var) & HTT_RX_EXT_PDEV_RATE_STATS_WIFI_VERSION_M) >> \
      HTT_RX_EXT_PDEV_RATE_STATS_WIFI_VERSION_S)
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_RX_PDEV_RATE_EXT_STATS_WIFI_VERSION_GET(_var) \
+    HTT_RX_EXT_PDEV_RATE_STATS_WIFI_VERSION_GET(_var)
 
 #define HTT_RX_EXT_PDEV_RATE_STATS_WIFI_VERSION_SET(_var, _val) \
     do { \
@@ -7920,6 +8139,9 @@ typedef struct {
 /* preserve old name alias for new name consistent with the tag name */
 typedef htt_stats_rx_pdev_ul_trig_stats_tlv htt_rx_pdev_ul_trigger_stats_tlv;
 
+#define HTT_STATS_RX_PDEV_UL_TRIG_STATS_MAC_ID_GET(word) \
+    (((word) >> 0) & 0xff)
+
 /* STATS_TYPE : HTT_DBG_EXT_STATS_PDEV_UL_TRIG_STATS
  * TLV_TAGS:
  *      - HTT_STATS_RX_PDEV_UL_TRIG_STATS_TAG
@@ -8062,6 +8284,9 @@ typedef htt_stats_rx_pdev_be_bn_ul_trig_tlv
     htt_stats_rx_pdev_be_ul_trig_stats_tlv;
 typedef htt_stats_rx_pdev_be_bn_ul_trig_tlv
     htt_rx_pdev_be_ul_trigger_stats_tlv;
+
+#define HTT_STATS_RX_PDEV_BE_BN_UL_TRIG_MAC_ID_GET(word) \
+    (((word) >> 0) & 0xff)
 
 /* STATS_TYPE : HTT_DBG_EXT_STATS_PDEV_UL_TRIG_STATS
  * TLV_TAGS:
@@ -8248,6 +8473,9 @@ typedef struct {
 typedef htt_stats_rx_pdev_ul_mumimo_trig_stats_tlv
     htt_rx_pdev_ul_mumimo_trig_stats_tlv;
 
+#define HTT_STATS_RX_PDEV_UL_MUMIMO_TRIG_STATS_MAC_ID_GET(word) \
+    (((word) >> 0) & 0xff)
+
 typedef struct {
     htt_tlv_hdr_t tlv_hdr;
 
@@ -8310,6 +8538,9 @@ typedef struct {
 typedef htt_stats_rx_pdev_ul_mumimo_trig_be_stats_tlv
     htt_rx_pdev_ul_mumimo_trig_be_stats_tlv;
 
+#define HTT_STATS_RX_PDEV_UL_MUMIMO_TRIG_BE_STATS_MAC_ID_GET(word) \
+    (((word) >> 0) & 0xff)
+
 typedef struct {
     htt_tlv_hdr_t tlv_hdr;
 
@@ -8368,6 +8599,8 @@ typedef struct {
     A_UINT32 bn_ul_mumimo_basic_trigger_rx_qos_null_only;
 } htt_stats_rx_pdev_ul_mumimo_trig_bn_tlv;
 
+#define HTT_STATS_RX_PDEV_UL_MUMIMO_TRIG_BN_MAC_ID_GET(word) \
+    (((word) >> 0) & 0xff)
 
 /* STATS_TYPE : HTT_DBG_EXT_STATS_PDEV_UL_MUMIMO_TRIG_STATS
  * TLV_TAGS:
@@ -8563,7 +8796,9 @@ typedef struct {
 #define HTT_RX_PDEV_FW_STATS_MAC_ID_GET(_var) \
     (((_var) & HTT_RX_PDEV_FW_STATS_MAC_ID_M) >> \
      HTT_RX_PDEV_FW_STATS_MAC_ID_S)
-
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_RX_PDEV_FW_STATS_MAC_ID_GET(_var) \
+    HTT_RX_PDEV_FW_STATS_MAC_ID_GET(_var)
 #define HTT_RX_PDEV_FW_STATS_MAC_ID_SET(_var, _val) \
     do { \
         HTT_CHECK_SET_VAL(HTT_RX_PDEV_FW_STATS_MAC_ID, _val); \
@@ -8776,6 +9011,9 @@ typedef struct {
 } htt_stats_rx_pdev_fw_stats_phy_err_tlv;
 /* preserve old name alias for new name consistent with the tag name */
 typedef htt_stats_rx_pdev_fw_stats_phy_err_tlv htt_rx_pdev_fw_stats_phy_err_tlv;
+
+#define HTT_STATS_RX_PDEV_FW_STATS_PHY_ERR_MAC_ID_GET(word) \
+    (((word) >> 0) & 0xff)
 
 #define HTT_RX_PDEV_FW_RING_MPDU_ERR_TLV_SZ(_num_elems) (sizeof(A_UINT32) * (_num_elems))
 
@@ -9869,6 +10107,9 @@ typedef enum {
 #define HTT_PER_RATE_STATS_WIFI_VERSION_GET(_var) \
     (((_var) & HTT_PER_RATE_STATS_WIFI_VERSION_M) >> \
      HTT_PER_RATE_STATS_WIFI_VERSION_S)
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_PER_RATE_STATS_WIFI_VERSION_GET(_var) \
+    HTT_PER_RATE_STATS_WIFI_VERSION_GET(_var)
 
 #define HTT_PER_RATE_STATS_WIFI_VERSION_SET(_var, _val) \
     do { \
@@ -10959,7 +11200,10 @@ typedef struct {
     A_UINT32 mu_grp_candidate_skip_1ss
         [HTT_TX_PDEV_STATS_NUM_UL_MUMIMO_USER_STATS]
         [HTT_STATS_CANDIDATE_SKIP_REASON_MAX];
-} htt_stats_pdev_ulmumimo_grp_stats_tlv;
+} htt_stats_pdev_ul_mumimo_grp_stats_tlv;
+/* preserve old name alias for new name consistent with the tag name */
+typedef htt_stats_pdev_ul_mumimo_grp_stats_tlv
+    htt_stats_pdev_ulmumimo_grp_stats_tlv;
 
 typedef struct {
     htt_tlv_hdr_t tlv_hdr;
@@ -10970,7 +11214,10 @@ typedef struct {
     A_UINT32 trig_bitmap_fail_cnt;
     /* Num of times peer denylisted due to trigger consecutive failure */
     A_UINT32 trig_consecutive_fail_cnt;
-} htt_stats_pdev_ulmumimo_denylist_stats_tlv;
+} htt_stats_pdev_ul_mumimo_denylist_stats_tlv;
+/* preserve old name alias for new name consistent with the tag name */
+typedef htt_stats_pdev_ul_mumimo_denylist_stats_tlv
+    htt_stats_pdev_ulmumimo_denylist_stats_tlv;
 
 #define HTT_STATS_SEQ_EFFICIENCY_HISTOGRAM 10
 typedef struct {
@@ -11007,7 +11254,10 @@ typedef struct {
      * for low traffic classification
      */
     A_UINT32 num_terminate_seq_low_traffic;
-} htt_stats_pdev_ulmumimo_seq_term_stats_tlv;
+} htt_stats_pdev_ul_mumimo_seq_term_stats_tlv;
+/* preserve old name alias for new name consistent with the tag name */
+typedef htt_stats_pdev_ul_mumimo_seq_term_stats_tlv
+    htt_stats_pdev_ulmumimo_seq_term_stats_tlv;
 
 #define HTT_STATS_MAX_ULMUMIMO_TRIGGERS 6
 #define HTT_STATS_TXOP_HISTOGRAM_BINS 24
@@ -11035,7 +11285,10 @@ typedef struct {
      * Checks for 8 eligible instances of ULMUMIMO in the past 32 instances.
      */
     A_UINT32 history_ineligibility;
-} htt_stats_pdev_ulmumimo_hist_ineligibility_tlv;
+} htt_stats_pdev_ul_mumimo_hist_ineligibility_tlv;
+/* preserve old name alias for new name consistent with the tag name */
+typedef htt_stats_pdev_ul_mumimo_hist_ineligibility_tlv
+    htt_stats_pdev_ulmumimo_hist_ineligibility_tlv;
 
 
 /* RTT VREG MASK */
@@ -11118,6 +11371,9 @@ typedef struct {
 #define HTT_STATS_TPCCAL_POSTPROC_CHANNEL_GET(_var) \
     (((_var) & HTT_STATS_TPCCAL_POSTPROC_CHANNEL_M) >> \
      HTT_STATS_TPCCAL_POSTPROC_CHANNEL_S)
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_PDEV_FTM_TPCCAL_TPCCAL_STATS_POSTPROC_CHANNEL_GET(_var) \
+    HTT_STATS_TPCCAL_POSTPROC_CHANNEL_GET(_var)
 
 #define HTT_STATS_TPCCAL_POSTPROC_CHAIN_M 0x00ff0000
 #define HTT_STATS_TPCCAL_POSTPROC_CHAIN_S 16
@@ -11125,6 +11381,9 @@ typedef struct {
 #define HTT_STATS_TPCCAL_POSTPROC_CHAIN_GET(_var) \
     (((_var) & HTT_STATS_TPCCAL_POSTPROC_CHAIN_M) >> \
      HTT_STATS_TPCCAL_POSTPROC_CHAIN_S)
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_PDEV_FTM_TPCCAL_TPCCAL_STATS_POSTPROC_CHAIN_GET(_var) \
+    HTT_STATS_TPCCAL_POSTPROC_CHAIN_GET(_var)
 
 #define HTT_STATS_TPCCAL_POSTPROC_BAND_M 0xff000000
 #define HTT_STATS_TPCCAL_POSTPROC_BAND_S 24
@@ -11132,6 +11391,9 @@ typedef struct {
 #define HTT_STATS_TPCCAL_POSTPROC_BAND_GET(_var) \
     (((_var) & HTT_STATS_TPCCAL_POSTPROC_BAND_M) >> \
      HTT_STATS_TPCCAL_POSTPROC_BAND_S)
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_PDEV_FTM_TPCCAL_TPCCAL_STATS_POSTPROC_BAND_GET(_var) \
+    HTT_STATS_TPCCAL_POSTPROC_BAND_GET(_var)
 
 #define HTT_STATS_TPCCAL_POSTPROC_NUMGAIN_M 0x000000ff
 #define HTT_STATS_TPCCAL_POSTPROC_NUMGAIN_S 0
@@ -11139,6 +11401,9 @@ typedef struct {
 #define HTT_STATS_TPCCAL_POSTPROC_NUMGAIN_GET(_var) \
     (((_var) & HTT_STATS_TPCCAL_POSTPROC_NUMGAIN_M) >> \
      HTT_STATS_TPCCAL_POSTPROC_NUMGAIN_S)
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_PDEV_FTM_TPCCAL_TPCCAL_STATS_POSTPROC_NUMGAIN_GET(_var) \
+    HTT_STATS_TPCCAL_POSTPROC_NUMGAIN_GET(_var)
 
 #define HTT_STATS_TPCCAL_POSTPROC_CALDBSTATUS_M 0x0000ff00
 #define HTT_STATS_TPCCAL_POSTPROC_CALDBSTATUS_S 8
@@ -11146,6 +11411,9 @@ typedef struct {
 #define HTT_STATS_TPCCAL_POSTPROC_CALDBSTATUS_GET(_var) \
     (((_var) & HTT_STATS_TPCCAL_POSTPROC_CALDBSTATUS_M) >> \
      HTT_STATS_TPCCAL_POSTPROC_CALDBSTATUS_S)
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_PDEV_FTM_TPCCAL_TPCCAL_STATS_POSTPROC_CALDBSTATUS_GET(_var) \
+    HTT_STATS_TPCCAL_POSTPROC_CALDBSTATUS_GET(_var)
 
 /* STATS_TYPE : HTT_DBG_EXT_PDEV_STATS_FTM_TPCCAL
  * TLV_TAGS:
@@ -11305,6 +11573,12 @@ typedef struct {
 #define HTT_STATS_TPCCAL_PDADC_LAST_IDX_GET(_var) \
     (((_var) & HTT_STATS_TPCCAL_PDADC_LAST_IDX_M) >> \
      HTT_STATS_TPCCAL_PDADC_LAST_IDX_S)
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_PDEV_FTM_TPCCAL_TPCCAL_LAST_IDX_GET(_var) \
+    HTT_STATS_TPCCAL_PDADC_LAST_IDX_GET(_var)
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_PDEV_FTM_TPCCAL_EXT_TPCCAL_PDADC_LAST_IDX_GET(_var) \
+    HTT_STATS_TPCCAL_PDADC_LAST_IDX_GET(_var)
 
 #define HTT_STATS_TPCCAL_PDADC_NUMGAIN_M 0x000000ff
 #define HTT_STATS_TPCCAL_PDADC_NUMGAIN_S 0
@@ -11829,6 +12103,9 @@ typedef htt_stats_phy_counters_tlv htt_phy_counters_tlv;
 #define HTT_STATS_ANI_MODE_GET(_var) \
     (((_var) & HTT_STATS_ANI_MODE_M) >> \
      HTT_STATS_ANI_MODE_S)
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_PHY_STATS_ANI_MODE_GET(_var) \
+    HTT_STATS_ANI_MODE_GET(_var)
 
 #define HTT_STATS_ANI_MODE_SET(_var, _val) \
     do { \
@@ -11842,6 +12119,9 @@ typedef htt_stats_phy_counters_tlv htt_phy_counters_tlv;
 #define HTT_STATS_CURR_EANI_MODE_GET(_var) \
     (((_var) & HTT_STATS_CURR_EANI_MODE_M) >> \
      HTT_STATS_CURR_EANI_MODE_S)
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_PHY_STATS_CUREANIMODE_GET(_var) \
+    HTT_STATS_CURR_EANI_MODE_GET(_var) 
 
 typedef struct {
     htt_tlv_hdr_t tlv_hdr;
@@ -11953,76 +12233,107 @@ typedef htt_stats_phy_stats_tlv htt_phy_stats_tlv;
 #define HTT_STATS_PHY_RESET_CAL_DATA_COMPRESSED_GET(_var) \
     (((_var) & HTT_STATS_PHY_RESET_CAL_DATA_COMPRESSED_M) >> \
      HTT_STATS_PHY_RESET_CAL_DATA_COMPRESSED_S)
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_PHY_RESET_STATS_CALDATA_COMPRESSED_GET(_var) \
+    HTT_STATS_PHY_RESET_CAL_DATA_COMPRESSED_GET(_var)
 #define HTT_STATS_PHY_RESET_CAL_DATA_COMPRESSED_SET(_var, _val) \
     do { \
         HTT_CHECK_SET_VAL(HTT_STATS_PHY_RESET_CAL_DATA_COMPRESSED, _val); \
         ((_var) |= ((_val) << HTT_STATS_PHY_RESET_CAL_DATA_COMPRESSED_S)); \
     } while (0)
+
 #define HTT_STATS_PHY_RESET_CAL_DATA_SOURCE_M 0x00000006
 #define HTT_STATS_PHY_RESET_CAL_DATA_SOURCE_S 1
 #define HTT_STATS_PHY_RESET_CAL_DATA_SOURCE_GET(_var) \
     (((_var) & HTT_STATS_PHY_RESET_CAL_DATA_SOURCE_M) >> \
      HTT_STATS_PHY_RESET_CAL_DATA_SOURCE_S)
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_PHY_RESET_STATS_CALDATASOURCE_GET(_var) \
+    HTT_STATS_PHY_RESET_CAL_DATA_SOURCE_GET(_var)
 #define HTT_STATS_PHY_RESET_CAL_DATA_SOURCE_SET(_var, _val) \
     do { \
         HTT_CHECK_SET_VAL(HTT_STATS_PHY_RESET_CAL_DATA_SOURCE, _val); \
         ((_var) |= ((_val) << HTT_STATS_PHY_RESET_CAL_DATA_SOURCE_S)); \
     } while (0)
+
 #define HTT_STATS_PHY_RESET_XTALCAL_M 0x00000008
 #define HTT_STATS_PHY_RESET_XTALCAL_S 3
 #define HTT_STATS_PHY_RESET_XTALCAL_GET(_var) \
     (((_var) & HTT_STATS_PHY_RESET_XTALCAL_M) >> \
      HTT_STATS_PHY_RESET_XTALCAL_S)
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_PHY_RESET_STATS_XTALCAL_GET(_var) \
+    HTT_STATS_PHY_RESET_XTALCAL_GET(_var)
 #define HTT_STATS_PHY_RESET_XTALCAL_SET(_var, _val) \
     do { \
         HTT_CHECK_SET_VAL(HTT_STATS_PHY_RESET_XTALCAL, _val); \
         ((_var) |= ((_val) << HTT_STATS_PHY_RESET_XTALCAL_S)); \
     } while (0)
+
 #define HTT_STATS_PHY_RESET_TPCCAL2GOPC_M 0x00000010
 #define HTT_STATS_PHY_RESET_TPCCAL2GOPC_S 4
 #define HTT_STATS_PHY_RESET_TPCCAL2GOPC_GET(_var) \
     (((_var) & HTT_STATS_PHY_RESET_TPCCAL2GOPC_M) >> \
      HTT_STATS_PHY_RESET_TPCCAL2GOPC_S)
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_PHY_RESET_STATS_TPCCAL2GOPC_GET(_var) \
+    HTT_STATS_PHY_RESET_TPCCAL2GOPC_GET(_var)
 #define HTT_STATS_PHY_RESET_TPCCAL2GOPC_SET(_var, _val) \
     do { \
         HTT_CHECK_SET_VAL(HTT_STATS_PHY_RESET_TPCCAL2GOPC, _val); \
         ((_var) |= ((_val) << HTT_STATS_PHY_RESET_TPCCAL2GOPC_S)); \
     } while (0)
+
 #define HTT_STATS_PHY_RESET_TPCCAL2GFPC_M 0x00000020
 #define HTT_STATS_PHY_RESET_TPCCAL2GFPC_S 5
 #define HTT_STATS_PHY_RESET_TPCCAL2GFPC_GET(_var) \
     (((_var) & HTT_STATS_PHY_RESET_TPCCAL2GFPC_M) >> \
      HTT_STATS_PHY_RESET_TPCCAL2GFPC_S)
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_PHY_RESET_STATS_TPCCAL2GFPC_GET(_var) \
+    HTT_STATS_PHY_RESET_TPCCAL2GFPC_GET(_var)
 #define HTT_STATS_PHY_RESET_TPCCAL2GFPC_SET(_var, _val) \
     do { \
         HTT_CHECK_SET_VAL(HTT_STATS_PHY_RESET_TPCCAL2GFPC, _val); \
         ((_var) |= ((_val) << HTT_STATS_PHY_RESET_TPCCAL2GFPC_S)); \
     } while (0)
+
 #define HTT_STATS_PHY_RESET_TPCCAL5GOPC_M 0x00000040
 #define HTT_STATS_PHY_RESET_TPCCAL5GOPC_S 6
 #define HTT_STATS_PHY_RESET_TPCCAL5GOPC_GET(_var) \
     (((_var) & HTT_STATS_PHY_RESET_TPCCAL5GOPC_M) >> \
      HTT_STATS_PHY_RESET_TPCCAL5GOPC_S)
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_PHY_RESET_STATS_TPCCAL5GOPC_GET(_var) \
+    HTT_STATS_PHY_RESET_TPCCAL5GOPC_GET(_var)
 #define HTT_STATS_PHY_RESET_TPCCAL5GOPC_SET(_var, _val) \
     do { \
         HTT_CHECK_SET_VAL(HTT_STATS_PHY_RESET_TPCCAL5GOPC, _val); \
         ((_var) |= ((_val) << HTT_STATS_PHY_RESET_TPCCAL5GOPC_S)); \
     } while (0)
+
 #define HTT_STATS_PHY_RESET_TPCCAL5GFPC_M 0x00000080
 #define HTT_STATS_PHY_RESET_TPCCAL5GFPC_S 7
 #define HTT_STATS_PHY_RESET_TPCCAL5GFPC_GET(_var) \
     (((_var) & HTT_STATS_PHY_RESET_TPCCAL5GFPC_M) >> \
      HTT_STATS_PHY_RESET_TPCCAL5GFPC_S)
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_PHY_RESET_STATS_TPCCAL5GFPC_GET(_var) \
+    HTT_STATS_PHY_RESET_TPCCAL5GFPC_GET(_var)
 #define HTT_STATS_PHY_RESET_TPCCAL5GFPC_SET(_var, _val) \
     do { \
         HTT_CHECK_SET_VAL(HTT_STATS_PHY_RESET_TPCCAL5GFPC, _val); \
         ((_var) |= ((_val) << HTT_STATS_PHY_RESET_TPCCAL5GFPC_S)); \
     } while (0)
+
 #define HTT_STATS_PHY_RESET_TPCCAL6GOPC_M 0x00000100
 #define HTT_STATS_PHY_RESET_TPCCAL6GOPC_S 8
 #define HTT_STATS_PHY_RESET_TPCCAL6GOPC_GET(_var) \
     (((_var) & HTT_STATS_PHY_RESET_TPCCAL6GOPC_M) >> \
      HTT_STATS_PHY_RESET_TPCCAL6GOPC_S)
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_PHY_RESET_STATS_TPCCAL6GOPC_GET(_var) \
+    HTT_STATS_PHY_RESET_TPCCAL6GOPC_GET(_var)
 #define HTT_STATS_PHY_RESET_TPCCAL6GOPC_SET(_var, _val) \
     do { \
         HTT_CHECK_SET_VAL(HTT_STATS_PHY_RESET_TPCCAL6GOPC, _val); \
@@ -12033,76 +12344,107 @@ typedef htt_stats_phy_stats_tlv htt_phy_stats_tlv;
 #define HTT_STATS_PHY_RESET_TPCCAL6GFPC_GET(_var) \
     (((_var) & HTT_STATS_PHY_RESET_TPCCAL6GFPC_M) >> \
      HTT_STATS_PHY_RESET_TPCCAL6GFPC_S)
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_PHY_RESET_STATS_TPCCAL6GFPC_GET(_var) \
+    HTT_STATS_PHY_RESET_TPCCAL6GFPC_GET(_var)
 #define HTT_STATS_PHY_RESET_TPCCAL6GFPC_SET(_var, _val) \
     do { \
         HTT_CHECK_SET_VAL(HTT_STATS_PHY_RESET_TPCCAL6GFPC, _val); \
         ((_var) |= ((_val) << HTT_STATS_PHY_RESET_TPCCAL6GFPC_S)); \
     } while (0)
+
 #define HTT_STATS_PHY_RESET_RXGAINCAL2G_M 0x00000400
 #define HTT_STATS_PHY_RESET_RXGAINCAL2G_S 10
 #define HTT_STATS_PHY_RESET_RXGAINCAL2G_GET(_var) \
     (((_var) & HTT_STATS_PHY_RESET_RXGAINCAL2G_M) >> \
      HTT_STATS_PHY_RESET_RXGAINCAL2G_S)
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_PHY_RESET_STATS_RXGAINCAL2G_GET(_var) \
+    HTT_STATS_PHY_RESET_RXGAINCAL2G_GET(_var)
 #define HTT_STATS_PHY_RESET_RXGAINCAL2G_SET(_var, _val) \
     do { \
         HTT_CHECK_SET_VAL(HTT_STATS_PHY_RESET_RXGAINCAL2G, _val); \
         ((_var) |= ((_val) << HTT_STATS_PHY_RESET_RXGAINCAL2G_S)); \
     } while (0)
+
 #define HTT_STATS_PHY_RESET_RXGAINCAL5G_M 0x00000800
 #define HTT_STATS_PHY_RESET_RXGAINCAL5G_S 11
 #define HTT_STATS_PHY_RESET_RXGAINCAL5G_GET(_var) \
     (((_var) & HTT_STATS_PHY_RESET_RXGAINCAL5G_M) >> \
      HTT_STATS_PHY_RESET_RXGAINCAL5G_S)
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_PHY_RESET_STATS_RXGAINCAL5G_GET(_var) \
+    HTT_STATS_PHY_RESET_RXGAINCAL5G_GET(_var)
 #define HTT_STATS_PHY_RESET_RXGAINCAL5G_SET(_var, _val) \
     do { \
         HTT_CHECK_SET_VAL(HTT_STATS_PHY_RESET_RXGAINCAL5G, _val); \
         ((_var) |= ((_val) << HTT_STATS_PHY_RESET_RXGAINCAL5G_S)); \
     } while (0)
+
 #define HTT_STATS_PHY_RESET_RXGAINCAL6G_M 0x00001000
 #define HTT_STATS_PHY_RESET_RXGAINCAL6G_S 12
 #define HTT_STATS_PHY_RESET_RXGAINCAL6G_GET(_var) \
     (((_var) & HTT_STATS_PHY_RESET_RXGAINCAL6G_M) >> \
      HTT_STATS_PHY_RESET_RXGAINCAL6G_S)
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_PHY_RESET_STATS_RXGAINCAL6G_GET(_var) \
+    HTT_STATS_PHY_RESET_RXGAINCAL6G_GET(_var)
 #define HTT_STATS_PHY_RESET_RXGAINCAL6G_SET(_var, _val) \
     do { \
         HTT_CHECK_SET_VAL(HTT_STATS_PHY_RESET_RXGAINCAL6G, _val); \
         ((_var) |= ((_val) << HTT_STATS_PHY_RESET_RXGAINCAL6G_S)); \
     } while (0)
+
 #define HTT_STATS_PHY_RESET_AOACAL2G_M 0x00002000
 #define HTT_STATS_PHY_RESET_AOACAL2G_S 13
 #define HTT_STATS_PHY_RESET_AOACAL2G_GET(_var) \
     (((_var) & HTT_STATS_PHY_RESET_AOACAL2G_M) >> \
      HTT_STATS_PHY_RESET_AOACAL2G_S)
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_PHY_RESET_STATS_AOACAL2G_GET(_var) \
+    HTT_STATS_PHY_RESET_AOACAL2G_GET(_var)
 #define HTT_STATS_PHY_RESET_AOACAL2G_SET(_var, _val) \
     do { \
         HTT_CHECK_SET_VAL(HTT_STATS_PHY_RESET_AOACAL2G, _val); \
         ((_var) |= ((_val) << HTT_STATS_PHY_RESET_AOACAL2G_S)); \
     } while (0)
+
 #define HTT_STATS_PHY_RESET_AOACAL5G_M 0x00004000
 #define HTT_STATS_PHY_RESET_AOACAL5G_S 14
 #define HTT_STATS_PHY_RESET_AOACAL5G_GET(_var) \
     (((_var) & HTT_STATS_PHY_RESET_AOACAL5G_M) >> \
      HTT_STATS_PHY_RESET_AOACAL5G_S)
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_PHY_RESET_STATS_AOACAL5G_GET(_var) \
+    HTT_STATS_PHY_RESET_AOACAL5G_GET(_var)
 #define HTT_STATS_PHY_RESET_AOACAL5G_SET(_var, _val) \
     do { \
         HTT_CHECK_SET_VAL(HTT_STATS_PHY_RESET_AOACAL5G, _val); \
         ((_var) |= ((_val) << HTT_STATS_PHY_RESET_AOACAL5G_S)); \
     } while (0)
+
 #define HTT_STATS_PHY_RESET_AOACAL6G_M 0x00008000
 #define HTT_STATS_PHY_RESET_AOACAL6G_S 15
 #define HTT_STATS_PHY_RESET_AOACAL6G_GET(_var) \
     (((_var) & HTT_STATS_PHY_RESET_AOACAL6G_M) >> \
      HTT_STATS_PHY_RESET_AOACAL6G_S)
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_PHY_RESET_STATS_AOACAL6G_GET(_var) \
+    HTT_STATS_PHY_RESET_AOACAL6G_GET(_var)
 #define HTT_STATS_PHY_RESET_AOACAL6G_SET(_var, _val) \
     do { \
         HTT_CHECK_SET_VAL(HTT_STATS_PHY_RESET_AOACAL6G, _val); \
         ((_var) |= ((_val) << HTT_STATS_PHY_RESET_AOACAL6G_S)); \
     } while (0)
+
 #define HTT_STATS_PHY_RESET_XTAL_FROM_OTP_M 0x00010000
 #define HTT_STATS_PHY_RESET_XTAL_FROM_OTP_S 16
 #define HTT_STATS_PHY_RESET_XTAL_FROM_OTP_GET(_var) \
     (((_var) & HTT_STATS_PHY_RESET_XTAL_FROM_OTP_M) >> \
      HTT_STATS_PHY_RESET_XTAL_FROM_OTP_S)
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_PHY_RESET_STATS_XTAL_FROM_OTP_GET(_var) \
+    HTT_STATS_PHY_RESET_XTAL_FROM_OTP_GET(_var)
 #define HTT_STATS_PHY_RESET_XTAL_FROM_OTP_SET(_var, _val) \
     do { \
         HTT_CHECK_SET_VAL(HTT_STATS_PHY_RESET_XTAL_FROM_OTP, _val); \
@@ -12114,26 +12456,37 @@ typedef htt_stats_phy_stats_tlv htt_phy_stats_tlv;
 #define HTT_STATS_PHY_RESET_GLUT_LINEARITY_GET(_var) \
     (((_var) & HTT_STATS_PHY_RESET_GLUT_LINEARITY_M) >> \
      HTT_STATS_PHY_RESET_GLUT_LINEARITY_S)
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_PHY_RESET_STATS_GLUT_LINEARITY_GET(_var) \
+    HTT_STATS_PHY_RESET_GLUT_LINEARITY_GET(_var)
 #define HTT_STATS_PHY_RESET_GLUT_LINEARITY_SET(_var, _val) \
     do { \
         HTT_CHECK_SET_VAL(HTT_STATS_PHY_RESET_GLUT_LINEARITY, _val); \
         ((_var) |= ((_val) << HTT_STATS_PHY_RESET_GLUT_LINEARITY_S)); \
     } while (0)
+
 #define HTT_STATS_PHY_RESET_PLUT_LINEARITY_M 0x0000FF00
 #define HTT_STATS_PHY_RESET_PLUT_LINEARITY_S 8
 #define HTT_STATS_PHY_RESET_PLUT_LINEARITY_GET(_var) \
     (((_var) & HTT_STATS_PHY_RESET_PLUT_LINEARITY_M) >> \
      HTT_STATS_PHY_RESET_PLUT_LINEARITY_S)
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_PHY_RESET_STATS_PLUT_LINEARITY_GET(_var) \
+    HTT_STATS_PHY_RESET_PLUT_LINEARITY_GET(_var)
 #define HTT_STATS_PHY_RESET_PLUT_LINEARITY_SET(_var, _val) \
     do { \
         HTT_CHECK_SET_VAL(HTT_STATS_PHY_RESET_PLUT_LINEARITY, _val); \
         ((_var) |= ((_val) << HTT_STATS_PHY_RESET_PLUT_LINEARITY_S)); \
     } while (0)
+
 #define HTT_STATS_PHY_RESET_WLANDRIVERMODE_M 0x00FF0000
 #define HTT_STATS_PHY_RESET_WLANDRIVERMODE_S 16
 #define HTT_STATS_PHY_RESET_WLANDRIVERMODE_GET(_var) \
     (((_var) & HTT_STATS_PHY_RESET_WLANDRIVERMODE_M) >> \
      HTT_STATS_PHY_RESET_WLANDRIVERMODE_S)
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_PHY_RESET_STATS_WLANDRIVERMODE_GET(_var) \
+    HTT_STATS_PHY_RESET_WLANDRIVERMODE_GET(_var)
 #define HTT_STATS_PHY_RESET_WLANDRIVERMODE_SET(_var, _val) \
     do { \
         HTT_CHECK_SET_VAL(HTT_STATS_PHY_RESET_WLANDRIVERMODE, _val); \
@@ -12653,6 +13006,11 @@ typedef struct {
     A_UINT32 power_boost_gain[HTT_TX_PDEV_STATS_NUM_BE_BW_COUNTERS][HTT_TX_PDEV_STATS_NUM_BE_MCS_COUNTERS];
 } htt_stats_phy_paprd_pb_tlv;
 
+#define HTT_STATS_PHY_PAPRD_PB_IS_DPD_VALID_GET(word) \
+    (((word) >> 0) & 0x1)
+
+#define HTT_STATS_PHY_PAPRD_PB_IS_PB_VALID_GET(word) \
+    (((word) >> 1) & 0x1)
 
 #define HTT_STATS_HDS_PROF_STATS_CIRCULAR_BUF_LEN 10
 
@@ -12752,11 +13110,9 @@ typedef struct {
                  is_verbose_enabled:        1, /* bit 12 */
                  is_dyn_ant_sel_supported:  1, /* bit 13 */
                  is_dfs_punc_enabled:       1, /* bit 14 */
-                 is_ctl_blob_downloaded:    1, /* bit 15 */
-                 dpd_pow_bo_status:         1, /* bit 16 */
-                 is_eeprom_compressed:      1, /* bit 17 */
-                 is_ctl_table_loaded:       1, /* bit 18 */
-                 reserved: 13; /* bits 31:19 */
+                 dpd_pow_bo_status:         1, /* bit 15 */
+                 is_eeprom_compressed:      1, /* bit 16 */
+                 reserved: 15; /* bits 31:17 */
         };
     };
 
@@ -12770,8 +13126,6 @@ typedef struct {
         };
     };
 
-    A_INT32 reg_tx_pow_limit; /* dBm units */
-    A_INT32 user_pow_limit; /* dBm units */
     A_UINT32 abi_max_rg_gain; /* dB units */
     A_UINT32 abi_max_lg_gain; /* dB units */
     A_UINT32 abi_max_vlg_gain; /* dB units */
@@ -12787,7 +13141,6 @@ typedef struct {
     A_INT32 rssi_xlna_bypass_offset; /* dB units */
     A_INT32 rssi_cbw_offset; /* dB units */
     A_INT32 rssi_chan_freq_offset; /* dB units */
-    A_UINT32 regdb_version;
     A_UINT32 otp_version;
     A_UINT32 cfr_clip_factor[4];
     union {
@@ -12812,132 +13165,194 @@ typedef struct {
 
 #define HTT_STATS_OPT_CONF_GET_DYN_CCA(word) \
     (((word) & 0x1) >> 0)
+/* provide alias macros that use preferred naming convention */
+#define HTT_STATS_OPTIONAL_CONFIGS_IS_DYN_CCA_ENABLED_GET(word) \
+    HTT_STATS_OPT_CONF_GET_DYN_CCA(word)
 #define HTT_STATS_OPT_CONF_SET_DYN_CCA(word, value) \
     ((word) = ((word) & ~0x1) | (((value) & 0x1) << 0))
 
 #define HTT_STATS_OPT_CONF_GET_LPI(word) \
     (((word) & 0x2) >> 1)
+/* provide alias macros that use preferred naming convention */
+#define HTT_STATS_OPTIONAL_CONFIGS_IS_LPI_ENABLED_GET(word) \
+    HTT_STATS_OPT_CONF_GET_LPI(word)
 #define HTT_STATS_OPT_CONF_SET_LPI(word, value) \
     ((word) = ((word) & ~0x2) | (((value) & 0x1) << 1))
 
 #define HTT_STATS_OPT_CONF_GET_GTX(word) \
     (((word) & 0x4) >> 2)
+/* provide alias macros that use preferred naming convention */
+#define HTT_STATS_OPTIONAL_CONFIGS_IS_GTX_ENABLED_GET(word) \
+    HTT_STATS_OPT_CONF_GET_GTX(word)
 #define HTT_STATS_OPT_CONF_SET_GTX(word, value) \
     ((word) = ((word) & ~0x4) | (((value) & 0x1) << 2))
 
 #define HTT_STATS_OPT_CONF_GET_ANI(word) \
     (((word) & 0x8) >> 3)
+/* provide alias macros that use preferred naming convention */
+#define HTT_STATS_OPTIONAL_CONFIGS_IS_ANI_ENABLED_GET(word) \
+    HTT_STATS_OPT_CONF_GET_ANI(word)
 #define HTT_STATS_OPT_CONF_SET_ANI(word, value) \
     ((word) = ((word) & ~0x8) | (((value) & 0x1) << 3))
 
 #define HTT_STATS_OPT_CONF_GET_STATIC_ANI(word) \
     (((word) & 0x10) >> 4)
+/* provide alias macros that use preferred naming convention */
+#define HTT_STATS_OPTIONAL_CONFIGS_IS_STATIC_ANI_ENABLED_GET(word) \
+    HTT_STATS_OPT_CONF_GET_STATIC_ANI(word)
 #define HTT_STATS_OPT_CONF_SET_STATIC_ANI(word, value) \
     ((word) = ((word) & ~0x10) | (((value) & 0x1) << 4))
 
 #define HTT_STATS_OPT_CONF_GET_ANN_PBT(word) \
     (((word) & 0x20) >> 5)
+/* provide alias macros that use preferred naming convention */
+#define HTT_STATS_OPTIONAL_CONFIGS_IS_ANN_PBT_ENABLED_GET(word) \
+    HTT_STATS_OPT_CONF_GET_ANN_PBT(word)
 #define HTT_STATS_OPT_CONF_SET_ANN_PBT(word, value) \
     ((word) = ((word) & ~0x20) | (((value) & 0x1) << 5))
 
 #define HTT_STATS_OPT_CONF_GET_EANI(word) \
     (((word) & 0x40) >> 6)
+/* provide alias macros that use preferred naming convention */
+#define HTT_STATS_OPTIONAL_CONFIGS_IS_E_ANI_ENABLED_GET(word) \
+    HTT_STATS_OPT_CONF_GET_EANI(word)
 #define HTT_STATS_OPT_CONF_SET_EANI(word, value) \
     ((word) = ((word) & ~0x40) | (((value) & 0x1) << 6))
 
 #define HTT_STATS_OPT_CONF_GET_SPUR_MIT(word) \
     (((word) & 0x80) >> 7)
+/* provide alias macros that use preferred naming convention */
+#define HTT_STATS_OPTIONAL_CONFIGS_IS_SPUR_MIT_ENABLED_GET(word) \
+    HTT_STATS_OPT_CONF_GET_SPUR_MIT(word)
 #define HTT_STATS_OPT_CONF_SET_SPUR_MIT(word, value) \
     ((word) = ((word) & ~0x80) | (((value) & 0x1) << 7))
 
 #define HTT_STATS_OPT_CONF_GET_MULTIGAIN_RSSI(word) \
     (((word) & 0x100) >> 8)
+/* provide alias macros that use preferred naming convention */
+#define HTT_STATS_OPTIONAL_CONFIGS_IS_MULTIGAIN_RSSI_ENABLED_GET(word) \
+    HTT_STATS_OPT_CONF_GET_MULTIGAIN_RSSI(word)
 #define HTT_STATS_OPT_CONF_SET_MULTIGAIN_RSSI(word, value) \
     ((word) = ((word) & ~0x100) | (((value) & 0x1) << 8))
 
 #define HTT_STATS_OPT_CONF_GET_OLPC_CLPC(word) \
     (((word) & 0x200) >> 9)
+/* provide alias macros that use preferred naming convention */
+#define HTT_STATS_OPTIONAL_CONFIGS_IS_OLPC_CLPC_GET(word) \
+    HTT_STATS_OPT_CONF_GET_OLPC_CLPC(word)
 #define HTT_STATS_OPT_CONF_SET_OLPC_CLPC(word, value) \
     ((word) = ((word) & ~0x200) | (((value) & 0x1) << 9))
 
 #define HTT_STATS_OPT_CONF_GET_ABI_EN_DIS(word) \
     (((word) & 0x400) >> 10)
+/* provide alias macros that use preferred naming convention */
+#define HTT_STATS_OPTIONAL_CONFIGS_IS_ABI_EN_DIS_GET(word) \
+    HTT_STATS_OPT_CONF_GET_ABI_EN_DIS(word)
 #define HTT_STATS_OPT_CONF_SET_ABI_EN_DIS(word, value) \
     ((word) = ((word) & ~0x400) | (((value) & 0x1) << 10))
 
 #define HTT_STATS_OPT_CONF_GET_STR_SIG_REC(word) \
     (((word) & 0x800) >> 11)
+/* provide alias macros that use preferred naming convention */
+#define HTT_STATS_OPTIONAL_CONFIGS_IS_STR_SIG_REC_GET(word) \
+    HTT_STATS_OPT_CONF_GET_STR_SIG_REC(word)
 #define HTT_STATS_OPT_CONF_SET_STR_SIG_REC(word, value) \
     ((word) = ((word) & ~0x800) | (((value) & 0x1) << 11))
 
 #define HTT_STATS_OPT_CONF_GET_VERBOSE(word) \
     (((word) & 0x1000) >> 12)
+/* provide alias macros that use preferred naming convention */
+#define HTT_STATS_OPTIONAL_CONFIGS_IS_VERBOSE_ENABLED_GET(word) \
+    HTT_STATS_OPT_CONF_GET_VERBOSE(word)
 #define HTT_STATS_OPT_CONF_SET_VERBOSE(word, value) \
     ((word) = ((word) & ~0x1000) | (((value) & 0x1) << 12))
 
 #define HTT_STATS_OPT_CONF_GET_DYN_ANT_SEL(word) \
     (((word) & 0x2000) >> 13)
+/* provide alias macros that use preferred naming convention */
+#define HTT_STATS_OPTIONAL_CONFIGS_IS_DYN_ANT_SEL_SUPPORTED_GET(word) \
+    HTT_STATS_OPT_CONF_GET_DYN_ANT_SEL(word)
 #define HTT_STATS_OPT_CONF_SET_DYN_ANT_SEL(word, value) \
     ((word) = ((word) & ~0x2000) | (((value) & 0x1) << 13))
 
 #define HTT_STATS_OPT_CONF_GET_DFS_PUNC(word) \
     (((word) & 0x4000) >> 14)
+/* provide alias macros that use preferred naming convention */
+#define HTT_STATS_OPTIONAL_CONFIGS_IS_DFS_PUNC_ENABLED_GET(word) \
+    HTT_STATS_OPT_CONF_GET_DFS_PUNC(word)
 #define HTT_STATS_OPT_CONF_SET_DFS_PUNC(word, value) \
     ((word) = ((word) & ~0x4000) | (((value) & 0x1) << 14))
 
-#define HTT_STATS_OPT_CONF_GET_CTL_BLOB_DOWNLODED(word) \
+#define HTT_STATS_OPT_CONF_GET_DPD_POW_BO(word) \
     (((word) & 0x8000) >> 15)
-#define HTT_STATS_OPT_CONF_SET_CTL_BLOB_DOWNLODED(word, value) \
+/* provide alias macros that use preferred naming convention */
+#define HTT_STATS_OPTIONAL_CONFIGS_DPD_POW_BO_STATUS_GET(word) \
+    HTT_STATS_OPT_CONF_GET_DPD_POW_BO(word)
+#define HTT_STATS_OPT_CONF_SET_DPD_POW_BO(word, value) \
     ((word) = ((word) & ~0x8000) | (((value) & 0x1) << 15))
 
-#define HTT_STATS_OPT_CONF_GET_DPD_POW_BO(word) \
-    (((word) & 0x10000) >> 16)
-#define HTT_STATS_OPT_CONF_SET_DPD_POW_BO(word, value) \
-    ((word) = ((word) & ~0x10000) | (((value) & 0x1) << 16))
-
 #define HTT_STATS_OPT_CONF_GET_EEPROM_COMPRESSED(word) \
-    (((word) & 0x20000) >> 17)
+    (((word) & 0x10000) >> 16)
+/* provide alias macros that use preferred naming convention */
+#define HTT_STATS_OPTIONAL_CONFIGS_IS_EEPROM_COMPRESSED_GET(word) \
+    HTT_STATS_OPT_CONF_GET_EEPROM_COMPRESSED(word)
 #define HTT_STATS_OPT_CONF_SET_EEPROM_COMPRESSED(word, value) \
-    ((word) = ((word) & ~0x20000) | (((value) & 0x1) << 17))
-
-#define HTT_STATS_OPT_CONF_GET_CTL_TABLE_LOADED(word) \
-    (((word) & 0x40000) >> 18)
-#define HTT_STATS_OPT_CONF_SET_CTL_TABLE_LOADED(word, value) \
-    ((word) = ((word) & ~0x40000) | (((value) & 0x1) << 18))
+    ((word) = ((word) & ~0x10000) | (((value) & 0x1) << 16))
 
 
 #define HTT_STATS_OPT_CONF_GET_RXSOP_ENABLED(word) \
     (((word) & 0x1) >> 0)
+/* provide alias macros that use preferred naming convention */
+#define HTT_STATS_OPTIONAL_CONFIGS_IS_RXSOP_ENABLED_GET(word) \
+    HTT_STATS_OPT_CONF_GET_RXSOP_ENABLED(word)
 #define HTT_STATS_OPT_CONF_SET_RXSOP_ENABLED(word, value) \
     ((word) = ((word) & ~0x1) | (((value) & 0x1) << 0))
 
 #define HTT_STATS_OPT_CONF_GET_RXSOP_CONFIG_VALUE(word) \
     (((word) & 0x1FE) >> 1)
+/* provide alias macros that use preferred naming convention */
+#define HTT_STATS_OPTIONAL_CONFIGS_RXSOP_CONFIG_VALUE_GET(word) \
+    HTT_STATS_OPT_CONF_GET_RXSOP_CONFIG_VALUE(word)
 #define HTT_STATS_OPT_CONF_SET_RXSOP_CONFIG_VALUE(word, value) \
     ((word) = ((word) & ~0x1FE) | (((value) & 0xFF) << 1))
 
 #define HTT_STATS_OPT_CONF_GET_HC_PREMCS(word) \
     ((word) & 0xFFFF)
+/* provide alias macros that use preferred naming convention */
+#define HTT_STATS_OPTIONAL_CONFIGS_HC_PREMCS_GET(word) \
+    HTT_STATS_OPT_CONF_GET_HC_PREMCS(word)
 #define HTT_STATS_OPT_CONF_SET_HC_PREMCS(word, value) \
     ((word) = ((value) & 0xFFFF))
 
 #define HTT_STATS_OPT_CONF_GET_HC_PKT_TYPE(word) \
     (((word) & 0xFFFF0000) >> 16)
+/* provide alias macros that use preferred naming convention */
+#define HTT_STATS_OPTIONAL_CONFIGS_HC_PKT_TYPE_GET(word) \
+    HTT_STATS_OPT_CONF_GET_HC_PKT_TYPE(word)
 #define HTT_STATS_OPT_CONF_SET_HC_PKT_TYPE(word, value) \
     ((word) = ((word) & ~0xFFFF0000) | (((value) & 0xFFFF) << 16))
 
 #define HTT_STATS_OPT_CONF_GET_HC_NSS_THR(word) \
     (((word) & 0x000000FF) >> 0)
+/* provide alias macros that use preferred naming convention */
+#define HTT_STATS_OPTIONAL_CONFIGS_HC_NSS_THR_GET(word) \
+    HTT_STATS_OPT_CONF_GET_HC_NSS_THR(word)
 #define HTT_STATS_OPT_CONF_SET_HC_NSS_THR(word, value) \
     ((word) = ((word) & ~0x000000FF) | (((value) & 0xFF) << 0))
 
 #define HTT_STATS_OPT_CONF_GET_IS_RX_GAIN_FORCED(word) \
     (((word) & 0x0000FF00) >> 8)
+/* provide alias macros that use preferred naming convention */
+#define HTT_STATS_OPTIONAL_CONFIGS_IS_RX_GAIN_FORCED_GET(word) \
+    HTT_STATS_OPT_CONF_GET_IS_RX_GAIN_FORCED(word)
 #define HTT_STATS_OPT_CONF_SET_IS_RX_GAIN_FORCED(word, value) \
     ((word) = ((word) & ~0x0000FF00) | (((value) & 0xFF) << 8))
 
 #define HTT_STATS_OPT_CONF_GET_RX_GAIN_FORCED_VAL(word) \
     (((word) & 0x00FF0000) >> 16)
+/* provide alias macros that use preferred naming convention */
+#define HTT_STATS_OPTIONAL_CONFIGS_RX_GAIN_FORCED_VAL_GET(word) \
+    HTT_STATS_OPT_CONF_GET_RX_GAIN_FORCED_VAL(word)
 #define HTT_STATS_OPT_CONF_SET_RX_GAIN_FORCED_VAL(word, value) \
     ((word) = ((word) & ~0x00FF0000) | (((value) & 0xFF) << 16))
 
@@ -13241,6 +13656,48 @@ typedef struct {
     A_UINT32 bdReadRsp;
 } htt_stats_ftm_tlv;
 
+#define HTT_STATS_FTM_TX_PARAMS_XTALCAL_GAIN_IDX_GET(word) \
+    (((word) >> 0) & 0xff)
+#define HTT_STATS_FTM_TX_PARAMS_INFINITE_BURSTING_MODE_GET(word) \
+    (((word) >> 8) & 0xff)
+#define HTT_STATS_FTM_TX_PARAMS_FTM_MODE_GET(word) \
+    (((word) >> 16) & 0xff)
+#define HTT_STATS_FTM_TX_PARAMS_SIFS_US_GET(word) \
+    (((word) >> 24) & 0xff)
+
+#define HTT_STATS_FTM_TX_PARAMS_AGG_STATUS_GET(word) \
+    (((word) >> 0) & 0x1)
+#define HTT_STATS_FTM_TX_PARAMS_DPDFLAG_GET(word) \
+    (((word) >> 1) & 0x1)
+#define HTT_STATS_FTM_TX_PARAMS_PPDU_DUR_BUF_LAST_IDX_GET(word) \
+    (((word) >> 2) & 0xff)
+
+#define HTT_STATS_FTM_TX_PARAMS_TARGET_TX_DUTY_GET(word) \
+    (((word) >> 0) & 0xff)
+#define HTT_STATS_FTM_TX_PARAMS_PPDUTYPE_GET(word) \
+    (((word) >> 8) & 0xff)
+#define HTT_STATS_FTM_TX_PARAMS_NUMUSERS_OFDMATONEPLAN_GET(word) \
+    (((word) >> 16) & 0xff)
+#define HTT_STATS_FTM_TX_PARAMS_NUMUSERS_OFDMATONEPLANEHT_GET(word) \
+    (((word) >> 24) & 0xff)
+
+#define HTT_STATS_FTM_TIMINGSTATS_TLVTIMESTAMPCNTFILLED_GET(word) \
+    (((word) >> 0) & 0xff)
+
+#define HTT_STATS_FTM_TIMINGSTATS_TLVCMD_ENTRY_GET(word) \
+    (((word) >> 0) & 0xffff)
+#define HTT_STATS_FTM_TIMINGSTATS_TLVCALTYPE_GET(word) \
+    (((word) >> 16) & 0xff)
+
+#define HTT_STATS_FTM_TLVPARAMS_FLAGTLVCMDPARSING_GET(word) \
+    (((word) >> 0) & 0x1)
+#define HTT_STATS_FTM_TLVPARAMS_NUMTLVCMDDROPPED_GET(word) \
+    (((word) >> 1) & 0xff)
+
+#define HTT_STATS_FTM_RXGAINCALPARAMS_RXGAINCALMAXNUMCHAN_GET(word) \
+    (((word) >> 0) & 0xff)
+#define HTT_STATS_FTM_RXGAINCALPARAMS_RXGAINCAL_REFISS_GET(word) \
+    (((word) >> 0) & 0xff)
 
 typedef struct {
     union {
@@ -13712,6 +14169,13 @@ typedef struct {
 #define HTT_STATS_ML_PEER_EXT_DETAILS_TID0_TQM_LINK_ID_GET(_var) \
     (((_var) & HTT_STATS_ML_PEER_EXT_DETAILS_TID0_TQM_LINK_ID_M) >> \
      HTT_STATS_ML_PEER_EXT_DETAILS_TID0_TQM_LINK_ID_S)
+/* provide alias macros that use preferred naming convention */
+#define HTT_STATS_ML_PEER_EXT_DETAILS_TID0_TQM_LINK0_ID_GET(_var) \
+    HTT_STATS_ML_PEER_EXT_DETAILS_TID0_TQM_LINK_ID_GET(_var)
+#define HTT_STATS_ML_PEER_EXT_DETAILS_TID0_TQM_LINK1_ID_GET(_var) \
+    HTT_STATS_ML_PEER_EXT_DETAILS_TID0_TQM_LINK_ID_GET(_var)
+#define HTT_STATS_ML_PEER_EXT_DETAILS_TID0_TQM_LINK2_ID_GET(_var) \
+    HTT_STATS_ML_PEER_EXT_DETAILS_TID0_TQM_LINK_ID_GET(_var)
 #define HTT_STATS_ML_PEER_EXT_DETAILS_TID0_TQM_LINK_ID_SET(_var, _val) \
     do { \
         HTT_CHECK_SET_VAL(HTT_STATS_ML_PEER_EXT_DETAILS_TID0_TQM_LINK_ID, _val); \
@@ -13722,6 +14186,13 @@ typedef struct {
 #define HTT_STATS_ML_PEER_EXT_DETAILS_TID1_TQM_LINK_ID_GET(_var) \
     (((_var) & HTT_STATS_ML_PEER_EXT_DETAILS_TID1_TQM_LINK_ID_M) >> \
      HTT_STATS_ML_PEER_EXT_DETAILS_TID1_TQM_LINK_ID_S)
+/* provide alias macros that use preferred naming convention */
+#define HTT_STATS_ML_PEER_EXT_DETAILS_TID1_TQM_LINK0_ID_GET(_var) \
+    HTT_STATS_ML_PEER_EXT_DETAILS_TID1_TQM_LINK_ID_GET(_var)
+#define HTT_STATS_ML_PEER_EXT_DETAILS_TID1_TQM_LINK1_ID_GET(_var) \
+    HTT_STATS_ML_PEER_EXT_DETAILS_TID1_TQM_LINK_ID_GET(_var)
+#define HTT_STATS_ML_PEER_EXT_DETAILS_TID1_TQM_LINK2_ID_GET(_var) \
+    HTT_STATS_ML_PEER_EXT_DETAILS_TID1_TQM_LINK_ID_GET(_var)
 #define HTT_STATS_ML_PEER_EXT_DETAILS_TID1_TQM_LINK_ID_SET(_var, _val) \
     do { \
         HTT_CHECK_SET_VAL(HTT_STATS_ML_PEER_EXT_DETAILS_TID1_TQM_LINK_ID, _val); \
@@ -13732,6 +14203,13 @@ typedef struct {
 #define HTT_STATS_ML_PEER_EXT_DETAILS_TID2_TQM_LINK_ID_GET(_var) \
     (((_var) & HTT_STATS_ML_PEER_EXT_DETAILS_TID2_TQM_LINK_ID_M) >> \
      HTT_STATS_ML_PEER_EXT_DETAILS_TID2_TQM_LINK_ID_S)
+/* provide alias macros that use preferred naming convention */
+#define HTT_STATS_ML_PEER_EXT_DETAILS_TID2_TQM_LINK0_ID_GET(_var) \
+    HTT_STATS_ML_PEER_EXT_DETAILS_TID2_TQM_LINK_ID_GET(_var)
+#define HTT_STATS_ML_PEER_EXT_DETAILS_TID2_TQM_LINK1_ID_GET(_var) \
+    HTT_STATS_ML_PEER_EXT_DETAILS_TID2_TQM_LINK_ID_GET(_var)
+#define HTT_STATS_ML_PEER_EXT_DETAILS_TID2_TQM_LINK2_ID_GET(_var) \
+    HTT_STATS_ML_PEER_EXT_DETAILS_TID2_TQM_LINK_ID_GET(_var)
 #define HTT_STATS_ML_PEER_EXT_DETAILS_TID2_TQM_LINK_ID_SET(_var, _val) \
     do { \
         HTT_CHECK_SET_VAL(HTT_STATS_ML_PEER_EXT_DETAILS_TID2_TQM_LINK_ID, _val); \
@@ -13742,6 +14220,13 @@ typedef struct {
 #define HTT_STATS_ML_PEER_EXT_DETAILS_TID3_TQM_LINK_ID_GET(_var) \
     (((_var) & HTT_STATS_ML_PEER_EXT_DETAILS_TID3_TQM_LINK_ID_M) >> \
      HTT_STATS_ML_PEER_EXT_DETAILS_TID3_TQM_LINK_ID_S)
+/* provide alias macros that use preferred naming convention */
+#define HTT_STATS_ML_PEER_EXT_DETAILS_TID3_TQM_LINK0_ID_GET(_var) \
+    HTT_STATS_ML_PEER_EXT_DETAILS_TID3_TQM_LINK_ID_GET(_var)
+#define HTT_STATS_ML_PEER_EXT_DETAILS_TID3_TQM_LINK1_ID_GET(_var) \
+    HTT_STATS_ML_PEER_EXT_DETAILS_TID3_TQM_LINK_ID_GET(_var)
+#define HTT_STATS_ML_PEER_EXT_DETAILS_TID3_TQM_LINK2_ID_GET(_var) \
+    HTT_STATS_ML_PEER_EXT_DETAILS_TID3_TQM_LINK_ID_GET(_var)
 #define HTT_STATS_ML_PEER_EXT_DETAILS_TID3_TQM_LINK_ID_SET(_var, _val) \
     do { \
         HTT_CHECK_SET_VAL(HTT_STATS_ML_PEER_EXT_DETAILS_TID3_TQM_LINK_ID, _val); \
@@ -13752,6 +14237,13 @@ typedef struct {
 #define HTT_STATS_ML_PEER_EXT_DETAILS_TID4_TQM_LINK_ID_GET(_var) \
     (((_var) & HTT_STATS_ML_PEER_EXT_DETAILS_TID4_TQM_LINK_ID_M) >> \
      HTT_STATS_ML_PEER_EXT_DETAILS_TID4_TQM_LINK_ID_S)
+/* provide alias macros that use preferred naming convention */
+#define HTT_STATS_ML_PEER_EXT_DETAILS_TID4_TQM_LINK0_ID_GET(_var) \
+    HTT_STATS_ML_PEER_EXT_DETAILS_TID4_TQM_LINK_ID_GET(_var)
+#define HTT_STATS_ML_PEER_EXT_DETAILS_TID4_TQM_LINK1_ID_GET(_var) \
+    HTT_STATS_ML_PEER_EXT_DETAILS_TID4_TQM_LINK_ID_GET(_var)
+#define HTT_STATS_ML_PEER_EXT_DETAILS_TID4_TQM_LINK2_ID_GET(_var) \
+    HTT_STATS_ML_PEER_EXT_DETAILS_TID4_TQM_LINK_ID_GET(_var)
 #define HTT_STATS_ML_PEER_EXT_DETAILS_TID4_TQM_LINK_ID_SET(_var, _val) \
     do { \
         HTT_CHECK_SET_VAL(HTT_STATS_ML_PEER_EXT_DETAILS_TID4_TQM_LINK_ID, _val); \
@@ -13762,6 +14254,13 @@ typedef struct {
 #define HTT_STATS_ML_PEER_EXT_DETAILS_TID5_TQM_LINK_ID_GET(_var) \
     (((_var) & HTT_STATS_ML_PEER_EXT_DETAILS_TID5_TQM_LINK_ID_M) >> \
      HTT_STATS_ML_PEER_EXT_DETAILS_TID5_TQM_LINK_ID_S)
+/* provide alias macros that use preferred naming convention */
+#define HTT_STATS_ML_PEER_EXT_DETAILS_TID5_TQM_LINK0_ID_GET(_var) \
+    HTT_STATS_ML_PEER_EXT_DETAILS_TID5_TQM_LINK_ID_GET(_var)
+#define HTT_STATS_ML_PEER_EXT_DETAILS_TID5_TQM_LINK1_ID_GET(_var) \
+    HTT_STATS_ML_PEER_EXT_DETAILS_TID5_TQM_LINK_ID_GET(_var)
+#define HTT_STATS_ML_PEER_EXT_DETAILS_TID5_TQM_LINK2_ID_GET(_var) \
+    HTT_STATS_ML_PEER_EXT_DETAILS_TID5_TQM_LINK_ID_GET(_var)
 #define HTT_STATS_ML_PEER_EXT_DETAILS_TID5_TQM_LINK_ID_SET(_var, _val) \
     do { \
         HTT_CHECK_SET_VAL(HTT_STATS_ML_PEER_EXT_DETAILS_TID5_TQM_LINK_ID, _val); \
@@ -13772,6 +14271,13 @@ typedef struct {
 #define HTT_STATS_ML_PEER_EXT_DETAILS_TID6_TQM_LINK_ID_GET(_var) \
     (((_var) & HTT_STATS_ML_PEER_EXT_DETAILS_TID6_TQM_LINK_ID_M) >> \
      HTT_STATS_ML_PEER_EXT_DETAILS_TID6_TQM_LINK_ID_S)
+/* provide alias macros that use preferred naming convention */
+#define HTT_STATS_ML_PEER_EXT_DETAILS_TID6_TQM_LINK0_ID_GET(_var) \
+    HTT_STATS_ML_PEER_EXT_DETAILS_TID6_TQM_LINK_ID_GET(_var)
+#define HTT_STATS_ML_PEER_EXT_DETAILS_TID6_TQM_LINK1_ID_GET(_var) \
+    HTT_STATS_ML_PEER_EXT_DETAILS_TID6_TQM_LINK_ID_GET(_var)
+#define HTT_STATS_ML_PEER_EXT_DETAILS_TID6_TQM_LINK2_ID_GET(_var) \
+    HTT_STATS_ML_PEER_EXT_DETAILS_TID6_TQM_LINK_ID_GET(_var)
 #define HTT_STATS_ML_PEER_EXT_DETAILS_TID6_TQM_LINK_ID_SET(_var, _val) \
     do { \
         HTT_CHECK_SET_VAL(HTT_STATS_ML_PEER_EXT_DETAILS_TID6_TQM_LINK_ID, _val); \
@@ -13782,6 +14288,13 @@ typedef struct {
 #define HTT_STATS_ML_PEER_EXT_DETAILS_TID7_TQM_LINK_ID_GET(_var) \
     (((_var) & HTT_STATS_ML_PEER_EXT_DETAILS_TID7_TQM_LINK_ID_M) >> \
      HTT_STATS_ML_PEER_EXT_DETAILS_TID7_TQM_LINK_ID_S)
+/* provide alias macros that use preferred naming convention */
+#define HTT_STATS_ML_PEER_EXT_DETAILS_TID7_TQM_LINK0_ID_GET(_var) \
+    HTT_STATS_ML_PEER_EXT_DETAILS_TID7_TQM_LINK_ID_GET(_var)
+#define HTT_STATS_ML_PEER_EXT_DETAILS_TID7_TQM_LINK1_ID_GET(_var) \
+    HTT_STATS_ML_PEER_EXT_DETAILS_TID7_TQM_LINK_ID_GET(_var)
+#define HTT_STATS_ML_PEER_EXT_DETAILS_TID7_TQM_LINK2_ID_GET(_var) \
+    HTT_STATS_ML_PEER_EXT_DETAILS_TID7_TQM_LINK_ID_GET(_var)
 #define HTT_STATS_ML_PEER_EXT_DETAILS_TID7_TQM_LINK_ID_SET(_var, _val) \
     do { \
         HTT_CHECK_SET_VAL(HTT_STATS_ML_PEER_EXT_DETAILS_TID7_TQM_LINK_ID, _val); \
@@ -13792,6 +14305,13 @@ typedef struct {
 #define HTT_STATS_ML_PEER_EXT_DETAILS_MLO_MGMT_TID_TQM_LINK_ID_GET(_var) \
     (((_var) & HTT_STATS_ML_PEER_EXT_DETAILS_MLO_MGMT_TID_TQM_LINK_ID_M) >> \
      HTT_STATS_ML_PEER_EXT_DETAILS_MLO_MGMT_TID_TQM_LINK_ID_S)
+/* provide alias macros that use preferred naming convention */
+#define HTT_STATS_ML_PEER_EXT_DETAILS_MLO_MGMT_TID_TQM_LINK0_ID_GET(_var) \
+    HTT_STATS_ML_PEER_EXT_DETAILS_MLO_MGMT_TID_TQM_LINK_ID_GET(_var)
+#define HTT_STATS_ML_PEER_EXT_DETAILS_MLO_MGMT_TID_TQM_LINK1_ID_GET(_var) \
+    HTT_STATS_ML_PEER_EXT_DETAILS_MLO_MGMT_TID_TQM_LINK_ID_GET(_var)
+#define HTT_STATS_ML_PEER_EXT_DETAILS_MLO_MGMT_TID_TQM_LINK2_ID_GET(_var) \
+    HTT_STATS_ML_PEER_EXT_DETAILS_MLO_MGMT_TID_TQM_LINK_ID_GET(_var)
 #define HTT_STATS_ML_PEER_EXT_DETAILS_MLO_MGMT_TID_TQM_LINK_ID_SET(_var, _val) \
     do { \
         HTT_CHECK_SET_VAL(HTT_STATS_ML_PEER_EXT_DETAILS_MLO_MGMT_TID_TQM_LINK_ID, _val); \
@@ -14050,6 +14570,9 @@ typedef htt_stats_ml_peer_ext_details_tlv htt_ml_peer_ext_details_tlv;
 #define HTT_STATS_ML_LINK_INFO_BRIDGE_PEER_GET(_var) \
     (((_var) & HTT_STATS_ML_LINK_INFO_BRIDGE_PEER_M) >> \
      HTT_STATS_ML_LINK_INFO_BRIDGE_PEER_S)
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_ML_LINK_INFO_DETAILS_BRIDGE_PEER_GET(_var) \
+    HTT_STATS_ML_LINK_INFO_BRIDGE_PEER_GET(_var)
 #define HTT_STATS_ML_LINK_INFO_BRIDGE_PEER_SET(_var, _val) \
     do { \
         HTT_CHECK_SET_VAL(HTT_STATS_ML_LINK_INFO_BRIDGE_PEER, _val); \
@@ -14089,6 +14612,9 @@ typedef htt_stats_ml_peer_ext_details_tlv htt_ml_peer_ext_details_tlv;
 #define HTT_STATS_ML_LINK_INFO_PS_STATE_GET(_var) \
     (((_var) & HTT_STATS_ML_LINK_INFO_PS_STATE_M) >> \
      HTT_STATS_ML_LINK_INFO_PS_STATE_S)
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_ML_LINK_INFO_DETAILS_PS_GET(_var) \
+    HTT_STATS_ML_LINK_INFO_PS_STATE_GET(_var)
 #define HTT_STATS_ML_LINK_INFO_PS_STATE_SET(_var, _val) \
     do { \
         HTT_CHECK_SET_VAL(HTT_STATS_ML_LINK_INFO_PS_STATE, _val); \
@@ -14738,6 +15264,8 @@ typedef struct {
 /* preserve old name alias for new name consistent with the tag name */
 typedef htt_stats_pdev_mbssid_ctrl_frame_stats_tlv
     htt_pdev_mbssid_ctrl_frame_stats_tlv;
+#define HTT_STATS_PDEV_MBSSID_CTRL_FRAME_STATS_MAC_ID_GET(word) \
+    (((word) >> 0) & 0xff)
 
 typedef struct {
     htt_tlv_hdr_t tlv_hdr;
@@ -14810,6 +15338,9 @@ typedef htt_stats_pdev_tdma_tlv htt_pdev_tdma_stats_tlv;
 #define HTT_BW_MGR_STATS_MAC_ID_GET(_var) \
     (((_var) & HTT_BW_MGR_STATS_MAC_ID_M) >> \
      HTT_BW_MGR_STATS_MAC_ID_S)
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_PDEV_BW_MGR_STATS_MAC_ID_GET(_var) \
+    HTT_BW_MGR_STATS_MAC_ID_GET(_var)
 
 #define HTT_BW_MGR_STATS_MAC_ID_SET(_var, _val) \
     do { \
@@ -14823,6 +15354,9 @@ typedef htt_stats_pdev_tdma_tlv htt_pdev_tdma_stats_tlv;
      HTT_BW_MGR_STATS_PRI20_IDX_S)
 #define HTT_BW_MGR_STATS_NPCA_PRI20_IDX_GET(_var) \
      HTT_BW_MGR_STATS_PRI20_IDX_GET(_var)
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_PDEV_BW_MGR_STATS_PRI20_IDX_GET(_var) \
+    HTT_BW_MGR_STATS_PRI20_IDX_GET(_var)
 
 #define HTT_BW_MGR_STATS_PRI20_IDX_SET(_var, _val) \
     do { \
@@ -14837,6 +15371,9 @@ typedef htt_stats_pdev_tdma_tlv htt_pdev_tdma_stats_tlv;
     (((_var) & HTT_BW_MGR_STATS_PRI20_FREQ_M) >> \
      HTT_BW_MGR_STATS_PRI20_FREQ_S)
 #define HTT_BW_MGR_STATS_NPCA_PRI20_FREQ_GET(_var) \
+    HTT_BW_MGR_STATS_PRI20_FREQ_GET(_var)
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_PDEV_BW_MGR_STATS_PRI20_FREQ_MHZ_GET(_var) \
     HTT_BW_MGR_STATS_PRI20_FREQ_GET(_var)
 
 #define HTT_BW_MGR_STATS_PRI20_FREQ_SET(_var, _val) \
@@ -14853,6 +15390,9 @@ typedef htt_stats_pdev_tdma_tlv htt_pdev_tdma_stats_tlv;
      HTT_BW_MGR_STATS_CENTER_FREQ1_S)
 #define HTT_BW_MGR_STATS_NPCA_CENTER_FREQ1_GET(_var) \
     HTT_BW_MGR_STATS_CENTER_FREQ1_GET(_var)
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_PDEV_BW_MGR_STATS_CENTRE_FREQ1_GET(_var) \
+    HTT_BW_MGR_STATS_CENTER_FREQ1_GET(_var)
 
 #define HTT_BW_MGR_STATS_CENTER_FREQ1_SET(_var, _val) \
     do { \
@@ -14867,6 +15407,9 @@ typedef htt_stats_pdev_tdma_tlv htt_pdev_tdma_stats_tlv;
     (((_var) & HTT_BW_MGR_STATS_CENTER_FREQ2_M) >> \
      HTT_BW_MGR_STATS_CENTER_FREQ2_S)
 #define HTT_BW_MGR_STATS_NPCA_CENTER_FREQ2_GET(_var) \
+    HTT_BW_MGR_STATS_CENTER_FREQ2_GET(_var)
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_PDEV_BW_MGR_STATS_CENTRE_FREQ2_GET(_var) \
     HTT_BW_MGR_STATS_CENTER_FREQ2_GET(_var)
 
 #define HTT_BW_MGR_STATS_CENTER_FREQ2_SET(_var, _val) \
@@ -14883,6 +15426,9 @@ typedef htt_stats_pdev_tdma_tlv htt_pdev_tdma_stats_tlv;
      HTT_BW_MGR_STATS_CHAN_PHY_MODE_S)
 #define HTT_BW_MGR_STATS_CHAN_NPCA_PHY_MODE_GET(_var) \
     HTT_BW_MGR_STATS_CHAN_PHY_MODE_GET(_var)
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_PDEV_BW_MGR_STATS_PHY_MODE_GET(_var) \
+    HTT_BW_MGR_STATS_CHAN_PHY_MODE_GET(_var)
 
 #define HTT_BW_MGR_STATS_CHAN_PHY_MODE_SET(_var, _val) \
     do { \
@@ -14898,6 +15444,9 @@ typedef htt_stats_pdev_tdma_tlv htt_pdev_tdma_stats_tlv;
      HTT_BW_MGR_STATS_STATIC_PATTERN_S)
 #define HTT_BW_MGR_STATS_NPCA_STATIC_PATTERN_GET(_var) \
      HTT_BW_MGR_STATS_STATIC_PATTERN_GET(_var)
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_PDEV_BW_MGR_STATS_STATIC_PATTERN_GET(_var) \
+    HTT_BW_MGR_STATS_STATIC_PATTERN_GET(_var)
 
 #define HTT_BW_MGR_STATS_STATIC_PATTERN_SET(_var, _val) \
     do { \
@@ -14911,12 +15460,33 @@ typedef htt_stats_pdev_tdma_tlv htt_pdev_tdma_stats_tlv;
 #define HTT_BW_MGR_STATS_WIFI_VERSION_GET(_var) \
     (((_var) & HTT_BW_MGR_STATS_WIFI_VERSION_M) >> \
      HTT_BW_MGR_STATS_WIFI_VERSION_S)
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_PDEV_BW_MGR_STATS_WIFI_VERSION_GET(_var) \
+    HTT_BW_MGR_STATS_WIFI_VERSION_GET(_var)
 
 #define HTT_BW_MGR_STATS_WIFI_VERSION_SET(_var, _val) \
     do { \
         HTT_CHECK_SET_VAL(HTT_BW_MGR_STATS_WIFI_VERSION, _val); \
         ((_var) |= ((_val) << HTT_BW_MGR_STATS_WIFI_VERSION_S)); \
     } while (0)
+
+#define HTT_STATS_PDEV_BW_MGR_STATS_NPCA_PRI20_IDX_GET(_var)  \
+    (((_var) >> 8) & 0xff)
+
+#define HTT_STATS_PDEV_BW_MGR_STATS_NPCA_PRI20_FREQ_MHZ_GET(_var)  \
+    (((_var) >> 16) & 0xffff)
+
+#define HTT_STATS_PDEV_BW_MGR_STATS_NPCA_CENTRE_FREQ1_GET(_var) \
+    (((_var) >> 0) & 0xffff)
+
+#define HTT_STATS_PDEV_BW_MGR_STATS_NPCA_CENTRE_FREQ2_GET(_var) \
+    (((_var) >> 16) & 0xffff)
+
+#define HTT_STATS_PDEV_BW_MGR_STATS_NPCA_PHY_MODE_GET(_var) \
+    (((_var) >> 0) & 0xff)
+
+#define HTT_STATS_PDEV_BW_MGR_STATS_NPCA_STATIC_PATTERN_GET(_var) \
+    (((_var) >> 8) & 0xffff)
 
 typedef struct {
     htt_tlv_hdr_t tlv_hdr;
@@ -15142,6 +15712,61 @@ typedef struct {
 } htt_stats_mlo_umac_ssr_mlo_tlv;
 /* preserve old name alias for new name consistent with the tag name */
 typedef htt_stats_mlo_umac_ssr_mlo_tlv htt_mlo_umac_ssr_mlo_stats_tlv;
+
+#define HTT_STATS_MLO_UMAC_SSR_MLO_MLO_DONE_MASK_PRE_RESET_DISABLE_RXDMA_PREFETCH_GET(word) \
+    (((word) >> 0) & 0x1)
+#define HTT_STATS_MLO_UMAC_SSR_MLO_MLO_DONE_MASK_PRE_RESET_PMACS_HWMLOS_GET(word) \
+    (((word) >> 1) & 0x1)
+#define HTT_STATS_MLO_UMAC_SSR_MLO_MLO_DONE_MASK_PRE_RESET_GLOBAL_WSI_GET(word) \
+    (((word) >> 2) & 0x1)
+#define HTT_STATS_MLO_UMAC_SSR_MLO_MLO_DONE_MASK_PRE_RESET_PMACS_DMAC_GET(word) \
+    (((word) >> 3) & 0x1)
+#define HTT_STATS_MLO_UMAC_SSR_MLO_MLO_DONE_MASK_PRE_RESET_TCL_GET(word) \
+    (((word) >> 4) & 0x1)
+#define HTT_STATS_MLO_UMAC_SSR_MLO_MLO_DONE_MASK_PRE_RESET_TQM_GET(word) \
+    (((word) >> 5) & 0x1)
+#define HTT_STATS_MLO_UMAC_SSR_MLO_MLO_DONE_MASK_PRE_RESET_WBM_GET(word) \
+    (((word) >> 6) & 0x1)
+#define HTT_STATS_MLO_UMAC_SSR_MLO_MLO_DONE_MASK_PRE_RESET_REO_GET(word) \
+    (((word) >> 7) & 0x1)
+#define HTT_STATS_MLO_UMAC_SSR_MLO_MLO_DONE_MASK_PRE_RESET_HOST_GET(word) \
+    (((word) >> 8) & 0x1)
+#define HTT_STATS_MLO_UMAC_SSR_MLO_MLO_DONE_MASK_RESET_PREREQUISITES_GET(word) \
+    (((word) >> 9) & 0x1)
+#define HTT_STATS_MLO_UMAC_SSR_MLO_MLO_DONE_MASK_RESET_PRE_RING_RESET_GET(word) \
+    (((word) >> 10) & 0x1)
+#define HTT_STATS_MLO_UMAC_SSR_MLO_MLO_DONE_MASK_RESET_APPLY_SOFT_RESET_GET(word) \
+    (((word) >> 11) & 0x1)
+#define HTT_STATS_MLO_UMAC_SSR_MLO_MLO_DONE_MASK_RESET_POST_RING_RESET_GET(word) \
+    (((word) >> 12) & 0x1)
+#define HTT_STATS_MLO_UMAC_SSR_MLO_MLO_DONE_MASK_RESET_FW_TQM_CMDQS_GET(word) \
+    (((word) >> 13) & 0x1)
+#define HTT_STATS_MLO_UMAC_SSR_MLO_MLO_DONE_MASK_POST_RESET_HOST_GET(word) \
+    (((word) >> 14) & 0x1)
+#define HTT_STATS_MLO_UMAC_SSR_MLO_MLO_DONE_MASK_POST_RESET_UMAC_INTERRUPTS_GET(word) \
+    (((word) >> 15) & 0x1)
+#define HTT_STATS_MLO_UMAC_SSR_MLO_MLO_DONE_MASK_POST_RESET_WBM_GET(word) \
+    (((word) >> 16) & 0x1)
+#define HTT_STATS_MLO_UMAC_SSR_MLO_MLO_DONE_MASK_POST_RESET_REO_GET(word) \
+    (((word) >> 17) & 0x1)
+#define HTT_STATS_MLO_UMAC_SSR_MLO_MLO_DONE_MASK_POST_RESET_TQM_GET(word) \
+    (((word) >> 18) & 0x1)
+#define HTT_STATS_MLO_UMAC_SSR_MLO_MLO_DONE_MASK_POST_RESET_PMACS_DMAC_GET(word) \
+    (((word) >> 19) & 0x1)
+#define HTT_STATS_MLO_UMAC_SSR_MLO_MLO_DONE_MASK_POST_RESET_TQM_SYNC_CMD_GET(word) \
+    (((word) >> 20) & 0x1)
+#define HTT_STATS_MLO_UMAC_SSR_MLO_MLO_DONE_MASK_POST_RESET_GLOBAL_WSI_GET(word) \
+    (((word) >> 21) & 0x1)
+#define HTT_STATS_MLO_UMAC_SSR_MLO_MLO_DONE_MASK_POST_RESET_PMACS_HWMLOS_GET(word) \
+    (((word) >> 22) & 0x1)
+#define HTT_STATS_MLO_UMAC_SSR_MLO_MLO_DONE_MASK_POST_RESET_ENABLE_RXDMA_PREFETCH_GET(word) \
+    (((word) >> 23) & 0x1)
+#define HTT_STATS_MLO_UMAC_SSR_MLO_MLO_DONE_MASK_POST_RESET_TCL_GET(word) \
+    (((word) >> 24) & 0x1)
+#define HTT_STATS_MLO_UMAC_SSR_MLO_MLO_DONE_MASK_POST_RESET_HOST_ENQ_GET(word) \
+    (((word) >> 25) & 0x1)
+#define HTT_STATS_MLO_UMAC_SSR_MLO_MLO_DONE_MASK_POST_RESET_VERIFY_UMAC_RECOVERED_GET(word) \
+    (((word) >> 26) & 0x1)
 
 /* dword0 - b'0 - PRE_RESET_DISABLE_RXDMA_PREFETCH */
 #define HTT_UMAC_RECOVERY_DONE_PRE_RESET_DISABLE_RXDMA_PREFETCH_M 0x1
@@ -15759,6 +16384,9 @@ typedef htt_stats_codel_svc_class_tlv htt_codel_svc_class_stats_tlv;
 #define HTT_CODEL_MSDUQ_STATS_TX_FLOW_NUM_GET(_var) \
     (((_var) & HTT_CODEL_MSDUQ_STATS_TX_FLOW_NUM_M) >> \
      HTT_CODEL_MSDUQ_STATS_TX_FLOW_NUM_S)
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_CODEL_MSDUQ_TX_FLOW_NUM_GET(_var) \
+    HTT_CODEL_MSDUQ_STATS_TX_FLOW_NUM_GET(_var)
 #define HTT_CODEL_MSDUQ_STATS_TX_FLOW_NUM_SET(_var, _val) \
     do { \
         HTT_CHECK_SET_VAL(HTT_CODEL_MSDUQ_STATS_TX_FLOW_NUM, _val); \
@@ -15771,6 +16399,9 @@ typedef htt_stats_codel_svc_class_tlv htt_codel_svc_class_stats_tlv;
 #define HTT_CODEL_MSDUQ_STATS_SVC_CLASS_ID_GET(_var) \
     (((_var) & HTT_CODEL_MSDUQ_STATS_SVC_CLASS_ID_M) >> \
      HTT_CODEL_MSDUQ_STATS_SVC_CLASS_ID_S)
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_CODEL_MSDUQ_SVC_CLASS_ID_GET(_var) \
+    HTT_CODEL_MSDUQ_STATS_SVC_CLASS_ID_GET(_var)
 #define HTT_CODEL_MSDUQ_STATS_SVC_CLASS_ID_SET(_var, _val) \
     do { \
         HTT_CHECK_SET_VAL(HTT_CODEL_MSDUQ_STATS_SVC_CLASS_ID, _val); \
@@ -15783,6 +16414,9 @@ typedef htt_stats_codel_svc_class_tlv htt_codel_svc_class_stats_tlv;
 #define HTT_CODEL_MSDUQ_STATS_DROPS_GET(_var) \
     (((_var) & HTT_CODEL_MSDUQ_STATS_DROPS_M) >> \
      HTT_CODEL_MSDUQ_STATS_DROPS_S)
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_CODEL_MSDUQ_CODEL_DROPS_GET(_var) \
+    HTT_CODEL_MSDUQ_STATS_DROPS_GET(_var)
 #define HTT_CODEL_MSDUQ_STATS_DROPS_SET(_var, _val) \
     do { \
         HTT_CHECK_SET_VAL(HTT_CODEL_MSDUQ_STATS_DROPS, _val); \
@@ -15795,6 +16429,9 @@ typedef htt_stats_codel_svc_class_tlv htt_codel_svc_class_stats_tlv;
 #define HTT_CODEL_MSDUQ_STATS_NO_DROPS_GET(_var) \
     (((_var) & HTT_CODEL_MSDUQ_STATS_NO_DROPS_M) >> \
      HTT_CODEL_MSDUQ_STATS_NO_DROPS_S)
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_CODEL_MSDUQ_CODEL_NO_DROPS_GET(_var) \
+    HTT_CODEL_MSDUQ_STATS_NO_DROPS_GET(_var)
 #define HTT_CODEL_MSDUQ_STATS_NO_DROPS_SET(_var, _val) \
     do { \
         HTT_CHECK_SET_VAL(HTT_CODEL_MSDUQ_STATS_NO_DROPS, _val); \
@@ -16140,16 +16777,25 @@ typedef struct {
 
 #define HTT_STATS_REGDB_CTRY_GET_MAJOR_VERSION(word) \
     HTT_STATS_GET_FIELD(0xFF, 0, (word))
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_REGDB_CTRY_MAJOR_VERSION_GET(word) \
+    HTT_STATS_REGDB_CTRY_GET_MAJOR_VERSION(word)
 #define HTT_STATS_REGDB_CTRY_SET_MAJOR_VERSION(word,value) \
     HTT_STATS_SET_FIELD(0xFF, 0, (word), (value))
 
 #define HTT_STATS_REGDB_CTRY_GET_MINOR_VERSION(word) \
     HTT_STATS_GET_FIELD(0xFF00, 8, (word))
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_REGDB_CTRY_MINOR_VERSION_GET(word) \
+    HTT_STATS_REGDB_CTRY_GET_MINOR_VERSION(word)
 #define HTT_STATS_REGDB_CTRY_SET_MINOR_VERSION(word,value) \
     HTT_STATS_SET_FIELD(0xFF00, 8, (word), (value))
 
 #define HTT_STATS_REGDB_CTRY_GET_CUSTOM_VERSION(word) \
     HTT_STATS_GET_FIELD(0xFF0000, 16, (word))
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_REGDB_CTRY_CUSTOM_VERSION_GET(word) \
+    HTT_STATS_REGDB_CTRY_GET_CUSTOM_VERSION(word)
 #define HTT_STATS_REGDB_CTRY_SET_CUSTOM_VERSION(word,value) \
     HTT_STATS_SET_FIELD(0xFF0000, 16, (word), (value))
 
@@ -16287,32 +16933,50 @@ typedef struct {
 
 #define HTT_STATS_REGDB_REGDOMAIN_GET_CTL_REGION(word) \
     HTT_STATS_GET_FIELD(0xFF, 0, (word))
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_REGDB_REGDOMAIN_CTL_REGION_GET(word) \
+    HTT_STATS_REGDB_REGDOMAIN_GET_CTL_REGION(word)
 #define HTT_STATS_REGDB_REGDOMAIN_SET_CTL_REGION(word,value) \
     HTT_STATS_SET_FIELD(0xFF, 0, (word), (value))
 
 #define HTT_STATS_REGDB_REGDOMAIN_GET_CCA_REGION(word) \
     HTT_STATS_GET_FIELD(0xFF00, 8, (word))
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_REGDB_REGDOMAIN_CCA_REGION_GET(word) \
+    HTT_STATS_REGDB_REGDOMAIN_GET_CCA_REGION(word)
 #define HTT_STATS_REGDB_REGDOMAIN_SET_CCA_REGION(word,value) \
     HTT_STATS_SET_FIELD(0xFF00, 8, (word), (value))
 
 #define HTT_STATS_REGDB_REGDOMAIN_GET_DFS_REGION(word) \
     HTT_STATS_GET_FIELD(0xFF0000, 16, (word))
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_REGDB_REGDOMAIN_DFS_REGION_GET(word) \
+    HTT_STATS_REGDB_REGDOMAIN_GET_DFS_REGION(word)
 #define HTT_STATS_REGDB_REGDOMAIN_SET_DFS_REGION(word,value) \
     HTT_STATS_SET_FIELD(0xFF0000, 16, (word), (value))
 
 #define HTT_STATS_REGDB_REGDOMAIN_GET_DOMAIN_CTL_INDEX(word) \
     HTT_STATS_GET_FIELD(0xFF000000, 24, (word))
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_REGDB_REGDOMAIN_DOMAIN_CTL_INDEX_GET(word) \
+    HTT_STATS_REGDB_REGDOMAIN_GET_DOMAIN_CTL_INDEX(word)
 #define HTT_STATS_REGDB_REGDOMAIN_SET_DOMAIN_CTL_INDEX(word,value) \
     HTT_STATS_SET_FIELD(0xFF000000, 24, (word), (value))
 
 
 #define HTT_STATS_REGDB_REGDOMAIN_GET_NUM_RULES(word) \
     HTT_STATS_GET_FIELD(0xFFFF, 0, (word))
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_REGDB_REGDOMAIN_NUM_RULES_GET(word) \
+    HTT_STATS_REGDB_REGDOMAIN_GET_NUM_RULES(word)
 #define HTT_STATS_REGDB_REGDOMAIN_SET_NUM_RULES(word,value) \
     HTT_STATS_SET_FIELD(0xFFFF, 0, (word), (value))
 
 #define HTT_STATS_REGDB_REGDOMAIN_GET_RULE_SIZE(word) \
     HTT_STATS_GET_FIELD(0xFFFF0000, 16, (word))
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_REGDB_REGDOMAIN_RULE_SIZE_GET(word) \
+    HTT_STATS_REGDB_REGDOMAIN_GET_RULE_SIZE(word)
 #define HTT_STATS_REGDB_REGDOMAIN_SET_RULE_SIZE(word,value) \
     HTT_STATS_SET_FIELD(0xFFFF0000, 16, (word), (value))
 
@@ -16325,14 +16989,7 @@ typedef struct {
                      deployment_type: 8, /* bits 15:8 */
                      /* Bit 0 : LPI, Bit 1 : SP, Bit 2 : VLP, others: rsvd */
                      power_mode_mask: 8, /* bits 23:16 */
-                     /* Tx is suspended or not */
-                     is_tx_allowed_by_afc: 1, /* bit 24 */
-                     /* is_tx_allowed_by_hw_min_power_check:
-                      * channel is blocked or not due to the HW Minimum power
-                      * compliance check
-                      */
-                     is_tx_allowed_by_hw_min_power_check: 1, /* bit 25 */
-                     reserved: 6;
+                     reserved: 8;
         };
         A_UINT32 afc_ini_params; /* AFC_INI_CONFIG */
     };
@@ -16366,54 +17023,68 @@ typedef struct {
 
 #define HTT_STATS_REG_6G_GET_DEPLOYMENT_TYPE(word) \
     HTT_STATS_GET_FIELD(0x0000FF00, 8, (word))
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_REG_6G_DEPLOYMENT_TYPE_GET(word) \
+    HTT_STATS_REG_6G_GET_DEPLOYMENT_TYPE(word)
 #define HTT_STATS_REG_6G_SET_DEPLOYMENT_TYPE(word,value) \
     HTT_STATS_SET_FIELD(0x0000FF00, 8, (word), (value))
 
 #define HTT_STATS_REG_6G_GET_POWER_MODE_MASK(word) \
     HTT_STATS_GET_FIELD(0x00FF0000, 16, (word))
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_REG_6G_POWER_MODE_MASK_GET(word) \
+    HTT_STATS_REG_6G_GET_POWER_MODE_MASK(word)
 #define HTT_STATS_REG_6G_SET_POWER_MODE_MASK(word,value) \
     HTT_STATS_SET_FIELD(0x00FF0000, 16, (word), (value))
 
-#define HTT_STATS_REG_6G_GET_IS_TX_ALLOWED_BY_AFC(word) \
-    HTT_STATS_GET_FIELD(0x01000000, 24, (word))
-#define HTT_STATS_REG_6G_SET_IS_TX_ALLOWED_BY_AFC(word,value) \
-    HTT_STATS_SET_FIELD(0x01000000, 24, (word), (value))
-
-#define HTT_STATS_REG_6G_GET_IS_TX_ALLOWED_BY_HW_MIN_POWER_CHECK(word) \
-    HTT_STATS_GET_FIELD(0x02000000, 25, (word))
-#define HTT_STATS_REG_6G_SET_IS_TX_ALLOWED_BY_HW_MIN_POWER_CHECK(word,value) \
-    HTT_STATS_SET_FIELD(0x02000000, 25, (word), (value))
-
-
 #define HTT_STATS_REG_6G_GET_SET_TPC_COUNT(word) \
     HTT_STATS_GET_FIELD(0xFFFF, 0, (word))
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_REG_6G_SET_TPC_COUNT_GET(word) \
+    HTT_STATS_REG_6G_GET_SET_TPC_COUNT(word)
 #define HTT_STATS_REG_6G_SET_SET_TPC_COUNT(word,value) \
     HTT_STATS_SET_FIELD(0xFFFF, 0, (word), (value))
 
 #define HTT_STATS_REG_6G_GET_SET_TPC_PASS_COUNT(word) \
     HTT_STATS_GET_FIELD(0xFFFF0000, 16, (word))
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_REG_6G_SET_TPC_PASS_COUNT_GET(word) \
+    HTT_STATS_REG_6G_GET_SET_TPC_PASS_COUNT(word)
 #define HTT_STATS_REG_6G_SET_SET_TPC_PASS_COUNT(word,value) \
     HTT_STATS_SET_FIELD(0xFFFF0000, 16, (word), (value))
 
 #define HTT_STATS_REG_6G_GET_CURRENT_POWER_MODE(word) \
     HTT_STATS_GET_FIELD(0xF, 0, (word))
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_REG_6G_CURRENT_POWER_MODE_GET(word) \
+    HTT_STATS_REG_6G_GET_CURRENT_POWER_MODE(word)
 #define HTT_STATS_REG_6G_SET_CURRENT_POWER_MODE(word,value) \
     HTT_STATS_SET_FIELD(0xF, 0, (word), (value))
 
 #define HTT_STATS_REG_6G_GET_LAST_BEST_POWER_MODE(word) \
     HTT_STATS_GET_FIELD(0xF0, 4, (word))
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_REG_6G_LAST_BEST_POWER_MODE_GET(word) \
+    HTT_STATS_REG_6G_GET_LAST_BEST_POWER_MODE(word)
 #define HTT_STATS_REG_6G_SET_LAST_BEST_POWER_MODE(word,value) \
     HTT_STATS_SET_FIELD(0xF0, 4, (word), (value))
 
 #define HTT_STATS_REG_6G_GET_IS_CURRENT_POWER_MODE_BEST(word) \
     HTT_STATS_GET_FIELD(0x100, 8, (word))
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_REG_6G_IS_CURRENT_MODE_BEST_POWER_MODE_GET(word) \
+    HTT_STATS_REG_6G_GET_IS_CURRENT_POWER_MODE_BEST(word)
 #define HTT_STATS_REG_6G_SET_IS_CURRENT_POWER_MODE_BEST(word,value) \
     HTT_STATS_SET_FIELD(0x100, 8, (word), (value))
 
 #define HTT_STATS_REG_6G_GET_BEST_POWER_MODE_COUNT(word) \
     HTT_STATS_GET_FIELD(0xFFFF0000, 16, (word))
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_REG_6G_BEST_POWER_MODE_COUNT_GET(word) \
+    HTT_STATS_REG_6G_GET_BEST_POWER_MODE_COUNT(word)
 #define HTT_STATS_REG_6G_SET_BEST_POWER_MODE_COUNT(word,value) \
     HTT_STATS_SET_FIELD(0xFFFF0000, 16, (word), (value))
+
 #define HTT_STATS_REG_POWER_INFO_6G_MAX_SUBBANDS 16
 
 
@@ -16470,40 +17141,64 @@ typedef struct {
         psd_power_freq_pair[HTT_STATS_REG_POWER_INFO_6G_MAX_SUBBANDS];
     htt_stats_reg_freq_power_pair_t
         eirp_power_freq_pair[HTT_STATS_REG_POWER_INFO_6G_MAX_SUBBANDS];
-} htt_stats_reg_6g_ch_power_info_tlv;
+} htt_stats_reg_6g_ch_pwr_info_tlv;
+/* preserve old name alias for new name consistent with the tag name */
+typedef htt_stats_reg_6g_ch_pwr_info_tlv
+    htt_stats_reg_6g_ch_power_info_tlv;
 
 #define HTT_STATS_REG_6G_GET_POWER_TYPE(word) \
     HTT_STATS_GET_FIELD(0xFF, 0, (word))
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_REG_6G_CH_PWR_INFO_POWER_TYPE_6GHZ_GET(word) \
+    HTT_STATS_REG_6G_GET_POWER_TYPE(word)
 #define HTT_STATS_REG_6G_SET_POWER_TYPE(word,value) \
     HTT_STATS_SET_FIELD(0xFF, 0, (word), (value))
 
 #define HTT_STATS_REG_6G_GET_EIRP_POWER(word) \
     HTT_STATS_GET_FIELD(0xFF00, 8, (word))
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_REG_6G_CH_PWR_INFO_EIRP_POWER_GET(word) \
+    HTT_STATS_REG_6G_GET_EIRP_POWER(word)
 #define HTT_STATS_REG_6G_SET_EIRP_POWER(word,value) \
     HTT_STATS_SET_FIELD(0xFF00, 8, (word), (value))
 
 #define HTT_STATS_REG_6G_GET_IS_PSD(word) \
     HTT_STATS_GET_FIELD(0x10000, 16, (word))
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_REG_6G_CH_PWR_INFO_IS_PSD_POWER_GET(word) \
+    HTT_STATS_REG_6G_GET_IS_PSD(word)
 #define HTT_STATS_REG_6G_SET_IS_PSD(word,value) \
     HTT_STATS_SET_FIELD(0x10000, 16, (word), (value))
 
 #define HTT_STATS_REG_6G_GET_BOTH_PSD_EIRP_SUPPORT(word) \
     HTT_STATS_GET_FIELD(0x20000, 17, (word))
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_REG_6G_CH_PWR_INFO_BOTH_PSD_EIRP_SUPPORT_GET(word) \
+    HTT_STATS_REG_6G_GET_BOTH_PSD_EIRP_SUPPORT(word)
 #define HTT_STATS_REG_6G_SET_BOTH_PSD_EIRP_SUPPORT(word,value) \
     HTT_STATS_SET_FIELD(0x20000, 17, (word), (value))
 
 #define HTT_STATS_REG_6G_GET_NUM_POWER_LEVELS(word) \
     HTT_STATS_GET_FIELD(0xFF, 0, (word))
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_REG_6G_CH_PWR_INFO_NUM_POWER_LEVELS_GET(word) \
+    HTT_STATS_REG_6G_GET_NUM_POWER_LEVELS(word)
 #define HTT_STATS_REG_6G_SET_NUM_POWER_LEVELS(word,value) \
     HTT_STATS_SET_FIELD(0xFF, 0, (word), (value))
 
 #define HTT_STATS_REG_6G_GET_NUM_PSD_LEVELS(word) \
     HTT_STATS_GET_FIELD(0xFF00, 8, (word))
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_REG_6G_CH_PWR_INFO_NUM_PSD_LEVELS_GET(word) \
+    HTT_STATS_REG_6G_GET_NUM_PSD_LEVELS(word)
 #define HTT_STATS_REG_6G_SET_NUM_PSD_LEVELS(word,value) \
     HTT_STATS_SET_FIELD(0xFF00, 8, (word), (value))
 
 #define HTT_STATS_REG_6G_GET_NUM_EIRP_LEVELS(word) \
     HTT_STATS_GET_FIELD(0xFF0000, 16, (word))
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_REG_6G_CH_PWR_INFO_NUM_EIRP_LEVELS_GET(word) \
+    HTT_STATS_REG_6G_GET_NUM_EIRP_LEVELS(word)
 #define HTT_STATS_REG_6G_SET_NUM_EIRP_LEVELS(word,value) \
     HTT_STATS_SET_FIELD(0xFF0000, 16, (word), (value))
 
@@ -16522,11 +17217,17 @@ typedef struct {
 
 #define HTT_STATS_REG_6G_GET_OOBE_LIMIT_OFFSET(word) \
     HTT_STATS_GET_FIELD(0xFFFF, 0, (word))
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_REG_6G_OOBE_OOBE_LIMIT_OFFSET_GET(word) \
+    HTT_STATS_REG_6G_GET_OOBE_LIMIT_OFFSET(word)
 #define HTT_STATS_REG_6G_SET_OOBE_LIMIT_OFFSET(word,value) \
     HTT_STATS_SET_FIELD(0xFFFF, 0, (word), (value))
 
 #define HTT_STATS_REG_6G_GET_OOBE_LIMIT_PSD(word) \
     HTT_STATS_GET_FIELD(0xFFFF0000, 16, (word))
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_REG_6G_OOBE_OOBE_LIMIT_PSD_GET(word) \
+    HTT_STATS_REG_6G_GET_OOBE_LIMIT_PSD(word)
 #define HTT_STATS_REG_6G_SET_OOBE_LIMIT_PSD(word,value) \
     HTT_STATS_SET_FIELD(0xFFFF0000, 16, (word), (value))
 
@@ -16549,11 +17250,17 @@ typedef struct {
 
 #define HTT_STATS_CTL_GET_REG_RULE_INDEX(word) \
     HTT_STATS_GET_FIELD(0x0000FFFF, 0, (word))
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_CTL_REGRULEINDEX_GET(word) \
+    HTT_STATS_CTL_GET_REG_RULE_INDEX(word)
 #define HTT_STATS_CTL_SET_REG_RULE_INDEX(word,value) \
     HTT_STATS_SET_FIELD(0x0000FFFF, 0, (word), (value))
 
 #define HTT_STATS_CTL_GET_POWER_RULE_INDEX(word) \
     HTT_STATS_GET_FIELD(0x00FF0000, 16, (word))
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_CTL_POWERRULEINDEX_GET(word) \
+    HTT_STATS_CTL_GET_POWER_RULE_INDEX(word)
 #define HTT_STATS_CTL_SET_POWER_RULE_INDEX(word,value) \
     HTT_STATS_SET_FIELD(0x00FF0000, 16, (word), (value))
 
@@ -16576,21 +17283,33 @@ typedef struct {
 
 #define HTT_STATS_ENHANCED_CTL_GET_ENHANCED_CTL_ENABLE(word) \
     HTT_STATS_GET_FIELD(0x00000001, 0, (word))
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_ENHANCED_CTL_ENHANCEDCTLENABLE_GET(word) \
+    HTT_STATS_ENHANCED_CTL_GET_ENHANCED_CTL_ENABLE(word)
 #define HTT_STATS_ENHANCED_CTL_SET_ENHANCED_CTL_ENABLE(word,value) \
     HTT_STATS_SET_FIELD(0x00000001, 0, (word), (value))
 
 #define HTT_STATS_ENHANCED_CTL_GET_DOMAIN_CTL_INDEX(word) \
     HTT_STATS_GET_FIELD(0x0000FF00, 8, (word))
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_ENHANCED_CTL_DOMAINCTLINDEX_GET(word) \
+    HTT_STATS_ENHANCED_CTL_GET_DOMAIN_CTL_INDEX(word)
 #define HTT_STATS_ENHANCED_CTL_SET_DOMAIN_CTL_INDEX(word,value) \
     HTT_STATS_SET_FIELD(0x0000FF00, 8, (word), (value))
 
 #define HTT_STATS_ENHANCED_CTL_GET_ARRAY_GAIN_CAP_CTL_REGION(word) \
     HTT_STATS_GET_FIELD(0x00FF0000, 16, (word))
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_ENHANCED_CTL_ARRAY_GAIN_CAP_CTLREGION_GET(word) \
+    HTT_STATS_ENHANCED_CTL_GET_ARRAY_GAIN_CAP_CTL_REGION(word)
 #define HTT_STATS_ENHANCED_CTL_SET_ARRAY_GAIN_CAP_CTL_REGION(word,value) \
     HTT_STATS_SET_FIELD(0x00FF0000, 16, (word), (value))
 
 #define HTT_STATS_ENHANCED_CTL_GET_EXCEPTION_CTL_REGION(word) \
     HTT_STATS_GET_FIELD(0xFF000000, 24, (word))
+/* provide alias macro that uses preferred naming convention */
+#define HTT_STATS_ENHANCED_CTL_EXCEPTIONCTLREGION_GET(word) \
+    HTT_STATS_ENHANCED_CTL_GET_EXCEPTION_CTL_REGION(word)
 #define HTT_STATS_ENHANCED_CTL_SET_EXCEPTION_CTL_REGION(word,value) \
     HTT_STATS_SET_FIELD(0xFF000000, 24, (word), (value))
 
@@ -16833,6 +17552,8 @@ typedef struct {
     (((_var).channel_context.channel_info & \
       HTT_STATS_WHAL_SELFGEN_CHANNEL_MHZ_M) >> \
      HTT_STATS_WHAL_SELFGEN_CHANNEL_MHZ_S)
+#define HTT_STATS_TX_SELFGEN_RESP_FRAME_STATS_CHANNEL_CONTEXT_MHZ_GET(word) \
+    (((word) >> 0) & 0xffff)
 #define HTT_STATS_WHAL_SELFGEN_CHANNEL_MHZ_SET(_var, _val) \
     do { \
         HTT_CHECK_SET_VAL(HTT_STATS_WHAL_SELFGEN_CHANNEL_MHZ, _val); \
@@ -16844,6 +17565,8 @@ typedef struct {
     (((_var).channel_context.channel_info & \
       HTT_STATS_WHAL_SELFGEN_CHANNEL_FLAGS_M) >> \
      HTT_STATS_WHAL_SELFGEN_CHANNEL_FLAGS_S)
+#define HTT_STATS_TX_SELFGEN_RESP_FRAME_STATS_CHANNEL_CONTEXT_FLAGS_GET(word) \
+    (((word) >> 16) & 0xffff)
 #define HTT_STATS_WHAL_SELFGEN_CHANNEL_FLAGS_SET(_var, _val) \
     do { \
         HTT_CHECK_SET_VAL(HTT_STATS_WHAL_SELFGEN_CHANNEL_FLAGS, _val); \
@@ -16925,6 +17648,26 @@ typedef struct {
     A_UINT32 sq_idx[HTT_STATS_MAX_CHAINS][HTT_STATS_NUM_DPD_CAL_TABLE];
     A_INT32  nmse_chain[HTT_STATS_MAX_CHAINS][HTT_STATS_NUM_DPD_CAL_TABLE];
 } htt_stats_dpd_hw_cal_results_tlv;
+
+typedef struct {
+    htt_tlv_hdr_t tlv_hdr;
+    A_UINT32 mu_rts_tx_success;
+    A_UINT32 mu_rts_tx_fail;
+    A_UINT32 mu_rts_rx_success;
+    A_UINT32 bsrp_ntb_tx_success;
+    A_UINT32 bsrp_ntb_tx_fail;
+    A_UINT32 bsrp_ntb_rx_success;
+    A_UINT32 bsrp_tx_success;
+    A_UINT32 bsrp_tx_fail;
+    A_UINT32 bsrp_rx_success;
+    A_UINT32 npca_tx_bw[HTT_TX_PDEV_STATS_NUM_BN_BW_COUNTERS];
+    A_UINT32 npca_su_tx_punctured_mode[HTT_TX_PDEV_STATS_NUM_PUNCTURED_MODE_COUNTERS];
+    A_UINT32 npca_rx_bw[HTT_TX_PDEV_STATS_NUM_BN_BW_COUNTERS];
+    A_UINT32 npca_su_rx_punctured_mode[HTT_TX_PDEV_STATS_NUM_BN_BW_COUNTERS];
+    A_UINT32 schd_cmd_result_npca[HTT_STATS_MAX_SCH_CMD_RESULT];
+    htt_tx_rate_stats_t npca_per_bw[HTT_TX_PDEV_STATS_NUM_BN_BW_COUNTERS];
+    htt_tx_rate_stats_t npca_per_tx_su_punctured_mode[HTT_TX_PDEV_STATS_NUM_PUNCTURED_MODE_COUNTERS];
+} htt_stats_npca_tlv;
 
 
 #endif /* __HTT_STATS_H__ */

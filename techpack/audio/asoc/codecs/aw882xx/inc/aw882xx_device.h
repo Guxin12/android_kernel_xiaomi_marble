@@ -19,6 +19,8 @@
 #include "aw882xx_monitor.h"
 #include "aw882xx_dsp.h"
 
+// #define AW_DTC_ENABLE
+
 #define AW_VOLUME_STEP_DB	(6 * 2)
 #define AW_REG_NONE		(0xFF)
 #define AW_NAME_MAX		(50)
@@ -108,6 +110,11 @@ enum AW_ALGO_AUTH_ID {
 enum AW_ALGO_AUTH_STATUS {
 	AW_ALGO_AUTH_WAIT = 0,
 	AW_ALGO_AUTH_OK = 1,
+};
+
+enum {
+	AW_DEV_HMUTE_DISABLE = 0,
+	AW_DEV_HMUTE_ENABLE,
 };
 
 struct aw_dev_attr {
@@ -324,12 +331,25 @@ struct algo_ramp_params {
 	int32_t ramp_time;
 };
 
+struct dtc_status {
+	int32_t interval_time;
+	int64_t tma_pre;
+	int64_t tcm_pre;
+};
+
+struct aw_dtc_desc {
+	long long last_time;
+	struct dtc_status dtc;
+};
+
 #define AW_IOCTL_MAGIC_S			'w'
 #define AW_IOCTL_GET_ALGO_AUTH			_IOWR(AW_IOCTL_MAGIC_S, 1, struct algo_auth_data)
 #define AW_IOCTL_SET_ALGO_AUTH			_IOWR(AW_IOCTL_MAGIC_S, 2, struct algo_auth_data)
 
 
 struct aw_device {
+	void *private_data;
+	bool ef_unlocked;
 	int status;
 	unsigned int chip_id;
 	unsigned int monitor_start;
@@ -343,6 +363,10 @@ struct aw_device {
 	unsigned int dither_st;
 	unsigned int txen_st;
 	unsigned int lpc_st;
+	unsigned int rst_list_flag;
+	unsigned int psm_init_st;
+	unsigned int mpd_init_st;
+	unsigned int dsmzth_init_st;
 
 	unsigned char cur_prof;  /*current profile index*/
 	unsigned char set_prof;  /*set profile index*/
@@ -401,13 +425,15 @@ struct aw_device {
 	struct aw_auth_desc auth_desc;
 	struct aw_switch_desc lpc_desc;
 
+	struct aw_dtc_desc dtc_desc;
+
 	struct aw_device_ops ops;
 	struct list_head list_node;
 };
 
 
 /*start/stop*/
-int aw882xx_device_start(struct aw_device *aw_dev);
+int aw882xx_device_start(struct aw_device *aw_dev, bool lock_valid);
 int aw882xx_device_stop(struct aw_device *aw_dev);
 int aw882xx_dev_reg_update(struct aw_device *aw_dev, bool force);
 int aw882xx_dev_get_list_head(struct list_head **head);

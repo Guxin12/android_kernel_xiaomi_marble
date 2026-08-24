@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2011-2021 The Linux Foundation. All rights reserved.
- * Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  *
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
@@ -396,6 +396,17 @@ static inline void ol_txrx_peer_find_add_id(struct ol_txrx_pdev_t *pdev,
 	if (pdev->enable_peer_unmap_conf_support)
 		check_valid = 1;
 
+	/* Get the peer reference from peer_id_obj_map if it present */
+	if (check_valid && peer_id != HTT_INVALID_PEER) {
+		qdf_spin_lock(&pdev->peer_map_unmap_lock);
+		peer = pdev->peer_id_to_obj_map[peer_id].peer;
+		if (peer) {
+			ol_txrx_peer_get_ref(peer, PEER_DEBUG_ID_OL_PEER_MAP);
+			goto inc_ref_cnt;
+		}
+		qdf_spin_unlock(&pdev->peer_map_unmap_lock);
+	}
+
 	/* check if there's already a peer object with this MAC address */
 	peer =
 		ol_txrx_peer_find_hash_find_get_ref(pdev, peer_mac_addr,
@@ -429,6 +440,8 @@ static inline void ol_txrx_peer_find_add_id(struct ol_txrx_pdev_t *pdev,
 		qdf_atomic_init
 		  (&pdev->peer_id_to_obj_map[peer_id].peer_id_ref_cnt);
 	}
+
+inc_ref_cnt:
 	qdf_atomic_inc
 		(&pdev->peer_id_to_obj_map[peer_id].peer_id_ref_cnt);
 

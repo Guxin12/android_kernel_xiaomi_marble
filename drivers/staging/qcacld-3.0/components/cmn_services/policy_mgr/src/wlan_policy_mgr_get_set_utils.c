@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2012-2021 The Linux Foundation. All rights reserved.
- * Copyright (c) 2021-2023 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  *
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
@@ -190,6 +190,45 @@ policy_mgr_get_sta_sap_scc_allowed_on_indoor_chnl(struct wlan_objmgr_psoc *psoc)
 	return pm_ctx->cfg.sta_sap_scc_on_indoor_channel;
 }
 
+bool
+policy_mgr_is_bonded_chan_dfs(struct wlan_objmgr_psoc *psoc,
+			      enum phy_ch_width ch_width,
+			      qdf_freq_t mhz_freq_seg1,
+			      uint32_t chan_freq)
+{
+	bool is_ch_dfs = false;
+	struct policy_mgr_psoc_priv_obj *pm_ctx;
+
+	pm_ctx = policy_mgr_get_context(psoc);
+	if (!pm_ctx) {
+		policy_mgr_err("pm_ctx is NULL");
+		return false;
+	}
+
+	if (ch_width == CH_WIDTH_160MHZ) {
+		if (wlan_reg_get_5g_bonded_channel_state_for_freq(pm_ctx->pdev,
+								  chan_freq,
+								  ch_width)
+				== CHANNEL_STATE_DFS)
+			is_ch_dfs = true;
+	} else if (ch_width == CH_WIDTH_80P80MHZ) {
+		if (wlan_reg_get_channel_state_for_freq(
+					pm_ctx->pdev,
+					chan_freq) ==
+				CHANNEL_STATE_DFS ||
+			wlan_reg_get_channel_state_for_freq(
+					pm_ctx->pdev,
+					mhz_freq_seg1) ==
+				CHANNEL_STATE_DFS)
+			is_ch_dfs = true;
+	} else {
+		if (wlan_reg_is_dfs_for_freq(pm_ctx->pdev, chan_freq))
+			is_ch_dfs = true;
+	}
+
+	return is_ch_dfs;
+}
+
 static bool
 policy_mgr_update_dfs_master_dynamic_enabled(
 	struct wlan_objmgr_psoc *psoc, uint8_t vdev_id)
@@ -312,6 +351,46 @@ QDF_STATUS policy_mgr_get_sap_mandt_chnl(struct wlan_objmgr_psoc *psoc,
 	*sap_mandt_chnl = pm_ctx->cfg.sap_mandatory_chnl_enable;
 
 	return QDF_STATUS_SUCCESS;
+}
+
+bool policy_mgr_get_sap_force_20mhz_for_country_id(
+					struct wlan_objmgr_psoc *psoc,
+					struct wlan_objmgr_vdev *vdev,
+					qdf_freq_t freq)
+{
+	struct policy_mgr_psoc_priv_obj *pm_ctx;
+	bool force_sap_20mhz_cc_id;
+	enum QDF_OPMODE opmode;
+	uint8_t country_code[REG_ALPHA2_LEN + 1] = {0};
+
+	pm_ctx = policy_mgr_get_context(psoc);
+	if (!pm_ctx) {
+		policy_mgr_err("pm_ctx is NULL");
+		return false;
+	}
+
+	if (!vdev) {
+		policy_mgr_err("vdev is NULL");
+		return false;
+	}
+
+	/* Check if device mode is SAP */
+	opmode = wlan_vdev_mlme_get_opmode(vdev);
+	if (opmode != QDF_SAP_MODE)
+		return false;
+
+	force_sap_20mhz_cc_id = pm_ctx->cfg.force_sap_20mhz_cc_id;
+	wlan_reg_get_cc_and_src(psoc, country_code);
+
+	/**
+	 * Force SAP to 20MHz if freq is UNII3 band freq, INI is
+	 * enabled, country is Indonesia and device mode is SAP
+	 */
+	if (wlan_reg_is_5ghz_unii3_chan_freq(freq) &&
+	    !qdf_mem_cmp(country_code, "ID", 2) && force_sap_20mhz_cc_id)
+		return true;
+
+	return false;
 }
 
 QDF_STATUS

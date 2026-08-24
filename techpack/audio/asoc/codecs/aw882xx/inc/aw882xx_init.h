@@ -68,7 +68,7 @@ enum aw_chipid {
 #define AW_MONITOR_INT_10BIT		(1023)  // 1 << 10 -1
 #define AW_MONITOR_TEMP_SIGN_MASK	(~(1<<9))
 #define AW_MONITOR_TEMP_NEG_MASK	(0xFC00)
-
+#define AW_MONITOR_TEMP_SCALE_DEFAULT (1)
 
 /* SYSST (0x01) detail */
 /* UVLS bit 14 (SYSST 0x01) */
@@ -1432,6 +1432,7 @@ enum aw_chipid {
 #define __AW882XX_PID_2329_REG_H__
 #define AW_PID_2329_REG_MAX			(0x80)
 #define AW_PID_2329_MONITOR_FILE	"aw882xx_pid_2329_monitor.bin"
+#define AW_PID_2329_TEMP_SCALE		(2)
 
 #define AW_PID_2329_BSTCTRL1_REG		(0x60)
 #define AW_PID_2329_LPC_REG				(0x59)
@@ -1510,6 +1511,7 @@ enum aw_chipid {
 #define AW_PID_2418_REG_MAX (0x80)
 
 #define AW_PID_2418_MONITOR_FILE	"aw882xx_pid_2418_monitor.bin"
+#define AW_PID_2418_TEMP_SCALE		(2)
 
 #define AW_PID_2418_SYSCTRL2_REG		(0x05)
 #define AW_PID_2418_I2SCTRL3_REG		(0x08)

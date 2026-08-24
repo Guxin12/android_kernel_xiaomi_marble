@@ -1246,7 +1246,6 @@ int cam_flash_i2c_pkt_parser(struct cam_flash_ctrl *fctrl, void *arg)
 	if (!csl_packet->num_cmd_buf) {
 		CAM_ERR(CAM_FLASH, "Invalid num_cmd_buffer = %d",
 			csl_packet->num_cmd_buf);
-		cam_mem_put_cpu_buf(config.packet_handle);
 		rc = -EINVAL;
 		goto end;
 	}
@@ -1483,8 +1482,7 @@ int cam_flash_i2c_pkt_parser(struct cam_flash_ctrl *fctrl, void *arg)
 			if (rc) {
 				CAM_ERR(CAM_FLASH, "cannot apply fire settings rc = %d", rc);
 			}
-			cam_mem_put_cpu_buf(config.packet_handle);
-			return rc;
+			goto end;
 		}
 		break;
 	}
@@ -1510,14 +1508,14 @@ int cam_flash_i2c_pkt_parser(struct cam_flash_ctrl *fctrl, void *arg)
 		if (rc) {
 			CAM_ERR(CAM_FLASH,
 			"Failed in parsing i2c packets");
-			return rc;
+			goto end;
 		}
 
 		/* Apply the settings immediately as it is an EPR Req*/
 		rc = fctrl->func_tbl.apply_setting(fctrl, csl_req_id);
 		if (rc)
 			CAM_ERR(CAM_FLASH, "cannot apply init fire cmd rc = %d", rc);
-		return rc;
+		goto end;
 	}
 	case CAM_FLASH_PACKET_OPCODE_NON_REALTIME_SET_OPS: {
 
@@ -1576,8 +1574,7 @@ int cam_flash_i2c_pkt_parser(struct cam_flash_ctrl *fctrl, void *arg)
 	}
 	case CAM_FLASH_PACKET_OPCODE_STREAM_OFF: {
 		if (fctrl->streamoff_count > 0) {
-			cam_mem_put_cpu_buf(config.packet_handle);
-			return rc;
+			goto end;
 		}
 
 		CAM_DBG(CAM_FLASH, "Received Stream off Settings");
@@ -1595,8 +1592,7 @@ int cam_flash_i2c_pkt_parser(struct cam_flash_ctrl *fctrl, void *arg)
 		if (rc) {
 			CAM_ERR(CAM_FLASH,
 			"Failed in parsing i2c Stream off packets");
-			cam_mem_put_cpu_buf(config.packet_handle);
-			return rc;
+			goto end;
 		}
 		break;
 	}
@@ -1741,7 +1737,7 @@ int cam_flash_pmic_pkt_parser(struct cam_flash_ctrl *fctrl, void *arg)
 	rc = cam_packet_util_validate_cmd_desc(cmd_desc);
 	if (rc) {
 		CAM_ERR(CAM_FLASH, "Invalid cmd desc ret: %d", rc);
-		return rc;
+		goto end;
 	}
 
 	switch (csl_packet->header.op_code & 0xFFFFFF) {
@@ -1893,7 +1889,7 @@ int cam_flash_pmic_pkt_parser(struct cam_flash_ctrl *fctrl, void *arg)
 			cmd_desc->offset);
 		if (!cmd_buf) {
 			rc = -EINVAL;
-			return rc;
+			goto end;
 		}
 		cmn_hdr = (struct common_header *)cmd_buf;
 

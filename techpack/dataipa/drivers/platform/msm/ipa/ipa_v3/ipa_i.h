@@ -1243,7 +1243,6 @@ struct ipa3_sys_context {
 	u32 page_order;
 	bool ext_ioctl_v2;
 	bool common_buff_pool;
-	struct ipa3_sys_context *common_sys;
 	atomic_t page_avilable;
 	u32 napi_sort_page_thrshld_cnt;
 
@@ -1265,6 +1264,7 @@ struct ipa3_sys_context {
 	unsigned int napi_comp_cnt;
 	struct delayed_work freepage_work;
 	struct tasklet_struct tasklet_find_freepage;
+	struct ipa3_sys_context *common_sys;
 	/* ordering is important - other immutable fields go below */
 };
 

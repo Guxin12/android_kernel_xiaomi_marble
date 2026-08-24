@@ -1617,10 +1617,11 @@ int ipa3_ipv6ct_init_cmd(
 		return -EPERM;
 	}
 
-	if (init->table_entries == 0) {
-		IPAERR_RL("Table entries is zero\n");
-		return -EPERM;
-	}
+        if (init->table_entries == 0 ||
+            init->table_entries == U16_MAX) {
+                IPAERR_RL("Table entries is %d\n", init->table_entries);
+                return -EPERM;
+        }
 
 	if (!dev->is_mapped) {
 		IPAERR_RL("attempt to init %s before mmap\n",

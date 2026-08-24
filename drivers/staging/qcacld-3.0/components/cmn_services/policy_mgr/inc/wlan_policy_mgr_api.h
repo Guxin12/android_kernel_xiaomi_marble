@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2012-2021 The Linux Foundation. All rights reserved.
- * Copyright (c) 2021-2023 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  *
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
@@ -276,6 +276,25 @@ bool policy_mgr_get_sta_sap_scc_allowed_on_indoor_chnl(
 uint32_t policy_mgr_get_connected_vdev_band_mask(struct wlan_objmgr_vdev *vdev);
 
 /**
+ * policy_mgr_is_bonded_chan_dfs() - check whether the given bonded
+ * channel configuration falls under DFS
+ * @psoc: pointer to psoc
+ * @ch_width: channel width of the operating channel
+ * @mhz_freq_seg1: center frequency of segment 1; used for 80+80 MHz
+ * @chan_freq: primary/operating channel frequency in MHz
+ *
+ * This API checks whether the given channel or bonded channel span
+ * includes DFS, based on the channel width and frequency segments.
+ *
+ * Return: true if the given bonded channel is DFS, else false.
+ */
+bool
+policy_mgr_is_bonded_chan_dfs(struct wlan_objmgr_psoc *psoc,
+			      enum phy_ch_width ch_width,
+			      qdf_freq_t mhz_freq_seg1,
+			      uint32_t chan_freq);
+
+/**
  * policy_mgr_get_dfs_master_dynamic_enabled() - support dfs master or not
  * on AP interafce when STA+SAP(GO) concurrency
  * @psoc: pointer to psoc
@@ -342,6 +361,28 @@ policy_mgr_get_sta_sap_scc_lte_coex_chnl(struct wlan_objmgr_psoc *psoc,
  */
 QDF_STATUS policy_mgr_get_sap_mandt_chnl(struct wlan_objmgr_psoc *psoc,
 					 uint8_t *sap_mandt_chnl);
+
+/*
+ * policy_mgr_get_sap_force_20mhz_for_country_id() - to find out if SAP
+ * force 20Mhz is enabled and country code is ID
+ * @psoc: pointer to psoc
+ * @vdev: vdev object pointer to check device mode
+ * @freq: freq
+ *
+ * This API is used to find out whether SAP's force 20Mhz support
+ * is enabled. Returns true only when all three conditions are met:
+ * 1. Device mode is SAP (verified via vdev opmode)
+ * 2. Frequency is in 5GHz UNII-3 band
+ * 3. Country code is Indonesia ("ID") and INI gForceSAP20Mhz_cc_id is enabled
+ *
+ * Return: bool
+ */
+bool
+policy_mgr_get_sap_force_20mhz_for_country_id(
+					struct wlan_objmgr_psoc *psoc,
+					struct wlan_objmgr_vdev *vdev,
+					qdf_freq_t freq);
+
 /**
  * policy_mgr_get_indoor_chnl_marking() - to get if indoor channel can be
  *						marked as disabled
@@ -671,19 +712,19 @@ QDF_STATUS policy_mgr_change_mcc_go_beacon_interval(
  *
  * Invoke the callback function to change SAP channel using (E)CSA
  *
- * Return: None
+ * Return: status
  */
-void policy_mgr_change_sap_channel_with_csa(struct wlan_objmgr_psoc *psoc,
+QDF_STATUS policy_mgr_change_sap_channel_with_csa(struct wlan_objmgr_psoc *psoc,
 					    uint8_t vdev_id, uint32_t ch_freq,
 					    uint32_t ch_width, bool forced);
 
 #else
-static inline void policy_mgr_change_sap_channel_with_csa(
+static inline QDF_STATUS policy_mgr_change_sap_channel_with_csa(
 		struct wlan_objmgr_psoc *psoc,
 		uint8_t vdev_id, uint32_t ch_freq,
 		uint32_t ch_width, bool forced)
 {
-
+	return QDF_STATUS_SUCCESS;
 }
 #endif
 

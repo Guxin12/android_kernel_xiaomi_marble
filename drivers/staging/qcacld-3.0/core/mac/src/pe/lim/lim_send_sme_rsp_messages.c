@@ -1742,15 +1742,8 @@ static bool lim_is_csa_channel_allowed(struct mac_context *mac_ctx,
 	return is_allowed;
 }
 
-/**
- * lim_handle_sta_csa_param() - Handle CSA offload param
- * @mac_ctx: pointer to global adapter context
- * @csa_params: csa parameters.
- *
- * Return: None
- */
-static void lim_handle_sta_csa_param(struct mac_context *mac_ctx,
-				     struct csa_offload_params *csa_params)
+void lim_handle_sta_csa_param(struct mac_context *mac_ctx,
+			      struct csa_offload_params *csa_params)
 {
 	struct pe_session *session_entry;
 	tpDphHashNode sta_ds = NULL;

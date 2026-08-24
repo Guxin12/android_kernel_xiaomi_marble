@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2012-2021 The Linux Foundation. All rights reserved.
- * Copyright (c) 2021-2024 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  *
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
@@ -2650,9 +2650,9 @@ policy_mgr_check_bw_with_unsafe_chan_freq(struct wlan_objmgr_psoc *psoc,
  *
  * Invoke the callback function to change SAP channel using (E)CSA
  *
- * Return: None
+ * Return: status
  */
-void policy_mgr_change_sap_channel_with_csa(struct wlan_objmgr_psoc *psoc,
+QDF_STATUS policy_mgr_change_sap_channel_with_csa(struct wlan_objmgr_psoc *psoc,
 					    uint8_t vdev_id, uint32_t ch_freq,
 					    uint32_t ch_width, bool forced)
 {
@@ -2663,7 +2663,7 @@ void policy_mgr_change_sap_channel_with_csa(struct wlan_objmgr_psoc *psoc,
 	pm_ctx = policy_mgr_get_context(psoc);
 	if (!pm_ctx) {
 		policy_mgr_err("Invalid context");
-		return;
+		return QDF_STATUS_E_INVAL;
 	}
 	if (pm_ctx->hdd_cbacks.wlan_get_ap_prefer_conc_ch_params) {
 		ch_params.ch_width = ch_width;
@@ -2686,6 +2686,8 @@ void policy_mgr_change_sap_channel_with_csa(struct wlan_objmgr_psoc *psoc,
 		pm_ctx->hdd_cbacks.sap_restart_chan_switch_cb(psoc,
 				vdev_id, ch_freq, ch_width, forced);
 	}
+
+	return QDF_STATUS_SUCCESS;
 }
 #endif /* FEATURE_WLAN_MCC_TO_SCC_SWITCH */
 

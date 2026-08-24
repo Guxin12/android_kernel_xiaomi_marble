@@ -412,6 +412,16 @@ bool reg_is_24ghz_ch_freq(uint32_t freq);
 bool reg_is_5ghz_ch_freq(uint32_t freq);
 
 /**
+ * reg_is_5ghz_unii3_chan_freq() - Check if the given 5 GHz channel frequency is
+ * uinii3 band frequency or not.
+ * @freq: Channel frequency
+ *
+ * Return: true if given 5 GHz channel frequency is uinii3 band frequency
+ * frequency, else false
+ */
+bool reg_is_5ghz_unii3_chan_freq(qdf_freq_t freq);
+
+/**
  * reg_is_range_overlap_2g() - Check if the given low_freq and high_freq
  * is in the 2G range.
  *

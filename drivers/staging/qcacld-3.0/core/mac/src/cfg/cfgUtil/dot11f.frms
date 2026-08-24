@@ -3864,7 +3864,7 @@ FRAME Beacon                              // C.f. Sec. 7.2.3.1
     OPTIE  TPCReport;
     OPTIE  ERPInfo;
     OPTIE  ExtSuppRates;
-    OPTIE  RSN;
+    OPTIE  RSNOpaque;
     OPTIE  QBSSLoad;
     OPTIE  EDCAParamSet;
     OPTIE  QOSCapsAp;
@@ -4046,7 +4046,7 @@ FRAME BeaconIEs
     OPTIE  TPCReport;
     OPTIE  ERPInfo;
     OPTIE  ExtSuppRates;
-    OPTIE  RSN;
+    OPTIE  RSNOpaque;
     OPTIE  QBSSLoad;
     OPTIE  EDCAParamSet;
     OPTIE  QOSCapsAp;

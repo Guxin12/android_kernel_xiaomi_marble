@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
  * Copyright (c) 2019-2020, The Linux Foundation. All rights reserved.
- * Copyright (c) 2022-2023 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  */
 
 #include "msm_vidc_ar50lt.h"
@@ -580,80 +580,83 @@ static int __power_off_ar50lt_hardware(struct msm_vidc_core *core)
 {
 	int rc = 0;
 
-	if (core->hw_power_control && is_ar50lt_hw_power_collapsed(core)) {
-		d_vpr_h("%s: hardware power control enabled and power collapsed\n", __func__);
-		goto disable_power;
-	}
+	if (core->platform->data.vpu_ver == VENUS_VERSION_AR50LT_V2) {
+		if (core->hw_power_control && is_ar50lt_hw_power_collapsed(core)) {
+			d_vpr_h("%s: hardware power control enabled and power collapsed\n",
+				 __func__);
+			goto disable_power;
+		}
 
-	d_vpr_e("%s: hardware is not power collapsed, doing now\n", __func__);
+		d_vpr_e("%s: hardware is not power collapsed, doing now\n", __func__);
 
-	rc = __write_register(core, VENUS_DMA_SPARE_3, 0x1);
-	if (rc)
-		return rc;
+		rc = __write_register(core, VENUS_DMA_SPARE_3, 0x1);
+		if (rc)
+			return rc;
 
-	rc = __write_register(core, VENUS_SS_VIDEO_NOC_PARTIAL_RESET_REQ, 0x1);
-	if (rc)
-		return rc;
+		rc = __write_register(core, VENUS_SS_VIDEO_NOC_PARTIAL_RESET_REQ, 0x1);
+		if (rc)
+			return rc;
 
-	rc = __read_register_with_poll_timeout(core, VENUS_SS_VIDEO_NOC_PARTIAL_RESET_ACK,
-			BIT(0), 0x1, 2000, 50000);
-	if (rc)
-		d_vpr_h("%s: VENUS_SS_VIDEO_NOC_PARTIAL_RESET_ACK assert failed with %d\n",
-			__func__, rc);
+		rc = __read_register_with_poll_timeout(core, VENUS_SS_VIDEO_NOC_PARTIAL_RESET_ACK,
+				BIT(0), 0x1, 2000, 50000);
+		if (rc)
+			d_vpr_h("%s: VENUS_SS_VIDEO_NOC_PARTIAL_RESET_ACK assert failed with %d\n",
+				__func__, rc);
 
-	rc = __write_register_masked(core, VENUS_WRAPPER_VCODEC0_SW_RESET,
+		rc = __write_register_masked(core, VENUS_WRAPPER_VCODEC0_SW_RESET,
 			NOC_PARTIAL_RESET_SW_RESET, BIT(27));
-	if (rc)
-		return rc;
+		if (rc)
+			return rc;
 
-	rc = __write_register_masked(core, VENUS_WRAPPER_VCODEC0_SW_RESET,
+		rc = __write_register_masked(core, VENUS_WRAPPER_VCODEC0_SW_RESET,
 			0x0, BIT(27));
-	if (rc)
-		return rc;
+		if (rc)
+			return rc;
 
-	rc = __write_register(core, VENUS_SS_VIDEO_NOC_PARTIAL_RESET_REQ, 0);
-	if (rc)
-		return rc;
+		rc = __write_register(core, VENUS_SS_VIDEO_NOC_PARTIAL_RESET_REQ, 0);
+		if (rc)
+			return rc;
 
-	rc = __read_register_with_poll_timeout(core, VENUS_SS_VIDEO_NOC_PARTIAL_RESET_ACK,
+		rc = __read_register_with_poll_timeout(core, VENUS_SS_VIDEO_NOC_PARTIAL_RESET_ACK,
 			BIT(0), 0x0, 2000, 50000);
-	if (rc)
-		d_vpr_h("%s: VENUS_SS_VIDEO_NOC_PARTIAL_RESET_ACK deassert failed with %d\n",
+		if (rc)
+			d_vpr_h("%s:VENUS_SS_VIDEO_NOC_PARTIAL_RESET_ACK deassert failed with %d\n",
 			__func__, rc);
 
-	rc = __write_register(core, VENUS_WRAPPER_VCODEC0_SW_RESET,
-			VENUS_WRAPPER_VCODEC0_SW_RESET___M &
-			(~(DMA_NOC_SW_RESET | DMA_RIF_SW_RESET | NOC_PARTIAL_RESET_SW_RESET)));
-	if (rc)
-		return rc;
+		rc = __write_register(core, VENUS_WRAPPER_VCODEC0_SW_RESET,
+				VENUS_WRAPPER_VCODEC0_SW_RESET___M &
+				(~(DMA_NOC_SW_RESET | DMA_RIF_SW_RESET
+				| NOC_PARTIAL_RESET_SW_RESET)));
+		if (rc)
+			return rc;
 
-	rc = __write_register(core, VENUS_WRAPPER_VCODEC0_SW_RESET, 0);
-	if (rc)
-		return rc;
+		rc = __write_register(core, VENUS_WRAPPER_VCODEC0_SW_RESET, 0);
+		if (rc)
+			return rc;
 
-	rc = __write_register(core, VENUS_WRAPPER_VCODEC0_SW_RESET,
-			VENUS_WRAPPER_VCODEC0_SW_RESET___M &
-			(~(DMA_NOC_SW_RESET | NOC_PARTIAL_RESET_SW_RESET)));
-	if (rc)
-		return rc;
+		rc = __write_register(core, VENUS_WRAPPER_VCODEC0_SW_RESET,
+				VENUS_WRAPPER_VCODEC0_SW_RESET___M &
+				(~(DMA_NOC_SW_RESET | NOC_PARTIAL_RESET_SW_RESET)));
+		if (rc)
+			return rc;
 
-	rc = __write_register(core, VENUS_WRAPPER_VCODEC0_SW_RESET, 0);
-	if (rc)
-		return rc;
+		rc = __write_register(core, VENUS_WRAPPER_VCODEC0_SW_RESET, 0);
+		if (rc)
+			return rc;
 
-	/*
-	 * Reset both sides of 2 ahb2ahb_bridges (TZ and non-TZ)
-	 */
-	rc = __write_register(core, VIDC_CPU_CS_AHB_BRIDGE_SYNC_RESET, 0x3);
-	if (rc)
-		return rc;
-	rc = __write_register(core, VIDC_CPU_CS_AHB_BRIDGE_SYNC_RESET, 0x2);
-	if (rc)
-		return rc;
-	rc = __write_register(core, VIDC_CPU_CS_AHB_BRIDGE_SYNC_RESET, 0x0);
-	if (rc)
-		return rc;
-
+		/*
+		 * Reset both sides of 2 ahb2ahb_bridges (TZ and non-TZ)
+		 */
+		rc = __write_register(core, VIDC_CPU_CS_AHB_BRIDGE_SYNC_RESET, 0x3);
+		if (rc)
+			return rc;
+		rc = __write_register(core, VIDC_CPU_CS_AHB_BRIDGE_SYNC_RESET, 0x2);
+		if (rc)
+			return rc;
+		rc = __write_register(core, VIDC_CPU_CS_AHB_BRIDGE_SYNC_RESET, 0x0);
+		if (rc)
+			return rc;
+	}
 disable_power:
 	/* power down process */
 	rc = __disable_regulator_ar50lt(core, "venus-core0");

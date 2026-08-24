@@ -39,6 +39,7 @@
 
 /*===    Dependency    ===*/
 #define LZ4_HC_STATIC_LINKING_ONLY
+#include "lz4_kern.h"
 #include "lz4hc.h"
 
 /*! HEAPMODE :

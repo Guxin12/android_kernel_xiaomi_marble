@@ -129,3 +129,17 @@ type 'struct ipv6_devconf' changed
   member 'u64 android_kabi_reserved4' was removed
   member 'union { struct { __u8 ra_honor_pio_pflag; __u8 padding4[7]; }; struct { u64 android_kabi_reserved4; }; union { }; }' was added
 
+type 'struct dev_pm_info' changed
+  member 'bool async_in_progress' was added
+
+type 'struct task_struct' changed
+  member 'u64 android_kabi_reserved2' was removed
+  member 'union { struct { unsigned int user_dumpable; }; struct { u64 android_kabi_reserved2; }; union { }; }' was added
+
+type 'struct fscrypt_master_key' changed
+  byte size changed from 832 to 840
+  member changed from 'struct key* mk_users' to 'struct list_head mk_users'
+    type changed from 'struct key*' to 'struct list_head'
+  7 members ('struct list_head mk_decrypted_inodes' .. 'bool mk_ino_hash_key_initialized') changed
+    offset changed by 64
+

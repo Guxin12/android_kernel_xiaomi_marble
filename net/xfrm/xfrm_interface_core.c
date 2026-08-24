@@ -369,7 +369,7 @@ xmit:
 	skb_dst_set(skb, dst);
 	skb->dev = tdev;
 
-	err = dst_output(xi->net, skb->sk, skb);
+	err = dst_output(xi->net, skb_to_full_sk(skb), skb);
 	if (net_xmit_eval(err) == 0) {
 		struct pcpu_sw_netstats *tstats = this_cpu_ptr(dev->tstats);
 
@@ -727,6 +727,9 @@ static int xfrmi_changelink(struct net_device *dev, struct nlattr *tb[],
 	struct xfrm_if *xi = netdev_priv(dev);
 	struct net *net = xi->net;
 	struct xfrm_if_parms p = {};
+
+	if (!rtnl_dev_link_net_capable(dev, net))
+		return -EPERM;
 
 	xfrmi_netlink_parms(data, &p);
 	if (!p.if_id) {

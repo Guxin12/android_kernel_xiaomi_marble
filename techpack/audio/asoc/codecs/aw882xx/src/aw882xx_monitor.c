@@ -458,8 +458,11 @@ static int aw_monitor_work(struct aw_device *aw_dev)
 
 static void aw_monitor_work_func(struct work_struct *work)
 {
+	int hmute_st = -1;
 	struct aw_device *aw_dev  = container_of(work,
 		struct aw_device, monitor_desc.delay_work.work);
+	struct aw882xx *aw882xx = aw_dev->private_data;
+	struct device *dev = aw882xx->dev;
 	struct aw_monitor_cfg *monitor_cfg = &aw_dev->monitor_desc.monitor_cfg;
 	struct aw_monitor_desc *monitor = &aw_dev->monitor_desc;
 
@@ -467,17 +470,29 @@ static void aw_monitor_work_func(struct work_struct *work)
 			aw_dev->monitor_start, monitor_cfg->monitor_status,
 			monitor_cfg->monitor_switch);
 
-	if ((monitor_cfg->monitor_status == AW_MON_CFG_OK) && (aw_dev->monitor_start) &&
-		monitor_cfg->monitor_switch) {
-		if (!aw_get_hmute(aw_dev)) {
-			aw_monitor_work(aw_dev);
-			if (monitor->monitor_mode == AW_MON_KERNEL_MODE) {
-				queue_delayed_work(aw_dev->work_queue,
-					&monitor->delay_work,
-					msecs_to_jiffies(monitor_cfg->monitor_time));
+	pm_stay_awake(dev);
+
+	if (!aw882xx->is_suspend) {
+		if ((monitor_cfg->monitor_status == AW_MON_CFG_OK) && (aw_dev->monitor_start) &&
+			monitor_cfg->monitor_switch) {
+			hmute_st = aw_get_hmute(aw_dev);
+			if (hmute_st == AW_DEV_HMUTE_DISABLE)
+				aw_monitor_work(aw_dev);
+			else {
+				pm_relax(dev);
+				return;
 			}
 		}
 	}
+
+	pm_relax(dev);
+
+	if ((monitor_cfg->monitor_status == AW_MON_CFG_OK) && (aw_dev->monitor_start) &&
+			(monitor_cfg->monitor_switch) && (monitor->monitor_mode == AW_MON_KERNEL_MODE))
+		queue_delayed_work(aw_dev->work_queue,
+			&monitor->delay_work,
+			msecs_to_jiffies(monitor_cfg->monitor_time));
+
 }
 
 static void aw_monitor_check_bop_status(struct aw_device *aw_dev)
@@ -516,6 +531,10 @@ void aw882xx_monitor_start(struct aw_monitor_desc *monitor_desc)
 
 	if (aw_dev->bop_en == AW_BOP_ENABLE)
 		aw_dev_info(aw_dev->dev, "bop status is enable");
+	if ((aw_dev->lpc_st) && (monitor_desc->monitor_data_src == AW_MON_REG_DATA)) {
+		aw_dev_info(aw_dev->dev, "lpc status is enable, monitor can't start");
+		return;
+	}
 
 	monitor_desc->mon_start_flag = true;
 	if (monitor_desc->monitor_mode == AW_MON_KERNEL_MODE) {
@@ -863,6 +882,40 @@ static void aw_monitor_write_data_to_table(struct aw_device *aw_dev,
 
 }
 
+static void aw_monitor_apply_temp_scale(struct aw_device *aw_dev,
+		struct aw_table_info *temp_info)
+{
+	int i;
+	int16_t scale = aw_dev->monitor_desc.reg_temp_scale;
+	int16_t max_max_val = -32768;
+
+	if ((aw_dev->monitor_desc.monitor_data_src == AW_MON_SYS_DATA) || (aw_dev->temp_desc.reg == AW_REG_NONE)) {
+		aw_dev_info(aw_dev->dev, "get temperature from system, not apply scale");
+		return;
+	}
+
+	for (i = 0; i < temp_info->table_num; i++) {
+		temp_info->aw_table[i].min_val *= scale;
+		temp_info->aw_table[i].max_val *= scale;
+		if (temp_info->aw_table[i].max_val > max_max_val)
+			max_max_val = temp_info->aw_table[i].max_val;
+	}
+
+	for (i = 0; i < temp_info->table_num; i++) {
+		if (temp_info->aw_table[i].max_val != max_max_val)
+			temp_info->aw_table[i].max_val += (scale - 1);
+	}
+
+	for (i = 0; i < temp_info->table_num; i++) {
+		aw_dev_info(aw_dev->dev,
+			"scaled min_val:%d, max_val:%d, ipeak:0x%x, gain:0x%x, vmax:0x%x",
+			temp_info->aw_table[i].min_val,
+			temp_info->aw_table[i].max_val,
+			temp_info->aw_table[i].ipeak,
+			temp_info->aw_table[i].gain,
+			temp_info->aw_table[i].vmax);
+	}
+}
 
 static int aw_monitor_parse_temp_data(struct aw_device *aw_dev, uint8_t *data)
 {
@@ -887,6 +940,8 @@ static int aw_monitor_parse_temp_data(struct aw_device *aw_dev, uint8_t *data)
 	temp_info->table_num = monitor_hdr->temp_num;
 	aw_monitor_write_data_to_table(aw_dev, temp_info,
 		&data[monitor_hdr->temp_offset]);
+	aw_monitor_apply_temp_scale(aw_dev, temp_info);
+
 	aw_dev_dbg(aw_dev->dev, "===parse temp end ===");
 	return 0;
 }
@@ -914,6 +969,8 @@ static int aw_monitor_parse_temp_data_v_0_1_1(struct aw_device *aw_dev, uint8_t 
 	temp_info->table_num = monitor_hdr->temp_num;
 	aw_monitor_write_data_to_table(aw_dev, temp_info,
 		&data[monitor_hdr->temp_offset]);
+	aw_monitor_apply_temp_scale(aw_dev, temp_info);
+
 	aw_dev_dbg(aw_dev->dev, "===parse temp end ===");
 	return 0;
 }
@@ -941,6 +998,8 @@ static int aw_monitor_parse_temp_data_v_0_1_2(struct aw_device *aw_dev, uint8_t 
 	temp_info->table_num = monitor_hdr->temp_num;
 	aw_monitor_write_data_to_table(aw_dev, temp_info,
 		&data[monitor_hdr->temp_offset]);
+	aw_monitor_apply_temp_scale(aw_dev, temp_info);
+
 	aw_dev_info(aw_dev->dev, "===parse temp end ===");
 	return 0;
 }

@@ -4429,7 +4429,7 @@ wlan_mlme_get_mgmt_6ghz_rate_support(struct wlan_objmgr_psoc *psoc,
 
 QDF_STATUS
 wlan_mlme_get_status_ring_buffer(struct wlan_objmgr_psoc *psoc,
-				 bool *enable_ring_buffer)
+				 uint32_t *enable_ring_buffer)
 {
 	struct wlan_mlme_psoc_ext_obj *mlme_obj;
 

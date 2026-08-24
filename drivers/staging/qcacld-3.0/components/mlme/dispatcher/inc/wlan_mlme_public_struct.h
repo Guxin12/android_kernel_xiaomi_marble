@@ -1379,7 +1379,7 @@ struct wlan_mlme_generic {
 	uint8_t mgmt_retry_max;
 	bool enable_he_mcs0_for_6ghz_mgmt;
 	bool bmiss_skip_full_scan;
-	bool enable_ring_buffer;
+	uint32_t enable_ring_buffer;
 	bool enable_peer_unmap_conf_support;
 	uint8_t dfs_chan_ageout_time;
 	bool bigtk_support;
