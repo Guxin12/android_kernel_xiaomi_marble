@@ -38,10 +38,6 @@
 #define GOODIX_DEFAULT_CFG_NAME		"goodix_cfg_group.cfg"
 #define GOOIDX_INPUT_PHYS			"goodix_ts/input0"
 
-#ifdef GOODIX_TOUCH_BOOST
-extern void touch_irq_boost(void);
-static bool __read_mostly touch_boost_flag = true;
-#endif
 #if defined(CONFIG_DRM)
 static struct drm_panel *active_panel;
 static void goodix_panel_notifier_callback(enum panel_event_notifier_tag tag,
@@ -782,37 +778,6 @@ static ssize_t goodix_ts_debug_log_store(struct device *dev,
 	return count;
 }
 
-#ifdef GOODIX_TOUCH_BOOST
-/* touch boost show */
-static ssize_t goodix_ts_touch_boost_show(struct device *dev,
-				       struct device_attribute *attr,
-				       char *buf)
-{
-	int r = 0;
-
-	r = snprintf(buf, PAGE_SIZE, "state:%s\n",
-		    touch_boost_flag ?
-		    "enabled" : "disabled");
-
-	return r;
-}
-
-/* touch boost store */
-static ssize_t goodix_ts_touch_boost_store(struct device *dev,
-					struct device_attribute *attr,
-					const char *buf, size_t count)
-{
-	if (!buf || count <= 0)
-		return -EINVAL;
-
-	if (buf[0] != '0')
-		touch_boost_flag = true;
-	else
-		touch_boost_flag = false;
-	return count;
-}
-#endif
-
 static DEVICE_ATTR(driver_info, 0440,
 		driver_info_show, NULL);
 static DEVICE_ATTR(chip_info, 0440,
@@ -831,10 +796,6 @@ static DEVICE_ATTR(esd_info, 0664,
 		goodix_ts_esd_info_show, goodix_ts_esd_info_store);
 static DEVICE_ATTR(debug_log, 0664,
 		goodix_ts_debug_log_show, goodix_ts_debug_log_store);
-#ifdef GOODIX_TOUCH_BOOST
-static DEVICE_ATTR(touch_boost, 0664,
-		goodix_ts_touch_boost_show, goodix_ts_touch_boost_store);
-#endif
 
 static struct attribute *sysfs_attrs[] = {
 	&dev_attr_driver_info.attr,
@@ -846,9 +807,6 @@ static struct attribute *sysfs_attrs[] = {
 	&dev_attr_irq_info.attr,
 	&dev_attr_esd_info.attr,
 	&dev_attr_debug_log.attr,
-#ifdef GOODIX_TOUCH_BOOST
-	&dev_attr_touch_boost.attr,
-#endif
 	NULL,
 };
 
@@ -1400,10 +1358,6 @@ static irqreturn_t goodix_ts_threadirq_func(int irq, void *data)
 
 	ts_esd->irq_status = true;
 	core_data->irq_trig_cnt++;
-#ifdef GOODIX_TOUCH_BOOST
-	if (touch_boost_flag)
-		touch_irq_boost();
-#endif
 	/* inform external module */
 	mutex_lock(&goodix_modules.mutex);
 	list_for_each_entry_safe(ext_module, next,
