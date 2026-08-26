@@ -96,10 +96,7 @@ bool rtw_is_cckratesonly_included(u8 *rate)
 int rtw_check_network_type(unsigned char *rate, int ratelen, int channel)
 {
 	if (channel > 14) {
-		if (rtw_is_cckrates_included(rate))
-			return WIRELESS_INVALID;
-		else
-			return WIRELESS_11A;
+		return WIRELESS_INVALID;
 	} else { /*  could be pure B, pure G, or B/G */
 		if (rtw_is_cckratesonly_included(rate))
 			return WIRELESS_11B;
@@ -275,10 +272,6 @@ void rtw_set_supported_rate(u8 *SupportedRates, uint mode)
 		break;
 
 	case WIRELESS_11G:
-	case WIRELESS_11A:
-	case WIRELESS_11_5N:
-	case WIRELESS_11A_5N:/* Todo: no basic rate for ofdm ? */
-	case WIRELESS_11_5AC:
 		memcpy(SupportedRates, WIFI_OFDMRATES, IEEE80211_NUM_OFDM_RATESLEN);
 		break;
 
@@ -336,14 +329,7 @@ int rtw_generate_ie(struct registry_priv *pregistrypriv)
 	ie = rtw_set_ie(ie, _SSID_IE_, pdev_network->Ssid.SsidLength, pdev_network->Ssid.Ssid, &sz);
 
 	/* supported rates */
-	if (pregistrypriv->wireless_mode == WIRELESS_11ABGN) {
-		if (pdev_network->Configuration.DSConfig > 14)
-			wireless_mode = WIRELESS_11A_5N;
-		else
-			wireless_mode = WIRELESS_11BG_24N;
-	} else {
-		wireless_mode = pregistrypriv->wireless_mode;
-	}
+	wireless_mode = pregistrypriv->wireless_mode;
 
 	rtw_set_supported_rate(pdev_network->SupportedRates, wireless_mode);
 
@@ -368,8 +354,8 @@ int rtw_generate_ie(struct registry_priv *pregistrypriv)
 	}
 
 	/* HT Cap. */
-	if (((pregistrypriv->wireless_mode&WIRELESS_11_5N) || (pregistrypriv->wireless_mode&WIRELESS_11_24N))
-		&& (pregistrypriv->ht_enable == true)) {
+	if ((pregistrypriv->wireless_mode & WIRELESS_11_24N) &&
+	    (pregistrypriv->ht_enable == true)) {
 		/* todo: */
 	}
 
@@ -393,6 +379,9 @@ unsigned char *rtw_get_wpa_ie(unsigned char *pie, int *wpa_ie_len, int limit)
 		pbuf = rtw_get_ie(pbuf, _WPA_IE_ID_, &len, limit_new);
 
 		if (pbuf) {
+			if (len < 6)
+				goto check_next_ie;
+
 			/* check if oui matches... */
 			if (memcmp((pbuf + 2), wpa_oui_type, sizeof(wpa_oui_type))) {
 				goto check_next_ie;

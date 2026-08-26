@@ -3462,7 +3462,7 @@ int dsi_ctrl_transfer_prepare(struct dsi_ctrl *dsi_ctrl, u32 flags)
 	rc = dsi_ctrl->clk_cb.dsi_clk_cb(dsi_ctrl->clk_cb.priv, clk_info);
 	if (rc) {
 		DSI_CTRL_ERR(dsi_ctrl, "failed to enable clocks\n");
-		goto error_disable_gdsc;
+		goto error_disable_clks;
 	}
 
 	/* Wait till any previous ASYNC waits are scheduled and completed */
@@ -3489,7 +3489,6 @@ error_disable_clks:
 	clk_info.clk_state = DSI_CLK_OFF;
 	(void)dsi_ctrl->clk_cb.dsi_clk_cb(dsi_ctrl->clk_cb.priv, clk_info);
 
-error_disable_gdsc:
 	(void)pm_runtime_put_sync(dsi_ctrl->drm_dev->dev);
 
 	return rc;
