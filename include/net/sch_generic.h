@@ -87,7 +87,6 @@ struct Qdisc {
 	struct hlist_node       hash;
 	u32			handle;
 	u32			parent;
-	int			depth;
 
 	struct netdev_queue	*dev_queue;
 
