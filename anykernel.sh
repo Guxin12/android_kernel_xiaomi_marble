@@ -45,6 +45,8 @@ if ${BOOTMODE}; then
 fi
 
 SHA1_STOCK="0"
+SHA1_KSU="0"
+SHA1_SUSFS="0"
 
 KEYCODE_UP=42
 KEYCODE_DOWN=41
@@ -563,11 +565,6 @@ fi
 
 unset vendor_dlkm_modules_options_file
 
-# ==================================================
-# KPM 内核模块补丁
-# ==================================================
-
-# 询问用户是否启用 KPM
 ui_print " "
 ui_print "=========================================="
 ui_print "        $_LANG_KPM_16"
@@ -603,7 +600,6 @@ if $enable_kpm; then
     attempt=1
     patch_success=false
 
-    # 验证必要文件
     if [ ! -f "$patch_bin" ] || [ ! -f "$original_image" ]; then
         abort "! $_LANG_KPM_4 $_LANG_KPM_5 $_LANG_FAILED"
     fi
@@ -613,7 +609,6 @@ if $enable_kpm; then
         ui_print "${_LANG_KPM_6} [$attempt/$max_retries]"
         ui_print "$_LANG_KPM_7"
 
-        # 创建临时目录
         temp_dir="/data/local/tmp/kpm_patch_$(date +%Y%m%d_%H%M%S)_$$"
         if ! mkdir -p "$temp_dir"; then
             ui_print "! ${_LANG_KPM_8}: $temp_dir"
@@ -624,7 +619,6 @@ if $enable_kpm; then
 
         ui_print "- ${_LANG_KPM_9}: $(basename "$temp_dir")"
 
-        # 复制文件
         if ! cp "$original_image" "$temp_dir/Image" || ! cp "$patch_bin" "$temp_dir/patch_android"; then
             ui_print "! ${_LANG_FAILED_TO_EXTRACT}"
             rm -rf "$temp_dir"
@@ -635,7 +629,6 @@ if $enable_kpm; then
 
         chmod +x "$temp_dir/patch_android"
 
-        # 执行补丁工具
         ui_print "- $_LANG_KPM_1"
         cd "$temp_dir" || {
             rm -rf "$temp_dir"
@@ -655,7 +648,6 @@ if $enable_kpm; then
             done
         fi
 
-        # 检查生成文件
         if [ ! -f "$temp_dir/oImage" ]; then
             ui_print "! $_LANG_KPM_11"
             rm -rf "$temp_dir"
@@ -664,7 +656,6 @@ if $enable_kpm; then
             continue
         fi
 
-        # 替换原始镜像
         if mv "$temp_dir/oImage" "$temp_dir/Image" && \
            cp "$temp_dir/Image" "$original_image"; then
             ui_print "- $_LANG_KPM_12"
@@ -693,9 +684,7 @@ if $enable_kpm; then
         abort "$_LANG_KPM_19_4"
     fi
 fi
-# ===== End KPM =====
 
-# ===== Optional: perfmgr.ko 来自酷安@AviderMin=====
 include_perfmgr=false
 
 if [ -f "${home}/_extra_modules/perfmgr.ko" ]; then
@@ -716,7 +705,6 @@ else
 fi
 
 if ${include_perfmgr}; then
-    # 确保目标目录存在 / Ensure target directory exists
     mkdir -p "${home}/_vendor_boot_modules"
 
     # 复制 perfmgr.ko 到 vendor_boot_modules / Copy perfmgr.ko to vendor_boot_modules
@@ -740,7 +728,6 @@ if ${include_perfmgr}; then
 
     ui_print "- perfmgr.ko $_LANG_SELECT_PERFMGR_6"
 fi
-# ===== End perfmgr.ko =====
 
 # Disguised the GPU model as Adreno730v3
 disguised_adreno730=false
