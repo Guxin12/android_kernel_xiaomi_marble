@@ -45,6 +45,8 @@ if ${BOOTMODE}; then
 fi
 
 SHA1_STOCK="0"
+PATCH_SHA1_KSU="0"
+PATCH_SHA1_SUSFS="0"
 SHA1_KSU="0"
 SHA1_SUSFS="0"
 
@@ -81,17 +83,31 @@ is_mounted() { mount | grep -q " $1 "; }
 sha1() { ${bin}/magiskboot sha1 "$1"; }
 
 apply_patch() {
-	# apply_patch <src_path> <src_sha1> <dst_sha1> <bs_patch>
+	# apply_patch <src_path> <src_sha1> <dst_sha1> <bs_patch> <patch_sha1>
 	local src_path=$1
 	local src_sha1=$2
 	local dst_sha1=$3
 	local bs_patch=$4
-	local file_sha1
+	local expected_patch_sha1=$5
+	local file_sha1 patch_sha1
 
-	file_sha1=$(sha1 $src_path)
+	file_sha1=$(sha1 "$src_path")
 	[ "$file_sha1" == "$dst_sha1" ] && return 0
-	[ "$file_sha1" == "$src_sha1" ] && ${bin}/hpatchz -f "$src_path" "$bs_patch" "$src_path" 
-	[ "$(sha1 $src_path)" == "$dst_sha1" ] || abort "! $_LANG_FAILED_TO_PATCH $src_path!"
+
+	if [ "$file_sha1" != "$src_sha1" ]; then
+		abort "! $_LANG_FAILED_TO_PATCH $src_path!"
+	fi
+
+	if [ -n "$expected_patch_sha1" ] && [ "$expected_patch_sha1" != "0" ]; then
+		patch_sha1=$(sha1 "$bs_patch")
+		if [ "$patch_sha1" != "$expected_patch_sha1" ]; then
+			abort "! $_LANG_FAILED_TO_PATCH $bs_patch!"
+		fi
+	fi
+
+	${bin}/hpatchz -f "$src_path" "$bs_patch" "$src_path" || abort "! $_LANG_FAILED_TO_PATCH $src_path!"
+
+	[ "$(sha1 "$src_path")" == "$dst_sha1" ] || abort "! $_LANG_FAILED_TO_PATCH $src_path!"
 }
 
 get_keycheck_result() {
@@ -362,6 +378,80 @@ if ${bin}/modinfo /vendor_dlkm/lib/modules/xiaomi_touch.ko | grep -qi lineage; t
 	is_lineageos_xiaomi_touch=true
 fi
 $BOOTMODE || umount /vendor_dlkm
+
+# KernelSU
+[ -f ${split_img}/ramdisk.cpio ] || abort "! $_LANG_CANNOT_FOUND ramdisk.cpio!"
+${bin}/magiskboot cpio ${split_img}/ramdisk.cpio test
+magisk_patched=$?
+exist_ksu_lkm=false
+if ${bin}/magiskboot cpio ${split_img}/ramdisk.cpio "exists kernelsu.ko"; then
+	${bin}/magiskboot cpio ${split_img}/ramdisk.cpio "extract kernelsu.ko ${home}/kernelsu.ko" || \
+		abort "! $_LANG_FAILED_TO_EXTRACT kernelsu.ko!"
+	if strings ${home}/kernelsu.ko | grep -q 'clang version 12.0.5'; then
+		exist_ksu_lkm=true
+	else
+		ui_print "- $_LANG_DETECTED_INCOMPATIBLE_KSU_LKM"
+		ui_print "- $_LANG_UNINSTALLING_KSU_LKM"
+		# TODO: chmod init
+		if ${bin}/magiskboot cpio ${split_img}/ramdisk.cpio \
+		    "rm kernelsu.ko" \
+		    "rm init" \
+		    "mv init.real init"; then
+			ui_print "- $_LANG_UNINSTALLING_KSU_LKM_SUCCESS"
+			sleep 3
+		else
+			abort "! $_LANG_UNINSTALLING_KSU_LKM_FAILED"
+		fi
+	fi
+	rm ${home}/kernelsu.ko
+fi
+if ${exist_ksu_lkm}; then
+	ui_print "- $_LANG_DETECTED_COMPATIBLE_KSU_LKM_PROMPT_1"
+	ui_print "- $_LANG_DETECTED_COMPATIBLE_KSU_LKM_PROMPT_2"
+	if [ "$magisk_patched" -eq 1 ]; then
+		ui_print "- $_LANG_DETECTED_COMPATIBLE_KSU_LKM_WITH_MAGISK_PROMPT_1"
+		ui_print "- $_LANG_DETECTED_COMPATIBLE_KSU_LKM_WITH_MAGISK_PROMPT_2"
+		sleep 3
+	fi
+elif keycode_select \
+	"$_LANG_SELECT_KSU" \
+	" " \
+	"$_LANG_NOTES" \
+	"$_LANG_SELECT_KSU_PROMPT_1" \
+	"$_LANG_SELECT_KSU_PROMPT_2"; then
+	if [ "$magisk_patched" -eq 1 ]; then
+		ui_print "- $_LANG_DETECTED_KSU_IMG_WITH_MAGISK_PROMPT_1"
+		ui_print "- $_LANG_DETECTED_KSU_IMG_WITH_MAGISK_PROMPT_2"
+		ui_print "- $_LANG_DETECTED_KSU_IMG_WITH_MAGISK_PROMPT_3"
+		ui_print " "
+		sleep 3
+	fi
+	use_patch=${home}/bs_patches/ksu.p
+	target_sha1="$SHA1_KSU"
+	target_patch_sha1="$PATCH_SHA1_KSU"
+	if [ -f ${home}/bs_patches/susfs.p ]; then
+		if keycode_select \
+			"$_LANG_SELECT_SUSFS" \
+			" " \
+			"$_LANG_NOTES" \
+			"$_LANG_SELECT_SUSFS_PROMPT_1" \
+			"$_LANG_SELECT_SUSFS_PROMPT_2"; then
+			use_patch=${home}/bs_patches/susfs.p
+			target_sha1="$SHA1_SUSFS"
+			target_patch_sha1="$PATCH_SHA1_SUSFS"
+		fi
+	else
+		ui_print "- $_LANG_NO_SUSFS_SUPPORT_PROMPT_1"
+		ui_print "  $_LANG_NO_SUSFS_SUPPORT_PROMPT_2"
+		ui_print " "
+		sleep 3
+	fi
+	ui_print "- $_LANG_PATCHING Kernel image..."
+	apply_patch ${home}/Image "$SHA1_STOCK" "$target_sha1" "$use_patch" "$target_patch_sha1"
+
+	unset use_patch target_sha1 target_patch_sha1
+fi
+unset exist_ksu_lkm magisk_patched
 
 ui_print " "
 ui_print "- $_LANG_UNPACKING_KERNEL_MODULES"
@@ -971,6 +1061,9 @@ rm ${home}/Image
 rm ${home}/boot.img
 rm ${home}/boot-new.img
 rm ${home}/vendor_dlkm.img
+
+unset magisk_patched
+rm ${home}/magisk_patched
 
 touch ${home}/rollback_if_abort_flag
 
