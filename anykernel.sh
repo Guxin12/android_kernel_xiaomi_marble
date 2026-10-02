@@ -37,12 +37,19 @@ split_boot # skip ramdisk unpack
 
 ########## FLASH BOOT & VENDOR_DLKM START ##########
 
-. ${home}/langs/en.lang
-if ${BOOTMODE}; then
-	case "$(getprop persist.sys.locale)" in
-		zh*) . ${home}/langs/cn.lang;;
-	esac
-fi
+# get language
+for p in persist.sys.language ro.product.locale; do
+    SYSTEM_LANG=$(getprop "$p" 2>/dev/null)
+    case "$SYSTEM_LANG" in ""|null) SYSTEM_LANG= ;; *) break ;; esac
+done
+[ -n "$SYSTEM_LANG" ] || SYSTEM_LANG=$(settings get system system_locales 2>/dev/null)
+
+SYSTEM_LANG=$(printf '%s' "$SYSTEM_LANG" | tr -d '"[]' | sed 's/[,;].*//')
+
+. "$home/langs/en.lang"
+case "$SYSTEM_LANG" in
+    zh*|*Hant*|*Hans*) . "$home/langs/cn.lang" ;;
+esac
 
 SHA1_STOCK="0"
 PATCH_SHA1_KSU="0"
@@ -405,53 +412,89 @@ if ${bin}/magiskboot cpio ${split_img}/ramdisk.cpio "exists kernelsu.ko"; then
 	fi
 	rm ${home}/kernelsu.ko
 fi
+do_patch=false
+susfs_enabled=false
 if ${exist_ksu_lkm}; then
 	ui_print "- $_LANG_DETECTED_COMPATIBLE_KSU_LKM_PROMPT_1"
-	ui_print "- $_LANG_DETECTED_COMPATIBLE_KSU_LKM_PROMPT_2"
 	if [ "$magisk_patched" -eq 1 ]; then
 		ui_print "- $_LANG_DETECTED_COMPATIBLE_KSU_LKM_WITH_MAGISK_PROMPT_1"
 		ui_print "- $_LANG_DETECTED_COMPATIBLE_KSU_LKM_WITH_MAGISK_PROMPT_2"
-		sleep 3
-	fi
-elif keycode_select \
-	"$_LANG_SELECT_KSU" \
-	" " \
-	"$_LANG_NOTES" \
-	"$_LANG_SELECT_KSU_PROMPT_1" \
-	"$_LANG_SELECT_KSU_PROMPT_2"; then
-	if [ "$magisk_patched" -eq 1 ]; then
-		ui_print "- $_LANG_DETECTED_KSU_IMG_WITH_MAGISK_PROMPT_1"
-		ui_print "- $_LANG_DETECTED_KSU_IMG_WITH_MAGISK_PROMPT_2"
-		ui_print "- $_LANG_DETECTED_KSU_IMG_WITH_MAGISK_PROMPT_3"
 		ui_print " "
 		sleep 3
 	fi
-	use_patch=${home}/bs_patches/ksu.p
-	target_sha1="$SHA1_KSU"
-	target_patch_sha1="$PATCH_SHA1_KSU"
-	if [ -f ${home}/bs_patches/susfs.p ]; then
-		if keycode_select \
-			"$_LANG_SELECT_SUSFS" \
-			" " \
-			"$_LANG_NOTES" \
-			"$_LANG_SELECT_SUSFS_PROMPT_1" \
-			"$_LANG_SELECT_SUSFS_PROMPT_2"; then
-			use_patch=${home}/bs_patches/susfs.p
-			target_sha1="$SHA1_SUSFS"
-			target_patch_sha1="$PATCH_SHA1_SUSFS"
+	if keycode_select \
+		"$_LANG_SELECT_CONVERT_TO_BUILTIN" \
+		" " \
+		"$_LANG_NOTES" \
+		"$_LANG_SELECT_CONVERT_TO_BUILTIN_PROMPT_1" \
+		"$_LANG_SELECT_CONVERT_TO_BUILTIN_PROMPT_2"; then
+		ui_print "- $_LANG_UNINSTALLING_KSU_LKM"
+		if ${bin}/magiskboot cpio ${split_img}/ramdisk.cpio \
+		    "rm kernelsu.ko" \
+		    "rm init" \
+		    "mv init.real init"; then
+			ui_print "- $_LANG_UNINSTALLING_KSU_LKM_SUCCESS"
+			sleep 3
+		else
+			abort "! $_LANG_UNINSTALLING_KSU_LKM_FAILED"
 		fi
+		do_patch=true
 	else
-		ui_print "- $_LANG_NO_SUSFS_SUPPORT_PROMPT_1"
-		ui_print "  $_LANG_NO_SUSFS_SUPPORT_PROMPT_2"
-		ui_print " "
+		ui_print "- $_LANG_DETECTED_COMPATIBLE_KSU_LKM_PROMPT_2"
 		sleep 3
 	fi
-	ui_print "- $_LANG_PATCHING Kernel image..."
-	apply_patch ${home}/Image "$SHA1_STOCK" "$target_sha1" "$use_patch" "$target_patch_sha1"
-
-	unset use_patch target_sha1 target_patch_sha1
+else
+	do_patch=true
 fi
-unset exist_ksu_lkm magisk_patched
+
+if [ "$do_patch" = true ]; then
+	if keycode_select \
+		"$_LANG_SELECT_KSU" \
+		" " \
+		"$_LANG_NOTES" \
+		"$_LANG_SELECT_KSU_PROMPT_1" \
+		"$_LANG_SELECT_KSU_PROMPT_2"; then
+		if [ "$magisk_patched" -eq 1 ]; then
+			ui_print "- $_LANG_DETECTED_KSU_IMG_WITH_MAGISK_PROMPT_1"
+			ui_print "- $_LANG_DETECTED_KSU_IMG_WITH_MAGISK_PROMPT_2"
+			ui_print "- $_LANG_DETECTED_KSU_IMG_WITH_MAGISK_PROMPT_3"
+			ui_print " "
+			sleep 3
+		fi
+		use_patch=${home}/bs_patches/ksu.p
+		target_sha1="$SHA1_KSU"
+		target_patch_sha1="$PATCH_SHA1_KSU"
+		if [ -f ${home}/bs_patches/susfs.p ]; then
+			if keycode_select \
+				"$_LANG_SELECT_SUSFS" \
+				" " \
+				"$_LANG_NOTES" \
+				"$_LANG_SELECT_SUSFS_PROMPT_1" \
+				"$_LANG_SELECT_SUSFS_PROMPT_2"; then
+				use_patch=${home}/bs_patches/susfs.p
+				target_sha1="$SHA1_SUSFS"
+				target_patch_sha1="$PATCH_SHA1_SUSFS"
+				susfs_enabled=true
+			fi
+		else
+			ui_print "- $_LANG_NO_SUSFS_SUPPORT_PROMPT_1"
+			ui_print "  $_LANG_NO_SUSFS_SUPPORT_PROMPT_2"
+			ui_print " "
+			sleep 3
+		fi
+		ui_print "- $_LANG_PATCHING Kernel image..."
+		apply_patch ${home}/Image "$SHA1_STOCK" "$target_sha1" "$use_patch" "$target_patch_sha1"
+
+		unset use_patch target_sha1 target_patch_sha1
+	else
+		if ${exist_ksu_lkm}; then
+			ui_print "- $_LANG_DETECTED_COMPATIBLE_KSU_LKM_PROMPT_2"
+		fi
+		sleep 3
+	fi
+fi
+
+unset exist_ksu_lkm magisk_patched do_patch
 
 ui_print " "
 ui_print "- $_LANG_UNPACKING_KERNEL_MODULES"
@@ -655,126 +698,127 @@ fi
 
 unset vendor_dlkm_modules_options_file
 
-ui_print " "
-ui_print "=========================================="
-ui_print "        $_LANG_KPM_16"
-ui_print "=========================================="
-ui_print " "
-ui_print "$_LANG_KPM_17"
-ui_print "$_LANG_KPM_17_1"
-ui_print "$_LANG_KPM_17_2"
-ui_print "$_LANG_KPM_17_3"
-ui_print " "
-
-enable_kpm=false
-if keycode_select \
-    "$_LANG_KPM_18" \
-    " " \
-    "$_LANG_NOTES" \
-    "$_LANG_KPM_18_1" \
-    "$_LANG_KPM_18_2"; then
-    enable_kpm=true
-else
-    ui_print "$_LANG_KPM_18_3"
-    ui_print "$_LANG_KPM_19"
-fi
-
-if $enable_kpm; then
+if ${susfs_enabled}; then
     ui_print " "
-    ui_print "$_LANG_KPM_19_1"
     ui_print "=========================================="
-
-    patch_bin="${bin}/patch_android"
-    original_image="${home}/Image"
-    max_retries=3
-    attempt=1
-    patch_success=false
-
-    if [ ! -f "$patch_bin" ] || [ ! -f "$original_image" ]; then
-        abort "! $_LANG_KPM_4 $_LANG_KPM_5 $_LANG_FAILED"
-    fi
-
-    while [ $attempt -le $max_retries ] && ! $patch_success; do
-        ui_print " "
-        ui_print "${_LANG_KPM_6} [$attempt/$max_retries]"
-        ui_print "$_LANG_KPM_7"
-
-        temp_dir="/data/local/tmp/kpm_patch_$(date +%Y%m%d_%H%M%S)_$$"
-        if ! mkdir -p "$temp_dir"; then
-            ui_print "! ${_LANG_KPM_8}: $temp_dir"
-            attempt=$((attempt + 1))
-            sleep 2
-            continue
-        fi
-
-        ui_print "- ${_LANG_KPM_9}: $(basename "$temp_dir")"
-
-        if ! cp "$original_image" "$temp_dir/Image" || ! cp "$patch_bin" "$temp_dir/patch_android"; then
-            ui_print "! ${_LANG_FAILED_TO_EXTRACT}"
-            rm -rf "$temp_dir"
-            attempt=$((attempt + 1))
-            sleep 2
-            continue
-        fi
-
-        chmod +x "$temp_dir/patch_android"
-
-        ui_print "- $_LANG_KPM_1"
-        cd "$temp_dir" || {
-            rm -rf "$temp_dir"
-            attempt=$((attempt + 1))
-            sleep 2
-            continue
-        }
-
-        output=$("$temp_dir/patch_android" 2>&1)
-        exit_code=$?
-
-        ui_print "- ${_LANG_KPM_2}: $exit_code"
-        if [ $exit_code -ne 0 ] && [ -n "$output" ]; then
-            ui_print "! $_LANG_KPM_3"
-            echo "$output" | while IFS= read -r line; do
-                ui_print "   $line"
-            done
-        fi
-
-        if [ ! -f "$temp_dir/oImage" ]; then
-            ui_print "! $_LANG_KPM_11"
-            rm -rf "$temp_dir"
-            attempt=$((attempt + 1))
-            sleep 2
-            continue
-        fi
-
-        if mv "$temp_dir/oImage" "$temp_dir/Image" && \
-           cp "$temp_dir/Image" "$original_image"; then
-            ui_print "- $_LANG_KPM_12"
-            patch_success=true
-        else
-            ui_print "! $_LANG_KPM_13"
-        fi
-
-        rm -rf "$temp_dir"
-
-        if ! $patch_success; then
-            attempt=$((attempt + 1))
-            sleep 2
-        fi
-    done
-
-    if $patch_success; then
-        ui_print " "
-        ui_print "$_LANG_KPM_19_2"
-        ui_print "=========================================="
+    ui_print "        $_LANG_KPM_16"
+    ui_print "=========================================="
+    ui_print " "
+    ui_print "$_LANG_KPM_17"
+    ui_print "$_LANG_KPM_17_1"
+    ui_print "$_LANG_KPM_17_2"
+    ui_print "$_LANG_KPM_17_3"
+    ui_print " "
+    
+    enable_kpm=false
+    if keycode_select \
+        "$_LANG_KPM_18" \
+        " " \
+        "$_LANG_NOTES" \
+        "$_LANG_KPM_18_1" \
+        "$_LANG_KPM_18_2"; then
+        enable_kpm=true
     else
+        ui_print "$_LANG_KPM_18_3"
+        ui_print "$_LANG_KPM_19"
+    fi
+    
+    if $enable_kpm; then
         ui_print " "
-        ui_print "! ${_LANG_KPM_15} $max_retries ${_LANG_KPM_15_1}"
-        ui_print "! $_LANG_KPM_19_3"
+        ui_print "$_LANG_KPM_19_1"
         ui_print "=========================================="
-        abort "$_LANG_KPM_19_4"
+    
+        patch_bin="${bin}/patch_android"
+        original_image="${home}/Image"
+        max_retries=3
+        attempt=1
+        patch_success=false
+    
+        if [ ! -f "$patch_bin" ] || [ ! -f "$original_image" ]; then
+            abort "! $_LANG_KPM_4 $_LANG_KPM_5 $_LANG_FAILED"
+        fi
+    
+        while [ $attempt -le $max_retries ] && ! $patch_success; do
+            ui_print " "
+            ui_print "${_LANG_KPM_6} [$attempt/$max_retries]"
+            ui_print "$_LANG_KPM_7"
+    
+            temp_dir="/data/local/tmp/kpm_patch_$(date +%Y%m%d_%H%M%S)_$$"
+            if ! mkdir -p "$temp_dir"; then
+                ui_print "! ${_LANG_KPM_8}: $temp_dir"
+                attempt=$((attempt + 1))
+                sleep 2
+                continue
+            fi
+    
+            ui_print "- ${_LANG_KPM_9}: $(basename "$temp_dir")"
+    
+            if ! cp "$original_image" "$temp_dir/Image" || ! cp "$patch_bin" "$temp_dir/patch_android"; then
+                ui_print "! ${_LANG_FAILED_TO_EXTRACT}"
+                rm -rf "$temp_dir"
+                attempt=$((attempt + 1))
+                sleep 2
+                continue
+            fi
+    
+            chmod +x "$temp_dir/patch_android"
+    
+            ui_print "- $_LANG_KPM_1"
+            cd "$temp_dir" || {
+                rm -rf "$temp_dir"
+                attempt=$((attempt + 1))
+                sleep 2
+                continue
+            }
+    
+            output=$("$temp_dir/patch_android" 2>&1)
+            exit_code=$?
+    
+            ui_print "- ${_LANG_KPM_2}: $exit_code"
+            if [ $exit_code -ne 0 ] && [ -n "$output" ]; then
+                ui_print "! $_LANG_KPM_3"
+                echo "$output" | while IFS= read -r line; do
+                    ui_print "   $line"
+                done
+            fi
+    
+            if [ ! -f "$temp_dir/oImage" ]; then
+                ui_print "! $_LANG_KPM_11"
+                rm -rf "$temp_dir"
+                attempt=$((attempt + 1))
+                sleep 2
+                continue
+            fi
+    
+            if mv "$temp_dir/oImage" "$temp_dir/Image" && \
+               cp "$temp_dir/Image" "$original_image"; then
+                ui_print "- $_LANG_KPM_12"
+                patch_success=true
+            else
+                ui_print "! $_LANG_KPM_13"
+            fi
+    
+            rm -rf "$temp_dir"
+    
+            if ! $patch_success; then
+                attempt=$((attempt + 1))
+                sleep 2
+            fi
+        done
+    
+        if $patch_success; then
+            ui_print " "
+            ui_print "$_LANG_KPM_19_2"
+            ui_print "=========================================="
+        else
+            ui_print " "
+            ui_print "! ${_LANG_KPM_15} $max_retries ${_LANG_KPM_15_1}"
+            ui_print "! $_LANG_KPM_19_3"
+            ui_print "=========================================="
+            abort "$_LANG_KPM_19_4"
+        fi
     fi
 fi
-
 include_perfmgr=false
 
 if [ -f "${home}/_extra_modules/perfmgr.ko" ]; then
