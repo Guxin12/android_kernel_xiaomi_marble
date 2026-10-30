@@ -455,7 +455,7 @@ netlink_unlock_table(void)
 
 struct netlink_compare_arg
 {
-	u64 net_cookie;
+	possible_net_t pnet;
 	u32 portid;
 };
 
@@ -470,14 +470,14 @@ static inline int netlink_compare(struct rhashtable_compare_arg *arg,
 	const struct netlink_sock *nlk = ptr;
 
 	return nlk->portid != x->portid ||
-	       sock_net(&nlk->sk)->net_cookie != x->net_cookie;
+	       !net_eq(sock_net(&nlk->sk), read_pnet(&x->pnet));
 }
 
 static void netlink_compare_arg_init(struct netlink_compare_arg *arg,
 				     struct net *net, u32 portid)
 {
 	memset(arg, 0, sizeof(*arg));
-	arg->net_cookie = net->net_cookie;
+	write_pnet(&arg->pnet, net);
 	arg->portid = portid;
 }
 
