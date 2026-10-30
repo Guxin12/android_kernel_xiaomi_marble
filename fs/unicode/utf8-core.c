@@ -3,7 +3,6 @@
 #include <linux/kernel.h>
 #include <linux/string.h>
 #include <linux/slab.h>
-#include <linux/rcupdate.h>
 #include <linux/parser.h>
 #include <linux/errno.h>
 #include <linux/unicode.h>
@@ -228,15 +227,9 @@ struct unicode_map *utf8_load(const char *version)
 }
 EXPORT_SYMBOL(utf8_load);
 
-/*
- * A pathwalk in rcu mode may still be in ->d_hash() or ->d_compare() of a
- * filesystem that is being torn down and read the map through its
- * superblock, so the map has to outlive the grace period.
- */
 void utf8_unload(struct unicode_map *um)
 {
-	if (um)
-		kfree_rcu(um, rcu);
+	kfree(um);
 }
 EXPORT_SYMBOL(utf8_unload);
 
