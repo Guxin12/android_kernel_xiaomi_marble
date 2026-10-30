@@ -1362,10 +1362,7 @@ out_unlock:
 
 void xfrm_policy_hash_rebuild(struct net *net)
 {
-	write_seqlock(&net->xfrm.policy_hthresh.lock);
-	if (!net->xfrm.policy_hthresh.work_disabled)
-		schedule_work(&net->xfrm.policy_hthresh.work);
-	write_sequnlock(&net->xfrm.policy_hthresh.lock);
+	schedule_work(&net->xfrm.policy_hthresh.work);
 }
 EXPORT_SYMBOL(xfrm_policy_hash_rebuild);
 
@@ -4101,7 +4098,6 @@ static int __net_init xfrm_policy_init(struct net *net)
 	net->xfrm.policy_hthresh.rbits6 = 128;
 
 	seqlock_init(&net->xfrm.policy_hthresh.lock);
-	net->xfrm.policy_hthresh.work_disabled = false;
 
 	INIT_LIST_HEAD(&net->xfrm.policy_all);
 	INIT_LIST_HEAD(&net->xfrm.inexact_bins);
@@ -4126,19 +4122,6 @@ static void xfrm_policy_fini(struct net *net)
 	struct xfrm_pol_inexact_bin *b, *t;
 	unsigned int sz;
 	int dir;
-
-	/* Prevent new policy hash rebuilds before draining the work item.
-	 *
-	 * The upstream fix uses disable_work_sync(), which is unavailable
-	 * in v6.6. Protecting work_disabled and schedule_work() with the
-	 * same seqlock closes the check-to-queue race, while the subsequent
-	 * cancel_work_sync() drains work that was queued or running before
-	 * teardown disabled it.
-	 */
-	write_seqlock(&net->xfrm.policy_hthresh.lock);
-	net->xfrm.policy_hthresh.work_disabled = true;
-	write_sequnlock(&net->xfrm.policy_hthresh.lock);
-	cancel_work_sync(&net->xfrm.policy_hthresh.work);
 
 	flush_work(&net->xfrm.policy_hash_work);
 #ifdef CONFIG_XFRM_SUB_POLICY
