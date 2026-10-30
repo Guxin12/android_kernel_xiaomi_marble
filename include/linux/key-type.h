@@ -161,7 +161,6 @@ struct key_type {
 	ANDROID_KABI_RESERVE(2);
 
 	/* internal fields */
-	atomic64_t		index_id;	/* Opaque keyring index ID */
 	struct list_head	link;		/* link in types list */
 	struct lock_class_key	lock_class;	/* key->sem lock class */
 } __randomize_layout;
