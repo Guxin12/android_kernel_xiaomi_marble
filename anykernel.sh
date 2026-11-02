@@ -368,7 +368,7 @@ ${bin}/7za x ${home}/Image.7z -o${home}/ && [ -f ${home}/Image ] || abort "! $_L
 rm ${home}/Image.7z
 [ "$(sha1 ${home}/Image)" == "$SHA1_STOCK" ] || abort "! $_LANG_KERNEL_IMAGE_CORRUPTED"
 
-strings ${home}/Image 2>/dev/null | grep -E -m1 'Linux version.*#' > ${home}/vertmp
+strings ${home}/Image 2>/dev/null | grep -E -m1 'Linux version.*#' > ${home}/LinuxVersion
 
 # Check vendor_dlkm partition status
 [ -d /vendor_dlkm ] || mkdir /vendor_dlkm
@@ -377,7 +377,7 @@ is_mounted /vendor_dlkm || \
 		abort "! $_LANG_FAILED_TO_MOUNT /vendor_dlkm"
 
 do_backup_flag=false
-if [ ! -f /vendor_dlkm/lib/modules/vertmp ]; then
+if [ ! -f /vendor_dlkm/lib/modules/LinuxVersion ]; then
 	do_backup_flag=true
 fi
 is_lineageos_xiaomi_touch=false
@@ -1056,7 +1056,7 @@ if true; then  # I don't want to adjust the indentation of the code block below,
 	rm -f ${extract_vendor_dlkm_modules_dir}/*
 	cp ${home}/_vendor_dlkm_modules/* ${extract_vendor_dlkm_modules_dir}/ || \
 		abort "! $_LANG_VENDOR_DLKM_UPDATE_FAILED"
-	cp ${home}/vertmp ${extract_vendor_dlkm_modules_dir}/vertmp
+	cp ${home}/LinuxVersion ${extract_vendor_dlkm_modules_dir}/LinuxVersion
 	sync
 
 	if ${vendor_dlkm_is_ext4}; then
